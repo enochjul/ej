@@ -13,6 +13,62 @@ namespace ej {
 uint32_t xxhash_32(const void *s, size_t n, uint32_t seed = 0) noexcept;
 uint64_t xxhash_64(const void *s, size_t n, uint64_t seed = 0) noexcept;
 
+//! Helper class for computing the hash of a string
+template <typename T>
+class xxHash;
+
+template <>
+class xxHash<uint32_t> {
+public:
+	typedef uint32_t value_type;
+
+	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
+		return xxhash_32(s, n, seed);
+	}
+};
+
+template <>
+class xxHash<uint64_t> {
+public:
+	typedef uint64_t value_type;
+
+	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
+		return xxhash_64(s, n, seed);
+	}
+};
+
+//! Helper class for computing the hash of a string using a specific seed
+template <typename T>
+class xxHashSeed;
+
+template <>
+class xxHashSeed<uint32_t> {
+public:
+	typedef uint32_t value_type;
+
+private:
+	value_type Seed = 0;
+
+public:
+	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
+		return xxhash_32(s, n, seed);
+	}
+};
+
+template <>
+class xxHashSeed<uint64_t> {
+public:
+	typedef uint64_t value_type;
+
+private:
+	value_type Seed = 0;
+
+public:
+	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
+		return xxhash_64(s, n, seed);
+	}
+};
+
 }
 
 #endif

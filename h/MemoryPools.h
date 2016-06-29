@@ -57,6 +57,8 @@ public:
 	MemoryPools(const MemoryPools &) = delete;
 	MemoryPools &operator =(const MemoryPools &) = delete;
 
+	void clear() noexcept;
+
 	//! Allocates memory for an object of the specified type
 	//! If there is not enough memory, returns nullptr if may_fail is true, otherwise aborts
 	template <typename T, bool may_fail = false>
@@ -143,6 +145,20 @@ MemoryPools<PoolSize, Alignment, SizeMax>::~MemoryPools() noexcept {
 			pool = next_pool;
 		} while (pool != nullptr);
 	}
+}
+
+template <size_t PoolSize, size_t Alignment, size_t SizeMax>
+void MemoryPools<PoolSize, Alignment, SizeMax>::clear() noexcept {
+	auto pool = Pools;
+	if (pool != nullptr) {
+		do {
+			auto next_pool = pool->Next;
+			munmap(pool, pool->Size);
+			pool = next_pool;
+		} while (pool != nullptr);
+	}
+	Pools = nullptr;
+	FreeSize = 0;
 }
 
 template <size_t PoolSize, size_t Alignment, size_t SizeMax>

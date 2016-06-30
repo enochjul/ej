@@ -31,13 +31,62 @@ public:
 	};
 
 protected:
-	struct Region : public MutexType {
+	//! Holds a mutable mutex and converts lock/unlock operations to const to allow const read operations on the data protected by the mutex
+	template <typename T, bool real_mutex = is_mutex<T>::value, bool exclusive = T::Exclusive>
+	struct RegionBase;
+
+	template <typename T, bool real_mutex>
+	struct RegionBase<T, real_mutex, true> {
+		mutable T Mutex;
+
+		void lock() const noexcept {
+			Mutex.lock();
+		}
+
+		void unlock() const noexcept {
+			Mutex.unlock();
+		}
+	};
+
+	template <typename T, bool real_mutex>
+	struct RegionBase<T, real_mutex, false> {
+		mutable T Mutex;
+
+		void rdlock() const noexcept {
+			Mutex.rdlock();
+		}
+
+		void rdunlock() const noexcept {
+			Mutex.rdunlock();
+		}
+
+		void wrlock() const noexcept {
+			Mutex.wrlock();
+		}
+
+		void wrunlock() const noexcept {
+			Mutex.wrunlock();
+		}
+	};
+
+	template <typename T>
+	struct RegionBase<T, false, true> {
+		void lock() const noexcept {
+		}
+
+		void unlock() const noexcept {
+		}
+	};
+
+	struct Region : public RegionBase<MutexType> {
+		typedef RegionBase<MutexType> super;
+
 		StringType **Buckets;
 		hash_type Mask;
 		size_type Size;
 		MemoryPools<PoolSize, alignof(StringType), std::numeric_limits<size_type>::max()> Pools;
 
-		Region() noexcept : MutexType(), Buckets(nullptr), Mask(0), Size(0), Pools() {
+		Region() noexcept : super(), Buckets(nullptr), Mask(0), Size(0), Pools() {
 		}
 		~Region() noexcept {
 			auto buckets = Buckets;

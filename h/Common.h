@@ -17,6 +17,30 @@ enum : size_t {
 	PAGE_SIZE = 4096,
 };
 
+//Unfortunately gcc currently does not optimize __atomic_compare_exchange_n() well, and does an extra memory write
+//to expected instead of putting it in a register.
+//On x86 use the sync builtins to avoid the issue, but the extra memory barrier implied by sync may not work well for
+//other architectures.
+
+template <typename T, bool weak = false>
+inline bool compare_and_exchange_bool_relaxed(T *ptr, T expected, T desired) noexcept {
+#if defined(__i386__) || defined(__amd64__)
+	return __sync_bool_compare_and_swap(ptr, expected, desired);
+#else
+	return __atomic_compare_exchange_n(ptr, &expected, desired, weak, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+#endif
+}
+
+template <typename T, bool weak = false>
+inline T compare_and_exchange_value_relaxed(T *ptr, T expected, T desired) noexcept {
+#if defined(__i386__) || defined(__amd64__)
+	return __sync_val_compare_and_swap(ptr, expected, desired);
+#else
+	__atomic_compare_exchange_n(ptr, &expected, desired, weak, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+	return expected;
+#endif
+}
+
 }
 
 #endif

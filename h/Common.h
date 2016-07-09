@@ -13,6 +13,12 @@
 
 namespace ej {
 
+template <typename T>
+struct duint {
+	T Low;
+	T High;
+};
+
 enum : size_t {
 	PAGE_SIZE = 4096,
 };

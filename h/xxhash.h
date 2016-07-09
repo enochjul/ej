@@ -47,11 +47,14 @@ public:
 	typedef uint32_t value_type;
 
 private:
-	value_type Seed = 0;
+	value_type Seed;
 
 public:
-	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
-		return xxhash_32(s, n, seed);
+	constexpr explicit xxHashSeed(value_type seed = 0) noexcept : Seed(seed) {
+	}
+
+	value_type eval(const void *s, size_t n) const noexcept {
+		return xxhash_32(s, n, Seed);
 	}
 };
 
@@ -61,11 +64,14 @@ public:
 	typedef uint64_t value_type;
 
 private:
-	value_type Seed = 0;
+	value_type Seed;
 
 public:
-	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
-		return xxhash_64(s, n, seed);
+	constexpr explicit xxHashSeed(value_type seed = 0) noexcept : Seed(seed) {
+	}
+
+	value_type eval(const void *s, size_t n) const noexcept {
+		return xxhash_64(s, n, Seed);
 	}
 };
 

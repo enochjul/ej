@@ -45,6 +45,10 @@ public:
 	PageArray(const PageArray &x) noexcept(std::is_nothrow_copy_constructible<value_type>::value) = delete;
 	PageArray &operator =(const PageArray &x) noexcept(std::is_nothrow_copy_assignable<value_type>::value) = delete;
 
+	bool empty() const noexcept {
+		return Size == 0;
+	}
+
 	size_type size() const noexcept {
 		return Size;
 	}
@@ -61,6 +65,54 @@ public:
 	const T &operator [](size_type pos) const noexcept {
 		assert(pos < Size);
 		return PagesFirst[pos / M][pos % M];
+	}
+
+	T &operator ()(size_type pos) noexcept {
+		return operator [](pos);
+	}
+
+	const T &operator ()(size_type pos) const noexcept {
+		return operator [](pos);
+	}
+
+	T &front() noexcept {
+		assert(Size > 0);
+		return operator [](0);
+	}
+
+	const T &cfront() const noexcept {
+		assert(Size > 0);
+		return operator [](0);
+	}
+
+	const T &front() const noexcept {
+		return cfront();
+	}
+
+	T &back() noexcept {
+		assert(Size > 0);
+		return operator [](Size - 1);
+	}
+
+	const T &cback() const noexcept {
+		assert(Size > 0);
+		return operator [](Size - 1);
+	}
+
+	const T &back() const noexcept {
+		return cback();
+	}
+
+	T &top() noexcept {
+		return back();
+	}
+
+	const T &ctop() const noexcept {
+		return cback();
+	}
+
+	const T &top() const noexcept {
+		return cback();
 	}
 
 	value_type &push() noexcept(std::is_nothrow_default_constructible<value_type>::value) {
@@ -87,18 +139,40 @@ public:
 		return push(value);
 	}
 
+	template <typename ... Args>
+	value_type &emplace_back(Args && ... a) noexcept(std::is_nothrow_constructible<T, Args ...>::value) {
+		auto new_object = alloc();
+		forward_construct(new_object, std::forward<Args>(a) ...);
+		return *new_object;
+	}
+
 	void pop() noexcept(std::is_nothrow_destructible<value_type>::value) {
 		assert(Size > 0);
 		auto n = Size;
 		n--;
 		Size = n;
-		auto last_page = PagesFirst[n / M];
-		auto index = n % M;
-		destruct(last_page + index);
+		auto *obj = PagesFirst[n / M] + (n % M);
+		destruct(obj);
 	}
 	void pop_back() noexcept(std::is_nothrow_destructible<value_type>::value) {
 		pop();
 	}
+
+	void pop(T *x) noexcept(std::is_nothrow_copy_assignable<value_type>::value && std::is_nothrow_destructible<value_type>::value) {
+		assert(Size > 0);
+
+		auto n = Size;
+		n--;
+		auto *obj = PagesFirst[n / M] + (n % M);
+		*x = *obj;
+		Size = n;
+		destruct(obj);
+	}
+	void pop_back(T *x) noexcept(std::is_nothrow_copy_assignable<value_type>::value && std::is_nothrow_destructible<value_type>::value) {
+		pop(x);
+	}
+
+	void clear() noexcept(std::is_nothrow_destructible<value_type>::value);
 
 	//! Applies the given function to each stored object
 	template <typename Function>
@@ -210,6 +284,28 @@ PageArray<T, M, always_default_construct>::~PageArray() noexcept(std::is_nothrow
 	}
 
 	free(PagesFirst);
+}
+
+template <typename T, size_t M, bool always_default_construct>
+void PageArray<T, M, always_default_construct>::clear() noexcept(std::is_nothrow_destructible<value_type>::value) {
+	value_type **page_begin;
+	value_type **page_iter;
+	value_type **page_end;
+
+	auto n = Size;
+	page_begin = PagesFirst;
+	for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
+		auto page = *page_iter;
+		destruct_array(page, page + M);
+	}
+
+	auto last_page_size = n % M;
+	if (last_page_size > 0) {
+		auto page = *page_iter;
+		destruct_array(page, page + last_page_size);
+	}
+
+	Size = 0;
 }
 
 }

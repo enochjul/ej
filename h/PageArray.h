@@ -7,8 +7,10 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
+#include "CAlloc.h"
 #include "CallType.h"
 #include "Construct.h"
 #include "Destruct.h"
@@ -244,12 +246,12 @@ auto PageArray<T, M, always_default_construct>::alloc() -> value_type * {
 		//Double the number of page entries if needed
 		if ((page_begin + number_of_full_pages) == PagesReservedLast) {
 			size_type new_number_of_pages = number_of_full_pages > 0 ? number_of_full_pages * 2 : 4;
-			page_begin = static_cast<value_type **>(realloc(PagesFirst, sizeof(value_type *) * new_number_of_pages));
+			page_begin = CAlloc::realloc_array<value_type *>(page_begin, new_number_of_pages);
 			PagesFirst = page_begin;
 			PagesReservedLast = page_begin + new_number_of_pages;
 		}
 		//Allocate a new page
-		page_begin[number_of_full_pages] = static_cast<value_type *>(malloc(sizeof(value_type) * M));
+		page_begin[number_of_full_pages] = CAlloc::alloc_array<value_type>(M);
 		Capacity += M;
 	}
 
@@ -268,7 +270,7 @@ PageArray<T, M, always_default_construct>::~PageArray() noexcept(std::is_nothrow
 	for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
 		auto page = *page_iter;
 		destruct_array(page, page + M);
-		free(page);
+		CAlloc::dealloc_array(page, M);
 	}
 
 	auto last_page_size = n % M;
@@ -280,10 +282,10 @@ PageArray<T, M, always_default_construct>::~PageArray() noexcept(std::is_nothrow
 	assert((Capacity % M) == 0);
 	for (page_end = page_begin + (Capacity / M); page_iter != page_end; ++page_iter) {
 		auto page = *page_iter;
-		free(page);
+		CAlloc::dealloc_array(page, M);
 	}
 
-	free(PagesFirst);
+	CAlloc::dealloc_array(page_begin, PagesReservedLast - page_begin);
 }
 
 template <typename T, size_t M, bool always_default_construct>

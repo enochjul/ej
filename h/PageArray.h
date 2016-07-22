@@ -17,21 +17,15 @@
 
 namespace ej {
 
-//! Represents an array using an array of arrays, and each individual array contains a fixed number of objects.
-template <
-	typename T,
-	//! Number of objects per array
-	size_t M = 16,
-	//! Always call the default constructor if no parameters are supplied to functions such as push()/resize()
-	bool always_default_construct = true>
-class PageArray {
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+class PageArrayBase {
 	static_assert(M > 0);
 
 public:
 	typedef T value_type;
 	typedef size_t size_type;
 
-private:
+protected:
 	value_type **PagesFirst;
 	value_type **PagesReservedLast;
 	size_type Size;
@@ -40,12 +34,11 @@ private:
 	value_type *alloc() noexcept;
 
 public:
-	constexpr PageArray() noexcept : PagesFirst(nullptr), PagesReservedLast(nullptr), Size(0), Capacity(0) {
+	constexpr PageArrayBase() noexcept : PagesFirst(nullptr), PagesReservedLast(nullptr), Size(0), Capacity(0) {
 	}
-	~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value);
 
-	PageArray(const PageArray &x) noexcept(std::is_nothrow_copy_constructible<value_type>::value) = delete;
-	PageArray &operator =(const PageArray &x) noexcept(std::is_nothrow_copy_assignable<value_type>::value) = delete;
+	PageArrayBase(const PageArrayBase &x) noexcept(std::is_nothrow_copy_constructible<value_type>::value) = delete;
+	PageArrayBase &operator =(const PageArrayBase &x) noexcept(std::is_nothrow_copy_assignable<value_type>::value) = delete;
 
 	bool empty() const noexcept {
 		return Size == 0;
@@ -174,15 +167,14 @@ public:
 		pop(x);
 	}
 
-	void clear() noexcept(std::is_nothrow_destructible<value_type>::value);
-
-	//! Applies the given function to each stored object
+	//! Applies the given function to each object
 	template <typename Function>
 	void for_each(Function f) {
 		value_type *const *page_begin;
 		value_type *const *page_iter;
 		value_type *const *page_end;
 
+		//Iterate through the objects in full pages
 		auto n = Size;
 		page_begin = PagesFirst;
 		for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
@@ -192,6 +184,7 @@ public:
 			}
 		}
 
+		//Check and iterate through the objects in the partial page
 		auto last_page_size = n % M;
 		if (last_page_size > 0) {
 			auto page = *page_iter;
@@ -201,13 +194,14 @@ public:
 		}
 	}
 
-	//! Applies the given function to each stored object
+	//! Applies the given function to each object
 	template <typename Function>
 	void cfor_each(Function f) const {
 		const value_type *const *page_begin;
 		const value_type *const *page_iter;
 		const value_type *const *page_end;
 
+		//Iterate through the objects in full pages
 		auto n = Size;
 		page_begin = PagesFirst;
 		for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
@@ -217,6 +211,7 @@ public:
 			}
 		}
 
+		//Check and iterate through the objects in the partial page
 		auto last_page_size = n % M;
 		if (last_page_size > 0) {
 			auto page = *page_iter;
@@ -226,15 +221,71 @@ public:
 		}
 	}
 
-	//! Applies the given function to each stored object
+	//! Applies the given function to each object
 	template <typename Function>
 	void for_each(Function f) const {
 		cfor_each(f);
 	}
+
+	//! Applies the given function to each object, starting from the last object
+	template <typename Function>
+	void rfor_each(Function f) {
+		auto n = this->Size;
+		auto page_begin = this->PagesFirst;
+		auto full_page_end = page_begin + (n / M);
+
+		//Check and iterate through the objects in the partial page
+		auto last_page_size = n % M;
+		if (last_page_size > 0) {
+			auto page = *full_page_end;
+			for (auto obj_riter = page + last_page_size, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				f(*(obj_riter - 1));
+			}
+		}
+
+		//Iterate through the objects in full pages
+		for (auto page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
+			auto page = *(page_riter - 1);
+			for (auto obj_riter = page + M, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				f(*(obj_riter - 1));
+			}
+		}
+	}
+
+	//! Applies the given function to each object, starting from the last object
+	template <typename Function>
+	void crfor_each(Function f) const {
+		auto n = this->Size;
+		const auto *const *page_begin = this->PagesFirst;
+		auto full_page_end = page_begin + (n / M);
+
+		//Check and iterate through the objects in the partial page
+		auto last_page_size = n % M;
+		if (last_page_size > 0) {
+			auto page = *full_page_end;
+			for (auto obj_riter = page + last_page_size, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				f(*(obj_riter - 1));
+			}
+		}
+
+		//Iterate through the objects in full pages
+		for (auto page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
+			auto page = *(page_riter - 1);
+			for (auto obj_riter = page + M, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				f(*(obj_riter - 1));
+			}
+		}
+	}
+
+	//! Applies the given function to each object, starting from the last object
+	template <typename Function>
+	void rfor_each(Function f) const {
+		crfor_each(f);
+	}
 };
 
-template <typename T, size_t M, bool always_default_construct>
-auto PageArray<T, M, always_default_construct>::alloc() -> value_type * {
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+auto PageArrayBase<T, M, always_default_construct, Alloc>::alloc() -> value_type * {
 	//Checks if all pages are full
 	auto n = Size;
 	auto number_of_full_pages = n / M;
@@ -246,12 +297,12 @@ auto PageArray<T, M, always_default_construct>::alloc() -> value_type * {
 		//Double the number of page entries if needed
 		if ((page_begin + number_of_full_pages) == PagesReservedLast) {
 			size_type new_number_of_pages = number_of_full_pages > 0 ? number_of_full_pages * 2 : 4;
-			page_begin = CAlloc::realloc_array<value_type *>(page_begin, new_number_of_pages);
+			page_begin = Alloc::template realloc_array<value_type *>(page_begin, new_number_of_pages);
 			PagesFirst = page_begin;
 			PagesReservedLast = page_begin + new_number_of_pages;
 		}
 		//Allocate a new page
-		page_begin[number_of_full_pages] = CAlloc::alloc_array<value_type>(M);
+		page_begin[number_of_full_pages] = Alloc::template alloc_array<value_type>(M);
 		Capacity += M;
 	}
 
@@ -259,55 +310,191 @@ auto PageArray<T, M, always_default_construct>::alloc() -> value_type * {
 	return page_begin[number_of_full_pages] + (n % M);
 }
 
-template <typename T, size_t M, bool always_default_construct>
-PageArray<T, M, always_default_construct>::~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value) {
+//! Represents an array using an array of arrays, and each individual array contains a fixed number of objects.
+template <
+	typename T,
+	//! Number of objects per array
+	size_t M = 16,
+	//! Calls the destructor for each object in reverse order
+	bool reverse_destruct = false,
+	//! Always call the default constructor if no parameters are supplied to functions such as push()/resize()
+	bool always_default_construct = true,
+	class Alloc = CAlloc,
+	bool trivially_destructible = std::is_trivially_destructible<T>::value>
+class PageArray;
+
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+class PageArray<T, M, false, always_default_construct, Alloc, false> : public PageArrayBase<T, M, always_default_construct, Alloc> {
+	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
+
+public:
+	typedef typename super::value_type value_type;
+
+	~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value);
+
+	void clear() noexcept(std::is_nothrow_destructible<value_type>::value);
+};
+
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+PageArray<T, M, false, always_default_construct, Alloc, false>::~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value) {
 	value_type **page_begin;
 	value_type **page_iter;
 	value_type **page_end;
 
-	auto n = Size;
-	page_begin = PagesFirst;
+	//Destroy and deallocate the objects in full pages
+	auto n = this->Size;
+	page_begin = this->PagesFirst;
 	for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
 		auto page = *page_iter;
-		destruct_array(page, page + M);
-		CAlloc::dealloc_array(page, M);
+		destruct_array_n(page, M);
+		Alloc::dealloc_array(page, M);
 	}
 
+	//Check and destroy the objects in the partial page
 	auto last_page_size = n % M;
 	if (last_page_size > 0) {
 		auto page = *page_iter;
-		destruct_array(page, page + last_page_size);
+		destruct_array_n(page, last_page_size);
 	}
 
-	assert((Capacity % M) == 0);
-	for (page_end = page_begin + (Capacity / M); page_iter != page_end; ++page_iter) {
+	//Destroy the partial page (if present) and reserved but unused pages
+	assert((this->Capacity % M) == 0);
+	for (page_end = page_begin + (this->Capacity / M); page_iter != page_end; ++page_iter) {
 		auto page = *page_iter;
-		CAlloc::dealloc_array(page, M);
+		Alloc::dealloc_array(page, M);
 	}
 
-	CAlloc::dealloc_array(page_begin, PagesReservedLast - page_begin);
+	Alloc::dealloc_array(page_begin, this->PagesReservedLast - page_begin);
 }
 
-template <typename T, size_t M, bool always_default_construct>
-void PageArray<T, M, always_default_construct>::clear() noexcept(std::is_nothrow_destructible<value_type>::value) {
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+void PageArray<T, M, false, always_default_construct, Alloc, false>::clear() noexcept(std::is_nothrow_destructible<value_type>::value) {
 	value_type **page_begin;
 	value_type **page_iter;
 	value_type **page_end;
 
-	auto n = Size;
-	page_begin = PagesFirst;
+	//Destroy the objects in full pages
+	auto n = this->Size;
+	page_begin = this->PagesFirst;
 	for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
 		auto page = *page_iter;
-		destruct_array(page, page + M);
+		destruct_array_n(page, M);
 	}
 
+	//Check and destroy the objects in the partial page
 	auto last_page_size = n % M;
 	if (last_page_size > 0) {
 		auto page = *page_iter;
-		destruct_array(page, page + last_page_size);
+		destruct_array_n(page, last_page_size);
 	}
 
-	Size = 0;
+	this->Size = 0;
+}
+
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+class PageArray<T, M, true, always_default_construct, Alloc, false> : public PageArrayBase<T, M, always_default_construct, Alloc> {
+	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
+
+public:
+	typedef typename super::value_type value_type;
+
+	~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value);
+
+	void clear() noexcept(std::is_nothrow_destructible<value_type>::value);
+};
+
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+PageArray<T, M, true, always_default_construct, Alloc, false>::~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value) {
+	value_type **page_begin;
+	value_type **full_page_end;
+	value_type **reserved_page_end;
+	value_type **page_riter;
+	value_type **page_rend;
+
+	assert((this->Capacity % M) == 0);
+
+	auto n = this->Size;
+	page_begin = this->PagesFirst;
+	full_page_end = page_begin + (n / M);
+	reserved_page_end = page_begin + (this->Capacity / M);
+
+	//Check if there are objects in a partial page
+	auto last_page_size = n % M;
+	if (last_page_size > 0) {
+		//Deallocates reserved but unused pages
+		for (page_riter = reserved_page_end, page_rend = full_page_end + 1; page_riter != page_rend; --page_riter) {
+			auto page = *(page_riter - 1);
+			Alloc::dealloc_array(page, M);
+		}
+
+		//Destroy and deallocate the objects in the partial page
+		auto page = *(page_riter - 1);
+		reverse_destruct_array_n(page, last_page_size);
+		Alloc::dealloc_array(page, M);
+	} else {
+		//Deallocates reserved but unused pages
+		for (page_riter = reserved_page_end, page_rend = full_page_end; page_riter != page_rend; --page_riter) {
+			auto page = *(page_riter - 1);
+			Alloc::dealloc_array(page, M);
+		}
+	}
+
+	//Destroy and deallocate objects in the full pages
+	for (page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
+		auto page = *(page_riter - 1);
+		reverse_destruct_array_n(page, M);
+		Alloc::dealloc_array(page, M);
+	}
+
+	Alloc::dealloc_array(page_begin, this->PagesReservedLast - page_begin);
+}
+
+template <typename T, size_t M, bool always_default_construct, class Alloc>
+void PageArray<T, M, true, always_default_construct, Alloc, false>::clear() noexcept(std::is_nothrow_destructible<value_type>::value) {
+	auto n = this->Size;
+	auto page_begin = this->PagesFirst;
+	auto full_page_end = page_begin + (n / M);
+
+	//Check and destroy the elements on a partial page
+	auto last_page_size = n % M;
+	if (last_page_size > 0) {
+		auto page = *full_page_end;
+		reverse_destruct_array_n(page, last_page_size);
+	}
+
+	//Destroy the elements on full pages
+	for (auto page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
+		auto page = *(page_riter - 1);
+		reverse_destruct_array_n(page, M);
+	}
+
+	this->Size = 0;
+}
+
+template <typename T, size_t M, bool reverse_destruct, bool always_default_construct, class Alloc>
+class PageArray<T, M, reverse_destruct, always_default_construct, Alloc, true> : public PageArrayBase<T, M, always_default_construct, Alloc> {
+	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
+
+public:
+	typedef typename super::value_type value_type;
+
+	~PageArray() noexcept;
+
+	void clear() noexcept {
+		this->Size = 0;
+	}
+};
+
+template <typename T, size_t M, bool reverse_destruct, bool always_default_construct, class Alloc>
+PageArray<T, M, reverse_destruct, always_default_construct, Alloc, true>::~PageArray() noexcept {
+	assert((this->Capacity % M) == 0);
+
+	auto page_begin = this->PagesFirst;
+	for (auto page_iter = page_begin, page_end = page_begin + (this->Capacity / M); page_iter != page_end; ++page_iter) {
+		auto page = *page_iter;
+		Alloc::dealloc_array(page, M);
+	}
+	Alloc::dealloc_array(page_begin, this->PagesReservedLast - page_begin);
 }
 
 }

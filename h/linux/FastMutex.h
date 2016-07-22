@@ -33,7 +33,7 @@ public:
 	constexpr FastMutex() noexcept : State(Unlocked) {
 	}
 #ifndef NDEBUG
-	~Mutex() noexcept {
+	~FastMutex() noexcept {
 		assert(State == Unlocked);
 	}
 #endif

@@ -328,7 +328,7 @@ class PageArray<T, M, false, always_default_construct, Alloc, false> : public Pa
 	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
 
 public:
-	typedef typename super::value_type value_type;
+	using typename super::value_type;
 
 	~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value);
 
@@ -396,7 +396,7 @@ class PageArray<T, M, true, always_default_construct, Alloc, false> : public Pag
 	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
 
 public:
-	typedef typename super::value_type value_type;
+	using typename super::value_type;
 
 	~PageArray() noexcept(std::is_nothrow_destructible<value_type>::value);
 
@@ -476,7 +476,7 @@ class PageArray<T, M, reverse_destruct, always_default_construct, Alloc, true> :
 	typedef PageArrayBase<T, M, always_default_construct, Alloc> super;
 
 public:
-	typedef typename super::value_type value_type;
+	using typename super::value_type;
 
 	~PageArray() noexcept;
 

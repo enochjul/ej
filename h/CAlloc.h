@@ -55,7 +55,7 @@ public:
 
 		T *ptr;
 
-		if (n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
+		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
 			ptr = allocate<T>(n * sizeof(T) + sentinel_n * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
@@ -77,7 +77,7 @@ public:
 	static T *realloc_array(T *ptr, size_t n) noexcept {
 		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
 
-		if (n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
+		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
 			ptr = reallocate<T>(ptr, n * sizeof(T) + sentinel_n * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
@@ -146,7 +146,7 @@ public:
 		size_t n;
 		T *ptr;
 
-		if (!__builtin_mul_overflow(width, height, &n) && n <= (SIZE_MAX / sizeof(T))) {
+		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
 			ptr = allocate<T>(height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
@@ -168,7 +168,7 @@ public:
 	static T *realloc_2d_array(T *ptr, size_t width, size_t height) noexcept {
 		size_t n;
 
-		if (!__builtin_mul_overflow(width, height, &n) && n <= (SIZE_MAX / sizeof(T))) {
+		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
 			ptr = reallocate<T>(ptr, height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
@@ -191,7 +191,7 @@ public:
 		size_t m, n;
 		T *ptr;
 
-		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && n <= (SIZE_MAX / sizeof(T))) {
+		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
 			ptr = allocate<T>(depth * height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
@@ -213,7 +213,7 @@ public:
 	static T *realloc_3d_array(T *ptr, size_t width, size_t height, size_t depth) noexcept {
 		size_t m, n;
 
-		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && n <= (SIZE_MAX / sizeof(T))) {
+		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
 			ptr = reallocate<T>(ptr, depth * height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;

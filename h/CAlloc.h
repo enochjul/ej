@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 namespace ej {
@@ -33,9 +34,7 @@ public:
 	//! Allocates memory for an object of the specified type
 	template <typename T, bool may_fail = false>
 	static T *alloc() noexcept {
-		T *ptr;
-
-		ptr = allocate<T>(sizeof(T));
+		auto ptr = allocate<T>(sizeof(T));
 		if (may_fail || ptr != nullptr) {
 			return ptr;
 		}
@@ -53,10 +52,8 @@ public:
 	static T *alloc_array(size_t n) noexcept {
 		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
 
-		T *ptr;
-
 		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
-			ptr = allocate<T>(n * sizeof(T) + sentinel_n * sizeof(T));
+			auto ptr = allocate<T>(n * sizeof(T) + sentinel_n * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
 			}
@@ -92,6 +89,48 @@ public:
 	template <typename T, size_t sentinel_n = 0>
 	static T *try_realloc_array(T *ptr, size_t n) noexcept {
 		return realloc_array<T, sentinel_n, true>(ptr, n);
+	}
+
+	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
+	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	static T *alloc_array_range(const T *first, const T *last) noexcept {
+		size_t n = (last - first) * sizeof(T);
+		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
+			auto ptr = allocate<T>(n + sentinel_n * sizeof(T));
+			if (may_fail || ptr != nullptr) {
+				return ptr;
+			}
+		} else if (may_fail) {
+			return nullptr;
+		}
+		abort();
+	}
+
+	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last), and returns nullptr if it fails
+	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	static T *try_alloc_array_range(const T *first, const T *last) noexcept {
+		return alloc_array_range<T, sentinel_n, true>(first, last);
+	}
+
+	//! Reallocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
+	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	static T *realloc_array_range(T *ptr, const T *first, const T *last) noexcept {
+		size_t n = (last - first) * sizeof(T);
+		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
+			auto ptr = reallocate<T>(n + sentinel_n * sizeof(T));
+			if (may_fail || ptr != nullptr) {
+				return ptr;
+			}
+		} else if (may_fail) {
+			return nullptr;
+		}
+		abort();
+	}
+
+	//! Reallocates memory for an array of objects of the specified type, where the size is determined from a range [first, last), and returns nullptr if it fails
+	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	static T *try_realloc_array_range(const T *first, const T *last) noexcept {
+		return realloc_array_range<T, sentinel_n, true>(first, last);
 	}
 
 	//! Allocates memory for a flexible array of the specified type

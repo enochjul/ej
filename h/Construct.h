@@ -41,6 +41,22 @@ public:
 	}
 };
 
+template <typename T>
+class DefaultConstruct<T, true, true> {
+public:
+	static void run(T *ptr) noexcept {
+		new(ptr, 0) T();
+	}
+
+	static void run_array(T *first, T *last) noexcept {
+		memset(first, 0, (last - first) * sizeof(T));
+	}
+
+	static void run_array_n(T *first, size_t n) noexcept {
+		memset(first, 0, n * sizeof(T));
+	}
+};
+
 template <class T>
 class DefaultConstruct<T, false, true> {
 public:

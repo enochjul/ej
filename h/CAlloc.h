@@ -94,6 +94,8 @@ public:
 	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	static T *alloc_array_range(const T *first, const T *last) noexcept {
+		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
+
 		size_t n = (last - first) * sizeof(T);
 		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
 			auto ptr = allocate<T>(n + sentinel_n * sizeof(T));
@@ -107,7 +109,7 @@ public:
 	}
 
 	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last), and returns nullptr if it fails
-	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	template <typename T, size_t sentinel_n = 0>
 	static T *try_alloc_array_range(const T *first, const T *last) noexcept {
 		return alloc_array_range<T, sentinel_n, true>(first, last);
 	}
@@ -115,6 +117,8 @@ public:
 	//! Reallocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	static T *realloc_array_range(T *ptr, const T *first, const T *last) noexcept {
+		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
+
 		size_t n = (last - first) * sizeof(T);
 		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
 			auto ptr = reallocate<T>(n + sentinel_n * sizeof(T));
@@ -128,7 +132,7 @@ public:
 	}
 
 	//! Reallocates memory for an array of objects of the specified type, where the size is determined from a range [first, last), and returns nullptr if it fails
-	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	template <typename T, size_t sentinel_n = 0>
 	static T *try_realloc_array_range(const T *first, const T *last) noexcept {
 		return realloc_array_range<T, sentinel_n, true>(first, last);
 	}
@@ -138,10 +142,8 @@ public:
 	static T *alloc_flexible_array(size_t n) noexcept {
 		static_assert(sentinel_n <= (SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type));
 
-		T *ptr;
-
 		if (n <= ((SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type) - sentinel_n)) {
-			ptr = allocate<T>(n * sizeof(typename T::value_type) + sentinel_n * sizeof(typename T::value_type) + T::sizeofHeader());
+			auto ptr = allocate<T>(n * sizeof(typename T::value_type) + sentinel_n * sizeof(typename T::value_type) + T::sizeofHeader());
 			if (may_fail || ptr != nullptr) {
 				return ptr;
 			}
@@ -183,10 +185,9 @@ public:
 	template <typename T, bool may_fail = false>
 	static T *alloc_2d_array(size_t width, size_t height) noexcept {
 		size_t n;
-		T *ptr;
 
 		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
-			ptr = allocate<T>(height * width * sizeof(T));
+			auto ptr = allocate<T>(height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
 			}
@@ -228,10 +229,9 @@ public:
 	template <typename T, bool may_fail = false>
 	static T *alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
 		size_t m, n;
-		T *ptr;
 
 		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
-			ptr = allocate<T>(depth * height * width * sizeof(T));
+			auto ptr = allocate<T>(depth * height * width * sizeof(T));
 			if (may_fail || ptr != nullptr) {
 				return ptr;
 			}

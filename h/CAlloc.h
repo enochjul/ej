@@ -47,6 +47,22 @@ public:
 		return alloc<T, true>();
 	}
 
+	//! Allocates memory for an object of the specified type with an explicit size
+	template <typename T, bool may_fail = false>
+	static T *alloc_n(size_t n) noexcept {
+		auto ptr = allocate<T>(n);
+		if (may_fail || ptr != nullptr) {
+			return ptr;
+		}
+		abort();
+	}
+
+	//! Allocates memory for an object of the specified type with an explicit size, and returns nullptr if it fails
+	template <typename T>
+	static T *try_alloc_n(size_t n) noexcept {
+		return alloc_n<T, true>(n);
+	}
+
 	//! Allocates memory for an array of objects of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	static T *alloc_array(size_t n) noexcept {

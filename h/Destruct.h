@@ -78,7 +78,7 @@ public:
 //! Calls the destructor for the specified object.
 template <class T>
 inline void destruct(T *ptr) noexcept(std::is_nothrow_destructible<T>::value) {
-	ptr->~T();
+	Destruct<T>::run(ptr);
 }
 
 //! Calls the destructor for objects in the range of [first, last)

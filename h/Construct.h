@@ -100,7 +100,7 @@ inline void copy_construct_array(T *first, T *last, typename CallType<T>::param_
 template <typename T>
 inline void copy_construct_array_n(T *first, size_t n, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
 	for (auto i = first, e = first + n; i != e; ++i) {
--		new(i, 0) T(a);
+		new(i, 0) T(a);
 	}
 }
 

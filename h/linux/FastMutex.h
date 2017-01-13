@@ -63,6 +63,23 @@ public:
 			futex_wake(&State);
 		}
 	}
+
+	template <class T>
+	void unlock_and_wake_futex(T *value) noexcept {
+		assert(State != Unlocked);
+		__atomic_thread_fence(__ATOMIC_RELEASE);
+		if (__atomic_fetch_sub(&State, 1, __ATOMIC_RELAXED) != Locked) {
+			__atomic_store_n(&State, Unlocked, __ATOMIC_RELAXED);
+			futex_requeue(value, 0, 1, &State);
+			futex_wake(&State);
+		} else {
+			futex_wake(value);
+		}
+	}
+
+	uint32_t *data() {
+		return &State;
+	}
 };
 
 }

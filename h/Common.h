@@ -19,6 +19,11 @@ struct duint {
 	T High;
 };
 
+template <typename T>
+EJ_ALWAYS_INLINE bool operator ==(const duint<T> &a, const duint<T> &b) {
+	return a.Low == b.Low && a.High == b.High;
+}
+
 enum : size_t {
 	PAGE_SIZE = 4096,
 };

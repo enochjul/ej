@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "Common.h"
+
 namespace ej {
 
 //! Computes 32-bit DJB2 hash function for a null terminated string
@@ -17,8 +19,33 @@ uint64_t djb2_64(const char *s) noexcept;
 
 //! Computes 32-bit DJB2 hash function
 uint32_t djb2_32(const void *s, size_t n) noexcept;
+//! Computes 32-bit DJB2 hash function
+uint32_t djb2_32(uint32_t value) noexcept;
+//! Computes 32-bit DJB2 hash function
+uint32_t djb2_32(uint64_t value) noexcept;
+//! Computes 32-bit DJB2 hash function
+EJ_ALWAYS_INLINE uint32_t djb2_32(int32_t value) noexcept {
+	return djb2_32(static_cast<uint32_t>(value));
+}
+//! Computes 32-bit DJB2 hash function
+EJ_ALWAYS_INLINE uint32_t djb2_32(int64_t value) noexcept {
+	return djb2_32(static_cast<uint64_t>(value));
+}
+
 //! Computes 64-bit DJB2 hash function
 uint64_t djb2_64(const void *s, size_t n) noexcept;
+//! Computes 64-bit DJB2 hash function
+uint64_t djb2_64(uint32_t value) noexcept;
+//! Computes 64-bit DJB2 hash function
+uint64_t djb2_64(uint64_t value) noexcept;
+//! Computes 64-bit DJB2 hash function
+EJ_ALWAYS_INLINE uint64_t djb2_64(int32_t value) noexcept {
+	return djb2_64(static_cast<uint32_t>(value));
+}
+//! Computes 64-bit DJB2 hash function
+EJ_ALWAYS_INLINE uint64_t djb2_64(int64_t value) noexcept {
+	return djb2_64(static_cast<uint64_t>(value));
+}
 
 //! Helper class for computing the hash of a string
 template <typename T>

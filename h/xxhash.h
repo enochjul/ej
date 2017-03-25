@@ -8,10 +8,29 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "Common.h"
+
 namespace ej {
 
 uint32_t xxhash_32(const void *s, size_t n, uint32_t seed = 0) noexcept;
+uint32_t xxhash_32(uint32_t value, uint32_t seed = 0) noexcept;
+uint32_t xxhash_32(uint64_t value, uint32_t seed = 0) noexcept;
+EJ_ALWAYS_INLINE uint32_t xxhash_32(int32_t value, uint32_t seed = 0) noexcept {
+	return xxhash_32(static_cast<uint32_t>(value), seed);
+}
+EJ_ALWAYS_INLINE uint32_t xxhash_32(int64_t value, uint32_t seed = 0) noexcept {
+	return xxhash_32(static_cast<uint64_t>(value), seed);
+}
+
 uint64_t xxhash_64(const void *s, size_t n, uint64_t seed = 0) noexcept;
+uint64_t xxhash_64(uint32_t value, uint64_t seed = 0) noexcept;
+uint64_t xxhash_64(uint64_t value, uint64_t seed = 0) noexcept;
+EJ_ALWAYS_INLINE uint64_t xxhash_64(int32_t value, uint64_t seed = 0) noexcept {
+	return xxhash_64(static_cast<uint32_t>(value), seed);
+}
+EJ_ALWAYS_INLINE uint64_t xxhash_64(int64_t value, uint64_t seed = 0) noexcept {
+	return xxhash_64(static_cast<uint64_t>(value), seed);
+}
 
 //! Helper class for computing the hash of a string
 template <typename T>

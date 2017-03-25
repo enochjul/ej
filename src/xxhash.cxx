@@ -236,6 +236,44 @@ uint32_t xxhash_32(const void *s, size_t n, uint32_t seed) noexcept {
 	return hash;
 }
 
+uint32_t xxhash_32(uint32_t value, uint32_t seed) noexcept {
+	uint32_t hash;
+
+	hash = seed + XXHASH_32_PRIME_5;
+
+	hash += sizeof(value);
+	hash += value * XXHASH_32_PRIME_3;
+	hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
+
+	hash ^= hash >> 15;
+	hash *= XXHASH_32_PRIME_2;
+	hash ^= hash >> 13;
+	hash *= XXHASH_32_PRIME_3;
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
+uint32_t xxhash_32(uint64_t value, uint32_t seed) noexcept {
+	uint32_t hash;
+
+	hash = seed + XXHASH_32_PRIME_5;
+
+	hash += sizeof(value);
+	hash += static_cast<uint32_t>(value) * XXHASH_32_PRIME_3;
+	hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
+	hash += static_cast<uint32_t>(value >> 32) * XXHASH_32_PRIME_3;
+	hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
+
+	hash ^= hash >> 15;
+	hash *= XXHASH_32_PRIME_2;
+	hash ^= hash >> 13;
+	hash *= XXHASH_32_PRIME_3;
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
 enum : uint64_t {
 	XXHASH_64_PRIME_1 = UINT64_C(11400714785074694791),
 	XXHASH_64_PRIME_2 = UINT64_C(14029467366897019727),
@@ -341,6 +379,46 @@ uint64_t xxhash_64(const void *s, size_t n, uint64_t seed) noexcept {
 		hash ^= static_cast<uint64_t>(*remaining_bytes) * XXHASH_64_PRIME_5;
 		hash = rotate_left<uint64_t>(hash, 11) * XXHASH_64_PRIME_1;
 	}
+
+	hash ^= hash >> 33;
+	hash *= XXHASH_64_PRIME_2;
+	hash ^= hash >> 29;
+	hash *= XXHASH_64_PRIME_3;
+	hash ^= hash >> 32;
+
+	return hash;
+}
+
+uint64_t xxhash_64(uint32_t value, uint64_t seed) noexcept {
+	uint64_t hash;
+
+	hash = seed + XXHASH_64_PRIME_5;
+
+	hash += sizeof(value);
+	hash ^= static_cast<uint64_t>(value) * XXHASH_64_PRIME_1;
+	hash = rotate_left<uint64_t>(hash, 23) * XXHASH_64_PRIME_2 + XXHASH_64_PRIME_3;
+
+	hash ^= hash >> 33;
+	hash *= XXHASH_64_PRIME_2;
+	hash ^= hash >> 29;
+	hash *= XXHASH_64_PRIME_3;
+	hash ^= hash >> 32;
+
+	return hash;
+}
+
+uint64_t xxhash_64(uint64_t value, uint64_t seed) noexcept {
+	uint64_t hash, k1;
+
+	hash = seed + XXHASH_64_PRIME_5;
+	hash += sizeof(value);
+
+	k1 = value;
+	k1 *= XXHASH_64_PRIME_2;
+	k1 = rotate_left<uint64_t>(k1, 31);
+	k1 *= XXHASH_64_PRIME_1;
+	hash ^= k1;
+	hash = rotate_left<uint64_t>(hash, 27) * XXHASH_64_PRIME_1 + XXHASH_64_PRIME_4;
 
 	hash ^= hash >> 33;
 	hash *= XXHASH_64_PRIME_2;

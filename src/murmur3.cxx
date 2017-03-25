@@ -81,6 +81,65 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 	return hash;
 }
 
+uint32_t murmur3_32(uint32_t value, uint32_t seed) noexcept {
+	uint32_t hash, k;
+
+	hash = seed;
+
+	k = value;
+	k *= MURMUR3_32_C1;
+	k = rotate_left<uint32_t>(k, 15);
+	k *= MURMUR3_32_C2;
+
+	hash ^= k;
+	hash = rotate_left<uint32_t>(hash, 13);
+	hash = hash * 5 + UINT32_C(0xe6546b64);
+
+	hash ^= sizeof(value);
+	hash ^= hash >> 16;
+	hash *= UINT32_C(0x85ebca6b);
+	hash ^= hash >> 13;
+	hash *= UINT32_C(0xc2b2ae35);
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
+uint32_t murmur3_32(uint64_t value, uint32_t seed) noexcept {
+	uint32_t hash, k;
+
+	hash = seed;
+
+	k = static_cast<uint32_t>(value);
+
+	k *= MURMUR3_32_C1;
+	k = rotate_left<uint32_t>(k, 15);
+	k *= MURMUR3_32_C2;
+
+	hash ^= k;
+	hash = rotate_left<uint32_t>(hash, 13);
+	hash = hash * 5 + UINT32_C(0xe6546b64);
+
+	k = static_cast<uint32_t>(value >> 32);
+
+	k *= MURMUR3_32_C1;
+	k = rotate_left<uint32_t>(k, 15);
+	k *= MURMUR3_32_C2;
+
+	hash ^= k;
+	hash = rotate_left<uint32_t>(hash, 13);
+	hash = hash * 5 + UINT32_C(0xe6546b64);
+
+	hash ^= sizeof(value);
+	hash ^= hash >> 16;
+	hash *= UINT32_C(0x85ebca6b);
+	hash ^= hash >> 13;
+	hash *= UINT32_C(0xc2b2ae35);
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
 enum : uint64_t {
 	MURMUR3_128_C1 = UINT64_C(0x87c37b91114253d5),
 	MURMUR3_128_C2 = UINT64_C(0x4cf5ad432745937f),
@@ -227,6 +286,64 @@ last_block:
 final_mix:
 	hash_low ^= n;
 	hash_high ^= n;
+
+	hash_low += hash_high;
+	hash_high += hash_low;
+
+	hash_low = murmur3_128_final_mix(hash_low);
+	hash_high = murmur3_128_final_mix(hash_high);
+
+	hash_low += hash_high;
+	hash_high += hash_low;
+
+	return duint<uint64_t>{hash_low, hash_high};
+}
+
+duint<uint64_t> murmur3_128(uint32_t value, uint64_t seed) noexcept {
+	uint64_t hash_low, hash_high;
+	uint64_t k_low;
+
+	hash_low = seed;
+	hash_high = seed;
+
+	k_low = value;
+
+	k_low *= MURMUR3_128_C1;
+	k_low = rotate_left<uint64_t>(k_low, 31);
+	k_low *= MURMUR3_128_C2;
+	hash_low ^= k_low;
+
+	hash_low ^= sizeof(value);
+	hash_high ^= sizeof(value);
+
+	hash_low += hash_high;
+	hash_high += hash_low;
+
+	hash_low = murmur3_128_final_mix(hash_low);
+	hash_high = murmur3_128_final_mix(hash_high);
+
+	hash_low += hash_high;
+	hash_high += hash_low;
+
+	return duint<uint64_t>{hash_low, hash_high};
+}
+
+duint<uint64_t> murmur3_128(uint64_t value, uint64_t seed) noexcept {
+	uint64_t hash_low, hash_high;
+	uint64_t k_low;
+
+	hash_low = seed;
+	hash_high = seed;
+
+	k_low = value;
+
+	k_low *= MURMUR3_128_C1;
+	k_low = rotate_left<uint64_t>(k_low, 31);
+	k_low *= MURMUR3_128_C2;
+	hash_low ^= k_low;
+
+	hash_low ^= sizeof(value);
+	hash_high ^= sizeof(value);
 
 	hash_low += hash_high;
 	hash_high += hash_low;

@@ -130,6 +130,36 @@ uint32_t djb2_32(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint32_t djb2_32(uint32_t value) noexcept {
+	uint32_t hash;
+
+	hash = DJB2_32_OFFSET_BASIS;
+	hash = hash * DJB2_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value) * DJB2_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 8) * DJB2_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 16) * DJB2_32_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint32_t djb2_32(uint64_t value) noexcept {
+	uint32_t hash;
+
+	hash = DJB2_32_OFFSET_BASIS;
+	hash = hash * DJB2_32_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value) * DJB2_32_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 8) * DJB2_32_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 16) * DJB2_32_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 24) * DJB2_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 32) * DJB2_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 40) * DJB2_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 48) * DJB2_32_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 56);
+
+	return hash;
+}
+
 enum : uint64_t {
 	DJB2_64_OFFSET_BASIS = UINT64_C(5381),
 	DJB2_64_MULTIPLIER_P1 = UINT64_C(33),
@@ -226,6 +256,36 @@ uint64_t djb2_64(const void *s, size_t n) noexcept {
 			end[0];
 		break;
 	}
+	return hash;
+}
+
+uint64_t djb2_64(uint32_t value) noexcept {
+	uint64_t hash;
+
+	hash = DJB2_64_OFFSET_BASIS;
+	hash = hash * DJB2_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value) * DJB2_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 8) * DJB2_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 16) * DJB2_64_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint64_t djb2_64(uint64_t value) noexcept {
+	uint64_t hash;
+
+	hash = DJB2_64_OFFSET_BASIS;
+	hash = hash * DJB2_64_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value) * DJB2_64_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 8) * DJB2_64_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 16) * DJB2_64_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 24) * DJB2_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 32) * DJB2_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 40) * DJB2_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 48) * DJB2_64_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 56);
+
 	return hash;
 }
 

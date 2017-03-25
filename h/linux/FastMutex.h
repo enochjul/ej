@@ -77,7 +77,7 @@ public:
 		}
 	}
 
-	uint32_t *data() {
+	uint32_t *data() noexcept {
 		return &State;
 	}
 };

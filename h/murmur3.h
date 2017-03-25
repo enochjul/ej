@@ -13,7 +13,24 @@
 namespace ej {
 
 uint32_t murmur3_32(const void *s, size_t n, uint32_t seed = 0) noexcept;
+uint32_t murmur3_32(uint32_t value, uint32_t seed = 0) noexcept;
+uint32_t murmur3_32(uint64_t value, uint32_t seed = 0) noexcept;
+EJ_ALWAYS_INLINE uint32_t murmur3_32(int32_t value, uint32_t seed = 0) noexcept {
+	return murmur3_32(static_cast<uint32_t>(value), seed);
+}
+EJ_ALWAYS_INLINE uint32_t murmur3_32(int64_t value, uint32_t seed = 0) noexcept {
+	return murmur3_32(static_cast<uint64_t>(value), seed);
+}
+
 duint<uint64_t> murmur3_128(const void *s, size_t n, uint64_t seed = 0) noexcept;
+duint<uint64_t> murmur3_128(uint32_t value, uint64_t seed = 0) noexcept;
+duint<uint64_t> murmur3_128(uint64_t value, uint64_t seed = 0) noexcept;
+EJ_ALWAYS_INLINE duint<uint64_t> murmur3_128(int32_t value, uint64_t seed = 0) noexcept {
+	return murmur3_128(static_cast<uint32_t>(value), seed);
+}
+EJ_ALWAYS_INLINE duint<uint64_t> murmur3_128(int64_t value, uint64_t seed = 0) noexcept {
+	return murmur3_128(static_cast<uint64_t>(value), seed);
+}
 
 //! Helper class for computing the hash of a string
 template <typename T>
@@ -36,6 +53,10 @@ public:
 
 	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
 		return murmur3_128(s, n, seed).Low;
+	}
+
+	static value_type eval(uint32_t value, value_type seed = 0) noexcept {
+		return murmur3_128(value, seed).Low;
 	}
 };
 

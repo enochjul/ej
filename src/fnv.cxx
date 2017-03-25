@@ -68,6 +68,34 @@ uint32_t fnv1_32(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint32_t fnv1_32(uint32_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV_32_OFFSET_BASIS;
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 8);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 16);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint32_t fnv1_32(uint64_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV_32_OFFSET_BASIS;
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 8);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 16);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 24);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 32);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 40);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 48);
+	hash = (hash * FNV_32_MULTIPLIER) ^ static_cast<uint8_t>(value >> 56);
+
+	return hash;
+}
+
 uint64_t fnv1_64(const void *s, size_t n) noexcept {
 	const uint8_t *start;
 	const uint8_t *end;
@@ -77,6 +105,34 @@ uint64_t fnv1_64(const void *s, size_t n) noexcept {
 	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
 		hash = (hash * FNV_64_MULTIPLIER) ^ *start;
 	}
+	return hash;
+}
+
+uint64_t fnv1_64(uint32_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV_64_OFFSET_BASIS;
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 8);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 16);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint64_t fnv1_64(uint64_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV_64_OFFSET_BASIS;
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 8);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 16);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 24);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 32);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 40);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 48);
+	hash = (hash * FNV_64_MULTIPLIER) ^ static_cast<uint8_t>(value >> 56);
+
 	return hash;
 }
 
@@ -92,6 +148,34 @@ uint32_t fnv1a_32(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint32_t fnv1a_32(uint32_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV_32_OFFSET_BASIS;
+	hash = (hash ^ static_cast<uint8_t>(value)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 8)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 16)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 24)) * FNV_32_MULTIPLIER;
+
+	return hash;
+}
+
+uint32_t fnv1a_32(uint64_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV_32_OFFSET_BASIS;
+	hash = (hash ^ static_cast<uint8_t>(value)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 8)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 16)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 24)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 32)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 40)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 48)) * FNV_32_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 56)) * FNV_32_MULTIPLIER;
+
+	return hash;
+}
+
 uint64_t fnv1a_64(const void *s, size_t n) noexcept {
 	const uint8_t *start;
 	const uint8_t *end;
@@ -101,6 +185,34 @@ uint64_t fnv1a_64(const void *s, size_t n) noexcept {
 	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
 		hash = (hash ^ *start) * FNV_64_MULTIPLIER;
 	}
+	return hash;
+}
+
+uint64_t fnv1a_64(uint32_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV_64_OFFSET_BASIS;
+	hash = (hash ^ static_cast<uint8_t>(value)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 8)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 16)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 24)) * FNV_64_MULTIPLIER;
+
+	return hash;
+}
+
+uint64_t fnv1a_64(uint64_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV_64_OFFSET_BASIS;
+	hash = (hash ^ static_cast<uint8_t>(value)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 8)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 16)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 24)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 32)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 40)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 48)) * FNV_64_MULTIPLIER;
+	hash = (hash ^ static_cast<uint8_t>(value >> 56)) * FNV_64_MULTIPLIER;
+
 	return hash;
 }
 
@@ -203,6 +315,36 @@ uint32_t fnv1_add_32(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint32_t fnv1_add_32(uint32_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV1_ADD_32_OFFSET_BASIS;
+	hash = hash * FNV1_ADD_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value) * FNV1_ADD_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 8) * FNV1_ADD_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 16) * FNV1_ADD_32_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint32_t fnv1_add_32(uint64_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV1_ADD_32_OFFSET_BASIS;
+	hash = hash * FNV1_ADD_32_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value) * FNV1_ADD_32_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 8) * FNV1_ADD_32_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 16) * FNV1_ADD_32_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 24) * FNV1_ADD_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 32) * FNV1_ADD_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 40) * FNV1_ADD_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 48) * FNV1_ADD_32_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 56);
+
+	return hash;
+}
+
 enum : uint64_t {
 	FNV1_ADD_64_OFFSET_BASIS = UINT64_C(14695981039346656037),
 	FNV1_ADD_64_MULTIPLIER_P1 = UINT64_C(1099511628211),
@@ -302,6 +444,36 @@ uint64_t fnv1_add_64(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint64_t fnv1_add_64(uint32_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV1_ADD_64_OFFSET_BASIS;
+	hash = hash * FNV1_ADD_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value) * FNV1_ADD_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 8) * FNV1_ADD_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 16) * FNV1_ADD_64_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 24);
+
+	return hash;
+}
+
+uint64_t fnv1_add_64(uint64_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV1_ADD_64_OFFSET_BASIS;
+	hash = hash * FNV1_ADD_64_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value) * FNV1_ADD_64_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 8) * FNV1_ADD_64_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 16) * FNV1_ADD_64_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 24) * FNV1_ADD_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 32) * FNV1_ADD_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 40) * FNV1_ADD_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 48) * FNV1_ADD_64_MULTIPLIER_P1 +
+		static_cast<uint8_t>(value >> 56);
+
+	return hash;
+}
+
 enum : uint32_t {
 	FNV1A_ADD_32_OFFSET_BASIS = UINT32_C(2166136261),
 	FNV1A_ADD_32_MULTIPLIER_P1 = UINT32_C(16777619),
@@ -393,6 +565,34 @@ uint32_t fnv1a_add_32(const void *s, size_t n) noexcept {
 	return hash;
 }
 
+uint32_t fnv1a_add_32(uint32_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV1A_ADD_32_OFFSET_BASIS;
+	hash = (hash + static_cast<uint8_t>(value)) * FNV1A_ADD_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 8) * FNV1A_ADD_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 16) * FNV1A_ADD_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 24) * FNV1A_ADD_32_MULTIPLIER_P1;
+
+	return hash;
+}
+
+uint32_t fnv1a_add_32(uint64_t value) noexcept {
+	uint32_t hash;
+
+	hash = FNV1A_ADD_32_OFFSET_BASIS;
+	hash = (hash + static_cast<uint8_t>(value)) * FNV1A_ADD_32_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value >> 8) * FNV1A_ADD_32_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 16) * FNV1A_ADD_32_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 24) * FNV1A_ADD_32_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 32) * FNV1A_ADD_32_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 40) * FNV1A_ADD_32_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 48) * FNV1A_ADD_32_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 56) * FNV1A_ADD_32_MULTIPLIER_P1;
+
+	return hash;
+}
+
 enum : uint64_t {
 	FNV1A_ADD_64_OFFSET_BASIS = UINT64_C(14695981039346656037),
 	FNV1A_ADD_64_MULTIPLIER_P1 = UINT64_C(1099511628211),
@@ -481,6 +681,34 @@ uint64_t fnv1a_add_64(const void *s, size_t n) noexcept {
 		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 	}
+	return hash;
+}
+
+uint64_t fnv1a_add_64(uint32_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV1A_ADD_64_OFFSET_BASIS;
+	hash = (hash + static_cast<uint8_t>(value)) * FNV1A_ADD_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 8) * FNV1A_ADD_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 16) * FNV1A_ADD_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 24) * FNV1A_ADD_64_MULTIPLIER_P1;
+
+	return hash;
+}
+
+uint64_t fnv1a_add_64(uint64_t value) noexcept {
+	uint64_t hash;
+
+	hash = FNV1A_ADD_64_OFFSET_BASIS;
+	hash = (hash + static_cast<uint8_t>(value)) * FNV1A_ADD_64_MULTIPLIER_P8 +
+		static_cast<uint8_t>(value >> 8) * FNV1A_ADD_64_MULTIPLIER_P7 +
+		static_cast<uint8_t>(value >> 16) * FNV1A_ADD_64_MULTIPLIER_P6 +
+		static_cast<uint8_t>(value >> 24) * FNV1A_ADD_64_MULTIPLIER_P5 +
+		static_cast<uint8_t>(value >> 32) * FNV1A_ADD_64_MULTIPLIER_P4 +
+		static_cast<uint8_t>(value >> 40) * FNV1A_ADD_64_MULTIPLIER_P3 +
+		static_cast<uint8_t>(value >> 48) * FNV1A_ADD_64_MULTIPLIER_P2 +
+		static_cast<uint8_t>(value >> 56) * FNV1A_ADD_64_MULTIPLIER_P1;
+
 	return hash;
 }
 

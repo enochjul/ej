@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "Common.h"
+
 namespace ej {
 
 uint32_t fnv1_32(const char *s) noexcept;
@@ -17,16 +19,84 @@ uint32_t fnv1a_32(const char *s) noexcept;
 uint64_t fnv1a_64(const char *s) noexcept;
 
 uint32_t fnv1_32(const void *s, size_t n) noexcept;
+uint32_t fnv1_32(uint32_t value) noexcept;
+uint32_t fnv1_32(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint32_t fnv1_32(int32_t value) noexcept {
+	return fnv1_32(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint32_t fnv1_32(int64_t value) noexcept {
+	return fnv1_32(static_cast<uint64_t>(value));
+}
+
 uint64_t fnv1_64(const void *s, size_t n) noexcept;
+uint64_t fnv1_64(uint32_t value) noexcept;
+uint64_t fnv1_64(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint64_t fnv1_64(int32_t value) noexcept {
+	return fnv1_64(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint64_t fnv1_64(int64_t value) noexcept {
+	return fnv1_64(static_cast<uint64_t>(value));
+}
 
 uint32_t fnv1a_32(const void *s, size_t n) noexcept;
+uint32_t fnv1a_32(uint32_t value) noexcept;
+uint32_t fnv1a_32(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint32_t fnv1a_32(int32_t value) noexcept {
+	return fnv1a_32(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint32_t fnv1a_32(int64_t value) noexcept {
+	return fnv1a_32(static_cast<uint64_t>(value));
+}
+
 uint64_t fnv1a_64(const void *s, size_t n) noexcept;
+uint64_t fnv1a_64(uint32_t value) noexcept;
+uint64_t fnv1a_64(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint64_t fnv1a_64(int32_t value) noexcept {
+	return fnv1a_64(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint64_t fnv1a_64(int64_t value) noexcept {
+	return fnv1a_64(static_cast<uint64_t>(value));
+}
 
 uint32_t fnv1_add_32(const void *s, size_t n) noexcept;
+uint32_t fnv1_add_32(uint32_t value) noexcept;
+uint32_t fnv1_add_32(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint32_t fnv1_add_32(int32_t value) noexcept {
+	return fnv1_add_32(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint32_t fnv1_add_32(int64_t value) noexcept {
+	return fnv1_add_32(static_cast<uint64_t>(value));
+}
+
 uint64_t fnv1_add_64(const void *s, size_t n) noexcept;
+uint64_t fnv1_add_64(uint32_t value) noexcept;
+uint64_t fnv1_add_64(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint64_t fnv1_add_64(int32_t value) noexcept {
+	return fnv1_add_64(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint64_t fnv1_add_64(int64_t value) noexcept {
+	return fnv1_add_64(static_cast<uint64_t>(value));
+}
 
 uint32_t fnv1a_add_32(const void *s, size_t n) noexcept;
+uint32_t fnv1a_add_32(uint32_t value) noexcept;
+uint32_t fnv1a_add_32(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint32_t fnv1a_add_32(int32_t value) noexcept {
+	return fnv1a_add_32(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint32_t fnv1a_add_32(int64_t value) noexcept {
+	return fnv1a_add_32(static_cast<uint64_t>(value));
+}
+
 uint64_t fnv1a_add_64(const void *s, size_t n) noexcept;
+uint64_t fnv1a_add_64(uint32_t value) noexcept;
+uint64_t fnv1a_add_64(uint64_t value) noexcept;
+EJ_ALWAYS_INLINE uint64_t fnv1a_add_64(int32_t value) noexcept {
+	return fnv1a_add_64(static_cast<uint32_t>(value));
+}
+EJ_ALWAYS_INLINE uint64_t fnv1a_add_64(int64_t value) noexcept {
+	return fnv1a_add_64(static_cast<uint64_t>(value));
+}
 
 //! Helper class for computing the FNV1 hash of a string
 template <typename T>

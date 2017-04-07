@@ -36,13 +36,18 @@ auto MirrorBuffer::create(const char *name, size_type n) noexcept -> CreateRetur
 				if (EJ_LIKELY(ftruncate(shm_id, n) == 0)) {
 					if (mmap(new_data, n, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, shm_id, 0) != MAP_FAILED) {
 						if (mmap(static_cast<char *>(new_data) + n, n, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, shm_id, 0) != MAP_FAILED) {
+							close(shm_id);
 							return { new_data, n };
 						}
 					}
 				}
+
+				close(shm_id);
 			} else {
 				mutex.unlock();
 			}
+
+			munmap(new_data, n * 2);
 		}
 	}
 

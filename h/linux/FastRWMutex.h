@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "futex.h"
+#include "futex_ops.h"
 
 namespace ej {
 

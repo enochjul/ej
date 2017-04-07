@@ -44,6 +44,22 @@ public:
 	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
 		return xxhash_32(s, n, seed);
 	}
+
+	static value_type eval(uint32_t value, value_type seed = 0) noexcept {
+		return xxhash_32(value, seed);
+	}
+
+	static value_type eval(int32_t value, value_type seed = 0) noexcept {
+		return xxhash_32(value, seed);
+	}
+
+	static value_type eval(uint64_t value, value_type seed = 0) noexcept {
+		return xxhash_32(value, seed);
+	}
+
+	static value_type eval(int64_t value, value_type seed = 0) noexcept {
+		return xxhash_32(value, seed);
+	}
 };
 
 template <>
@@ -53,6 +69,22 @@ public:
 
 	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
 		return xxhash_64(s, n, seed);
+	}
+
+	static value_type eval(uint32_t value, value_type seed = 0) noexcept {
+		return xxhash_64(value, seed);
+	}
+
+	static value_type eval(int32_t value, value_type seed = 0) noexcept {
+		return xxhash_64(value, seed);
+	}
+
+	static value_type eval(uint64_t value, value_type seed = 0) noexcept {
+		return xxhash_64(value, seed);
+	}
+
+	static value_type eval(int64_t value, value_type seed = 0) noexcept {
+		return xxhash_64(value, seed);
 	}
 };
 

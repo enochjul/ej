@@ -5,7 +5,6 @@
 #ifndef EJ_STRING_VIEW_H
 #define EJ_STRING_VIEW_H
 
-#include <assert.h>
 #include <stddef.h>
 
 namespace ej {
@@ -61,11 +60,9 @@ public:
 	}
 
 	value_type &operator [](size_type index) noexcept {
-		assert(index < Size);
 		return First[index];
 	}
 	constexpr const value_type &operator [](size_type index) const noexcept {
-		assert(index < Size);
 		return First[index];
 	}
 
@@ -128,11 +125,9 @@ public:
 	}
 
 	value_type &operator [](size_type index) noexcept {
-		assert(index < size());
 		return First[index];
 	}
 	constexpr const value_type &operator [](size_type index) const noexcept {
-		assert(index < size());
 		return First[index];
 	}
 

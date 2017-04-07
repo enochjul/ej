@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "FastMutex.h"
-#include "futex.h"
+#include "futex_ops.h"
 
 namespace ej {
 

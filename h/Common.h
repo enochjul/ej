@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #define EJ_ALWAYS_INLINE	inline __attribute__((always_inline))
-#define EJ_LIKELY(cond)		__builtin_expect(!!(cond), true)
-#define EJ_UNLIKELY(cond)	__builtin_expect(!!(cond), false)
+#define EJ_LIKELY(cond)		__builtin_expect(static_cast<bool>(cond), true)
+#define EJ_UNLIKELY(cond)	__builtin_expect(static_cast<bool>(cond), false)
 
 namespace ej {
 

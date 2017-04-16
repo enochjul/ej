@@ -18,11 +18,7 @@ public:
 	//! Allocates memory for an object of the specified type
 	template <typename T, bool may_fail = false>
 	T *alloc() noexcept {
-		auto ptr = Base::template allocate<T>(sizeof(T));
-		if (may_fail || ptr != nullptr) {
-			return ptr;
-		}
-		abort();
+		return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(sizeof(T)));
 	}
 
 	//! Allocates memory for an object of the specified type, and returns nullptr if it fails
@@ -34,11 +30,7 @@ public:
 	//! Allocates memory for an object of the specified type with an explicit size
 	template <typename T, bool may_fail = false>
 	T *alloc_n(size_t n) noexcept {
-		auto ptr = Base::template allocate<T>(n);
-		if (may_fail || ptr != nullptr) {
-			return ptr;
-		}
-		abort();
+		return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n));
 	}
 
 	//! Allocates memory for an object of the specified type with an explicit size, and returns nullptr if it fails
@@ -53,10 +45,7 @@ public:
 		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
 
 		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
-			auto ptr = Base::template allocate<T>(n * sizeof(T) + sentinel_n * sizeof(T));
-			if (may_fail || ptr != nullptr) {
-				return ptr;
-			}
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(T) + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
 		}
@@ -76,10 +65,7 @@ public:
 
 		size_t n = (last - first) * sizeof(T);
 		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
-			auto ptr = Base::template allocate<T>(n + sentinel_n * sizeof(T));
-			if (may_fail || ptr != nullptr) {
-				return ptr;
-			}
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
 		}
@@ -98,10 +84,7 @@ public:
 		static_assert(sentinel_n <= (SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type));
 
 		if (n <= ((SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type) - sentinel_n)) {
-			auto ptr = Base::template allocate<T>(n * sizeof(typename T::value_type) + sentinel_n * sizeof(typename T::value_type) + T::sizeofHeader());
-			if (may_fail || ptr != nullptr) {
-				return ptr;
-			}
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(typename T::value_type) + sentinel_n * sizeof(typename T::value_type) + T::sizeofHeader()));
 		} else if (may_fail) {
 			return nullptr;
 		}
@@ -120,10 +103,7 @@ public:
 		size_t n;
 
 		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
-			auto ptr = Base::template allocate<T>(height * width * sizeof(T));
-			if (may_fail || ptr != nullptr) {
-				return ptr;
-			}
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(height * width * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
 		}
@@ -142,10 +122,7 @@ public:
 		size_t m, n;
 
 		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
-			auto ptr = Base::template allocate<T>(depth * height * width * sizeof(T));
-			if (may_fail || ptr != nullptr) {
-				return ptr;
-			}
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(depth * height * width * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
 		}

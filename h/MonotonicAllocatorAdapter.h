@@ -20,7 +20,7 @@ class MonotonicAllocatorAdapter : public AllocatorAdapter<Base> {
 
 public:
 	template <typename F, typename ... A>
-	static bool with(F f, A && ... args) noexcept {
+	EJ_ALWAYS_INLINE static bool with(F f, A && ... args) noexcept {
 		MonotonicAllocatorAdapter self;
 		if (EJ_LIKELY(self.initialize(std::forward<A>(args) ...))) {
 			f(self);
@@ -31,9 +31,7 @@ public:
 	}
 
 	template <typename F>
-	void frame(F f) noexcept {
-		assert(Start != nullptr);
-
+	EJ_ALWAYS_INLINE void frame(F f) noexcept {
 		auto frame_start = getEnd();
 		f();
 		pop_frame(frame_start);

@@ -28,12 +28,67 @@ class MmapLinearAllocatorBase {
 	void *End;
 	size_t FreeSize;
 
-	__attribute__((malloc, alloc_align(1), alloc_size(2))) void *allocate_raw(size_t alignment, size_t n) noexcept;
+	__attribute__((returns_nonnull)) static void *mark_nonnull(void *ptr) noexcept {
+		assert(ptr != nullptr);
+		return ptr;
+	}
+
+	template <bool may_fail>
+	__attribute__((malloc, alloc_align(1), alloc_size(2))) void *commit_and_allocate(size_t alignment, size_t n) noexcept;
 
 protected:
-	template <typename T>
-	T *allocate(size_t n) noexcept {
-		return static_cast<T *>(allocate_raw(MinimumAlignment > 1 && alignof(T) < MinimumAlignment ? alignof(T) : alignof(T), n));
+	template <size_t Alignment, bool may_fail>
+	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1))) void *allocate(size_t n) noexcept {
+		static_assert(Alignment > 0 && Alignment <= PAGE_SIZE && (Alignment & (Alignment - 1)) == 0);
+		assert(Start != nullptr);
+		assert(n % Alignment == 0);
+
+		auto free_size = FreeSize;
+		if (Alignment > MinimumAlignment) {
+			auto aligned_free_size = free_size & ~(Alignment - 1);
+			if (EJ_LIKELY(n <= aligned_free_size)) {
+				auto end = static_cast<char *>(End);
+				auto new_block = end + (free_size & (Alignment - 1));
+				End = new_block + n;
+				FreeSize = aligned_free_size - n;
+				if (ZeroPadding) {
+					for (auto pad_i = end; pad_i < new_block; ++pad_i) {
+						*pad_i = 0;
+					}
+				}
+				return mark_nonnull(new_block);
+			} else {
+				return commit_and_allocate<may_fail>(Alignment, n);
+			}
+		} else {
+			auto new_block = static_cast<char *>(End);
+			if (EJ_LIKELY(n <= free_size)) {
+				if (Alignment == MinimumAlignment) {
+					End = new_block + n;
+					FreeSize = free_size - n;
+					return mark_nonnull(new_block);
+				} else {
+					auto aligned_n = ((n + MinimumAlignment - 1) / MinimumAlignment) * MinimumAlignment;
+					auto aligned_end = new_block + aligned_n;
+					End = aligned_end;
+					FreeSize = free_size - aligned_n;
+					if (ZeroPadding) {
+						for (auto pad_i = new_block + n; pad_i < aligned_end; ++pad_i) {
+							*pad_i = 0;
+						}
+					}
+					return mark_nonnull(new_block);
+				}
+			} else {
+				return commit_and_allocate<may_fail>(Alignment, n);
+			}
+		}
+
+		if (may_fail) {
+			return nullptr;
+		} else {
+			abort();
+		}
 	}
 
 	void deallocate(void *, size_t) noexcept {
@@ -53,7 +108,7 @@ public:
 	MmapLinearAllocatorBase(const MmapLinearAllocatorBase &) = delete;
 	MmapLinearAllocatorBase &operator =(const MmapLinearAllocatorBase &) = delete;
 
-	void *getEnd() noexcept {
+	void *getEnd() const noexcept {
 		return End;
 	}
 
@@ -92,6 +147,7 @@ public:
 	}
 
 	void pop_frame(void *frame_start) noexcept {
+		assert(Start != nullptr);
 		auto frame_end = End;
 		End = frame_start;
 		FreeSize += reinterpret_cast<uintptr_t>(frame_end) - reinterpret_cast<uintptr_t>(frame_start);
@@ -99,37 +155,47 @@ public:
 };
 
 template <size_t MinimumAlignment, bool ZeroPadding, size_t CommitGranularity>
-void *MmapLinearAllocatorBase<MinimumAlignment, ZeroPadding, CommitGranularity>::allocate_raw(size_t alignment, size_t n) noexcept {
+template <bool may_fail>
+void *MmapLinearAllocatorBase<MinimumAlignment, ZeroPadding, CommitGranularity>::commit_and_allocate(size_t alignment, size_t n) noexcept {
+	assert(Start != nullptr);
 	assert(alignment > 0 && alignment <= PAGE_SIZE && (alignment & (alignment - 1)) == 0);
+	assert(n % alignment == 0);
 
 	auto end = static_cast<char *>(End);
 	auto free_size = FreeSize;
-	auto align_mask = alignment - 1;
-	auto new_block = static_cast<char *>(end) + (free_size & align_mask);
-	auto aligned_free_size = free_size & ~align_mask;
-	if (EJ_UNLIKELY(n > aligned_free_size)) {
-		auto max_aligned_free_size = reinterpret_cast<uintptr_t>(Reserved) - reinterpret_cast<uintptr_t>(new_block);
-		if (EJ_LIKELY(n <= max_aligned_free_size)) {
-			auto allocated_end = end + free_size;
-			auto additional_allocated_size = reinterpret_cast<uintptr_t>(new_block) + n - reinterpret_cast<uintptr_t>(allocated_end);
-			additional_allocated_size = ((additional_allocated_size + CommitGranularity - 1) / CommitGranularity) * CommitGranularity;
-			aligned_free_size += additional_allocated_size;
-			if (EJ_UNLIKELY(mmap(allocated_end, additional_allocated_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0) == MAP_FAILED)) {
-				return nullptr;
+	auto alignment_mask = alignment - 1;
+	auto new_block = end + (free_size & alignment_mask);
+	auto aligned_free_size = free_size & ~alignment_mask;
+	auto max_aligned_free_size = reinterpret_cast<uintptr_t>(Reserved) - reinterpret_cast<uintptr_t>(new_block);
+	if (EJ_LIKELY(n <= max_aligned_free_size)) {
+		auto allocated_end = end + free_size;
+		auto additional_allocated_size = reinterpret_cast<uintptr_t>(new_block) + n - reinterpret_cast<uintptr_t>(allocated_end);
+		additional_allocated_size = ((additional_allocated_size + CommitGranularity - 1) / CommitGranularity) * CommitGranularity;
+		assert(additional_allocated_size > 0);
+		if (EJ_LIKELY(mmap(allocated_end, additional_allocated_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0) != MAP_FAILED)) {
+			if (ZeroPadding) {
+				for (auto pad_i = static_cast<char *>(End); pad_i < new_block; ++pad_i) {
+					*pad_i = 0;
+				}
 			}
-		} else {
-			return nullptr;
+			auto aligned_n = ((n + MinimumAlignment - 1) / MinimumAlignment) * MinimumAlignment;
+			auto new_aligned_end = new_block + aligned_n;
+			End = new_aligned_end;
+			FreeSize = aligned_free_size + additional_allocated_size - aligned_n;
+			if (ZeroPadding) {
+				for (auto pad_i = new_block + n; pad_i < new_aligned_end; ++pad_i) {
+					*pad_i = 0;
+				}
+			}
+			return new_block;
 		}
 	}
 
-	if (ZeroPadding) {
-		for (auto pad_i = end; pad_i < new_block; ++pad_i) {
-			*pad_i = 0;
-		}
+	if (may_fail) {
+		return nullptr;
+	} else {
+		abort();
 	}
-	End = new_block + n;
-	FreeSize = aligned_free_size - n;
-	return new_block;
 }
 
 template <

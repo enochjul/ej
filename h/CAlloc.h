@@ -17,13 +17,23 @@ namespace ej {
 //! Helper functions to access the C memory allocation functions such as malloc and realloc
 class CAllocBase {
 protected:
-	template <typename T>
-	static T *allocate(size_t n) noexcept {
-		if (alignof(T) <= alignof(max_align_t)) {
-			return static_cast<T *>(malloc(n));
+	template <size_t Alignment, bool may_fail>
+	static void *allocate(size_t n) noexcept {
+		if (Alignment <= alignof(max_align_t)) {
+			auto ptr = malloc(n);
+			if (may_fail || ptr != nullptr) {
+				return ptr;
+			} else {
+				abort();
+			}
 		} else {
-			assert(n % alignof(T) == 0);
-			return static_cast<T *>(aligned_alloc(alignof(T), n));
+			assert(n % Alignment == 0);
+			auto ptr = aligned_alloc(Alignment, n);
+			if (may_fail || ptr != nullptr) {
+				return ptr;
+			} else {
+				abort();
+			}
 		}
 	}
 
@@ -31,10 +41,15 @@ protected:
 		free(ptr);
 	}
 
-	template <typename T>
-	static T *reallocate(T *ptr, size_t n) noexcept {
-		static_assert(alignof(T) <= alignof(max_align_t));
-		return static_cast<T *>(::realloc(ptr, n));
+	template <size_t Alignment, bool may_fail>
+	static void *reallocate(void *ptr, size_t n) noexcept {
+		static_assert(Alignment <= alignof(max_align_t));
+		ptr = ::realloc(ptr, n);
+		if (may_fail || ptr != nullptr) {
+			return ptr;
+		} else {
+			abort();
+		}
 	}
 
 public:

@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-namespace  {
+namespace ej {
 
 template <class Base>
 class AllocAdapter : public Base {

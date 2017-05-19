@@ -145,8 +145,8 @@ inline constexpr StringView<T, void> make_string_view(T *first, T *last) noexcep
 }
 
 template <typename T>
-inline constexpr StringView<T, void> make_string_view(T *first, typename StringView<T, void>::size_type n) noexcept {
-	return StringView<T, void>(first, n);
+inline constexpr StringView<T, void> make_string_view(T *ptr, typename StringView<T, void>::size_type n) noexcept {
+	return StringView<T, void>(ptr, n);
 }
 
 template <typename T>
@@ -170,8 +170,8 @@ inline constexpr StringView<T> make_string_view_n(T *first, T *last) noexcept {
 }
 
 template <typename T>
-inline constexpr StringView<T> make_string_view_n(T *first, typename StringView<T>::size_type n) noexcept {
-	return StringView<T>(first, n);
+inline constexpr StringView<T> make_string_view_n(T *ptr, typename StringView<T>::size_type n) noexcept {
+	return StringView<T>(ptr, n);
 }
 
 template <typename T>

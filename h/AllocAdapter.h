@@ -144,7 +144,7 @@ public:
 	//! Deallocates memory for a single object with an explicit size
 	template <typename T>
 	static void dealloc_n(T *ptr, size_t n) noexcept {
-		dealloate(ptr, n);
+		deallocate(ptr, n);
 	}
 
 	//! Deallocates memory for an array of objects

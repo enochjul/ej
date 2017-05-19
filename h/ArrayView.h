@@ -5,6 +5,8 @@
 #ifndef EJ_ARRAY_VIEW_H
 #define EJ_ARRAY_VIEW_H
 
+#include <stddef.h>
+
 namespace ej {
 
 //! A non-owning view of an array represented with two pointers.
@@ -28,7 +30,7 @@ public:
 	constexpr ArrayView(value_type *ptr, size_type n) noexcept : First(ptr), Size(n) {
 	}
 	template <size_t N>
-	explicit constexpr ArrayView(value_type (&x)[N]) noexcept : ArrayView(x, N) {
+	explicit constexpr ArrayView(value_type (&data)[N]) noexcept : ArrayView(data, N) {
 	}
 	constexpr ArrayView(const ArrayView &) noexcept = default;
 	constexpr ArrayView &operator =(const ArrayView &) noexcept = default;
@@ -107,7 +109,7 @@ public:
 	constexpr ArrayView(value_type *ptr, size_type n) noexcept : First(ptr), Last(ptr + n) {
 	}
 	template <size_t N>
-	explicit constexpr ArrayView(value_type (&x)[N]) noexcept : ArrayView(x, N) {
+	explicit constexpr ArrayView(value_type (&data)[N]) noexcept : ArrayView(data, N) {
 	}
 	constexpr ArrayView(const ArrayView &) noexcept = default;
 
@@ -163,6 +165,56 @@ public:
 		}
 	}
 };
+
+template <typename T>
+inline constexpr ArrayView<T, void> make_array_view(T *first, T *last) noexcept {
+	return ArrayView<T, void>(first, last);
+}
+
+template <typename T>
+inline constexpr ArrayView<T, void> make_array_view(T *ptr, typename ArrayView<T, void>::size_type n) noexcept {
+	return ArrayView<T, void>(ptr, n);
+}
+
+template <typename T, size_t N>
+inline constexpr ArrayView<T, void> make_array_view(T (&data)[N]) noexcept {
+	return ArrayView<T, void>(data, N);
+}
+
+template <typename T, typename S>
+inline constexpr ArrayView<T, void> make_array_view(ArrayView<T, S> a) noexcept {
+	return ArrayView<T, void>(a.begin(), a.end());
+}
+
+template <typename T, typename S>
+inline constexpr ArrayView<const T, void> make_const_array_view(ArrayView<T, S> a) noexcept {
+	return ArrayView<const T, void>(a.begin(), a.end());
+}
+
+template <typename T>
+inline constexpr ArrayView<T> make_array_view_n(T *first, T *last) noexcept {
+	return ArrayView<T>(first, last);
+}
+
+template <typename T>
+inline constexpr ArrayView<T> make_array_view_n(T *ptr, typename ArrayView<T>::size_type n) noexcept {
+	return ArrayView<T>(ptr, n);
+}
+
+template <typename T, size_t N>
+inline constexpr ArrayView<T> make_array_view_n(T (&data)[N]) noexcept {
+	return ArrayView<T>(data, N);
+}
+
+template <typename T, typename S>
+inline constexpr ArrayView<T> make_array_view_n(ArrayView<T, S> a) noexcept {
+	return ArrayView<T>(a.begin(), a.size());
+}
+
+template <typename T, typename S>
+inline constexpr ArrayView<const T> make_const_array_view_n(ArrayView<T, S> a) noexcept {
+	return ArrayView<const T>(a.begin(), a.size());
+}
 
 }
 

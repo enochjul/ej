@@ -6,11 +6,13 @@
 #define EJ_CONSTRUCT_H
 
 #include <stddef.h>
+#include <string.h>
 
 #include <type_traits>
 #include <utility>
 
 #include "CallType.h"
+#include "TypeTraits.h"
 
 //Define a potentially throwing version of placement new so that the compiler does not emit a null pointer check
 inline void *operator new(size_t, void *ptr, int) { return ptr; }
@@ -29,14 +31,22 @@ public:
 	}
 
 	static void run_array(T *first, T *last) noexcept(std::is_nothrow_default_constructible<T>::value) {
-		for (auto i = first, e = last; i != e; ++i) {
-			new(i, 0) T();
+		if (is_zero_default_constructible<T>::value) {
+			memset(first, 0, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
+		} else {
+			for (auto i = first, e = last; i != e; ++i) {
+				new(i, 0) T();
+			}
 		}
 	}
 
 	static void run_array_n(T *first, size_t n) noexcept(std::is_nothrow_default_constructible<T>::value) {
-		for (auto i = first, e = first + n; i != e; ++i) {
-			new(i, 0) T();
+		if (is_zero_default_constructible<T>::value) {
+			memset(first, 0, n * sizeof(T));
+		} else {
+			for (auto i = first, e = first + n; i != e; ++i) {
+				new(i, 0) T();
+			}
 		}
 	}
 };
@@ -49,7 +59,7 @@ public:
 	}
 
 	static void run_array(T *first, T *last) noexcept {
-		memset(first, 0, (last - first) * sizeof(T));
+		memset(first, 0, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
 	}
 
 	static void run_array_n(T *first, size_t n) noexcept {
@@ -91,16 +101,65 @@ inline void copy_construct(T *ptr, typename CallType<T>::param_type a) noexcept(
 }
 
 template <typename T>
-inline void copy_construct_array(T *first, T *last, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+inline void copy_construct_array(T *dst, const T *first, const T *last) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+	if (std::is_trivially_copy_constructible<T>::value) {
+		memcpy(dst, first, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
+	} else {
+		for (auto i = first, e = last; i != e; ++i, ++dst) {
+			new(dst, 0) T(*i);
+		}
+	}
+}
+
+template <typename T>
+inline void copy_construct_array_n(T *dst, const T *first, size_t n) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+	if (std::is_trivially_copy_constructible<T>::value) {
+		memcpy(dst, first, n * sizeof(T));
+	} else {
+		for (auto i = first, e = first + n; i != e; ++i, ++dst) {
+			new(dst, 0) T(*i);
+		}
+	}
+}
+
+template <typename T>
+inline void copy_construct_fill_array(T *first, T *last, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
 	for (auto i = first, e = last; i != e; ++i) {
 		new(i, 0) T(a);
 	}
 }
 
 template <typename T>
-inline void copy_construct_array_n(T *first, size_t n, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
+inline void copy_construct_fill_array_n(T *first, size_t n, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
 	for (auto i = first, e = first + n; i != e; ++i) {
 		new(i, 0) T(a);
+	}
+}
+
+template <typename T>
+inline void move_construct(T *ptr, T &&a) noexcept(std::is_nothrow_move_constructible<T>::value) {
+	new(ptr, 0) T(std::move(a));
+}
+
+template <typename T>
+inline void move_construct_array(T *dst, T *first, T *last) noexcept(std::is_nothrow_move_constructible<T>::value) {
+	if (std::is_trivially_move_constructible<T>::value) {
+		memcpy(dst, first, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
+	} else {
+		for (auto i = first, e = last; i != e; ++i, ++dst) {
+			new(dst, 0) T(std::move(*i));
+		}
+	}
+}
+
+template <typename T>
+inline void move_construct_array_n(T *dst, T *first, size_t n) noexcept(std::is_nothrow_move_constructible<T>::value) {
+	if (std::is_trivially_move_constructible<T>::value) {
+		memcpy(dst, first, n * sizeof(T));
+	} else {
+		for (auto i = first, e = first + n; i != e; ++i, ++dst) {
+			new(dst, 0) T(std::move(*i));
+		}
 	}
 }
 

@@ -251,7 +251,7 @@ Array<T, reverse_destruct, always_default_construct, Alloc>::Array(size_type n, 
 		auto new_last = new_first + n;
 
 		First = new_first, Last = new_last;
-		copy_construct_array<T>(new_first, new_last, value);
+		copy_construct_fill_array(new_first, new_last, value);
 	} else {
 		First = nullptr, Last = nullptr;
 	}
@@ -262,7 +262,7 @@ Array<T, reverse_destruct, always_default_construct, Alloc>::Array(const value_t
 	if (first != last) {
 		auto new_first = Alloc::alloc_array_range(first, last);
 		First = new_first, Last = new_first + (last - first);
-		std::uninitialized_copy(first, last, new_first);
+		copy_construct_array(new_first, first, last);
 	} else {
 		First = nullptr, Last = nullptr;
 	}
@@ -303,7 +303,7 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::assign(size_ty
 	if (n > 0) {
 		new_first = Alloc::template alloc_array<value_type>(n);
 		new_last = new_first + n;
-		copy_construct_array(new_first, new_last, value);
+		copy_construct_fill_array(new_first, new_last, value);
 	} else {
 		new_first = nullptr, new_last = nullptr;
 	}
@@ -319,7 +319,7 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::assign(const v
 	value_type *new_first;
 	if (first != last) {
 		new_first = Alloc::alloc_array_range(first, last);
-		std::uninitialized_copy(first, last, new_first);
+		copy_construct_array(new_first, first, last);
 	} else {
 		new_first = nullptr;
 	}

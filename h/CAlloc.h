@@ -55,6 +55,10 @@ protected:
 public:
 	CAllocBase(const CAllocBase &) = delete;
 	CAllocBase &operator =(const CAllocBase &) = delete;
+
+	static constexpr size_t max_size() noexcept {
+		return SIZE_MAX;
+	}
 };
 
 using CAlloc = ReallocAdapter<CAllocBase>;

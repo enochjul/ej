@@ -181,6 +181,18 @@ public:
 template <class Base>
 class ReallocAdapter : public AllocAdapter<Base> {
 public:
+	//! Reallocates memory for an object of the specified type with an explicit size
+	template <typename T, bool may_fail = false>
+	static T *realloc_n(T *ptr, size_t n) noexcept {
+		return static_cast<T *>(Base::template reallocate<alignof(T), may_fail>(ptr, n));
+	}
+
+	//! Reallocates memory for an object of the specified type with an explicit size, and returns nullptr if it fails
+	template <typename T>
+	static T *try_realloc_n(T *ptr, size_t n) noexcept {
+		return realloc_n<T, true>(ptr, n);
+	}
+
 	//! Reallocates memory for an array of objects of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	static T *realloc_array(T *ptr, size_t n) noexcept {

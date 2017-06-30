@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "CallType.h"
+#include "fill.h"
 #include "TypeTraits.h"
 
 //Define a potentially throwing version of placement new so that the compiler does not emit a null pointer check
@@ -124,15 +125,23 @@ inline void copy_construct_array_n(T *dst, const T *first, size_t n) noexcept(st
 
 template <typename T>
 inline void copy_construct_fill_array(T *first, T *last, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	for (auto i = first, e = last; i != e; ++i) {
-		new(i, 0) T(a);
+	if (std::is_scalar<T>::value) {
+		fill(first, last, a);
+	} else {
+		for (auto i = first, e = last; i != e; ++i) {
+			new(i, 0) T(a);
+		}
 	}
 }
 
 template <typename T>
 inline void copy_construct_fill_array_n(T *first, size_t n, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	for (auto i = first, e = first + n; i != e; ++i) {
-		new(i, 0) T(a);
+	if (std::is_scalar<T>::value) {
+		fill_n(first, n, a);
+	} else {
+		for (auto i = first, e = first + n; i != e; ++i) {
+			new(i, 0) T(a);
+		}
 	}
 }
 

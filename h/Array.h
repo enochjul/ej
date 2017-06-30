@@ -15,6 +15,8 @@
 #include "CallType.h"
 #include "Construct.h"
 #include "Destruct.h"
+#include "fill.h"
+#include "TypeTraits.h"
 
 namespace ej {
 
@@ -36,6 +38,11 @@ public:
 private:
 	T *First;
 	T *Last;
+
+	static value_type *find_last(value_type *ptr, const value_type *first, const value_type *last) noexcept {
+		assert(reinterpret_cast<uintptr_t>(last) >= reinterpret_cast<uintptr_t>(first));
+		return reinterpret_cast<value_type *>(reinterpret_cast<uintptr_t>(ptr) + (reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first)));
+	}
 
 public:
 	constexpr Array() noexcept : First(nullptr), Last(nullptr) {
@@ -85,9 +92,12 @@ public:
 		assign(x.First, x.Last);
 	}
 
-	void assign_all() noexcept(std::is_nothrow_default_constructible<value_type>::value);
-	void assign_all(typename CallType<value_type>::param_type value) noexcept(std::is_nothrow_copy_assignable<value_type>::value) {
-		std::fill(First, Last, value);
+	void fill(typename CallType<value_type>::param_type value) noexcept(std::is_nothrow_copy_assignable<value_type>::value) {
+		fill(First, Last, value);
+	}
+
+	void zero() noexcept(std::is_nothrow_copy_assignable<value_type>::value) {
+		fill(First, Last, 0);
 	}
 
 	void clear() noexcept(std::is_nothrow_destructible<value_type>::value);
@@ -103,7 +113,7 @@ public:
 	}
 
 	size_type size() const noexcept {
-		return Last - First;
+		return (reinterpret_cast<uintptr_t>(Last) - reinterpret_cast<uintptr_t>(First)) / sizeof(value_type);
 	}
 
 	T &operator [](size_type pos) noexcept {
@@ -261,7 +271,7 @@ template <typename T, bool reverse_destruct, bool always_default_construct, clas
 Array<T, reverse_destruct, always_default_construct, Alloc>::Array(const value_type *first, const value_type *last) noexcept(std::is_nothrow_copy_constructible<value_type>::value) {
 	if (first != last) {
 		auto new_first = Alloc::alloc_array_range(first, last);
-		First = new_first, Last = new_first + (last - first);
+		First = new_first, Last = find_last(new_first, first, last);
 		copy_construct_array(new_first, first, last);
 	} else {
 		First = nullptr, Last = nullptr;
@@ -272,14 +282,14 @@ template <typename T, bool reverse_destruct, bool always_default_construct, clas
 Array<T, reverse_destruct, always_default_construct, Alloc>::~Array() noexcept(std::is_nothrow_destructible<value_type>::value) {
 	auto first = First, last = Last;
 	Destruct<value_type, reverse_destruct>::run_array(first, last);
-	Alloc::dealloc_array(first, last - first);
+	Alloc::dealloc_array_range(first, first, last);
 }
 
 template <typename T, bool reverse_destruct, bool always_default_construct, class Alloc>
 void Array<T, reverse_destruct, always_default_construct, Alloc>::assign(size_type n) noexcept(std::is_nothrow_default_constructible<value_type>::value) {
 	auto first = First, last = Last;
 	Destruct<T, reverse_destruct>::run_array(first, last);
-	auto cur_size = last - first;
+	auto cur_size = (reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first)) / sizeof(value_type);
 	if (cur_size != n) {
 		Alloc::dealloc_array(first, cur_size);
 		if (n > 0) {
@@ -310,7 +320,7 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::assign(size_ty
 
 	auto first = First, last = Last;
 	Destruct<T, reverse_destruct>::run_array(first, last);
-	Alloc::dealloc_array(first, last - first);
+	Alloc::dealloc_array_range(first, first, last);
 	First = new_first, Last = new_last;
 }
 
@@ -326,15 +336,8 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::assign(const v
 
 	auto my_first = First, my_last = Last;
 	Destruct<T, reverse_destruct>::run_array(my_first, my_last);
-	Alloc::dealloc_array(my_first, my_last - my_first);
-	First = new_first, Last = new_first + (last - first);
-}
-
-template <typename T, bool reverse_destruct, bool always_default_construct, class Alloc>
-void Array<T, reverse_destruct, always_default_construct, Alloc>::assign_all() noexcept(std::is_nothrow_default_constructible<value_type>::value) {
-	auto first = First, last = Last;
-	Destruct<T, reverse_destruct>::run_array(first, last);
-	default_construct_array<T, true>(first, last);
+	Alloc::dealloc_array_range(my_first, my_first, my_last);
+	First = new_first, Last = find_last(new_first, first, last);
 }
 
 template <typename T, bool reverse_destruct, bool always_default_construct, class Alloc>
@@ -342,7 +345,7 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::clear() noexce
 	auto first = First, last = Last;
 	First = nullptr, Last = nullptr;
 	Destruct<value_type, reverse_destruct>::run_array(first, last);
-	Alloc::dealloc_array(first, last - first);
+	Alloc::dealloc_array_range(first, first, last);
 }
 
 }

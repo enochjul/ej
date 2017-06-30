@@ -23,6 +23,34 @@ struct is_zero_default_constructible final {
 	};
 };
 
+template <typename T>
+struct is_any_char final {
+	enum : bool {
+		value = false
+	};
+};
+
+template <>
+struct is_any_char<char> final {
+	enum : bool {
+		value = true
+	};
+};
+
+template <>
+struct is_any_char<signed char> final {
+	enum : bool {
+		value = true
+	};
+};
+
+template <>
+struct is_any_char<unsigned char> final {
+	enum : bool {
+		value = true
+	};
+};
+
 }
 
 #endif

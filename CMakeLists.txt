@@ -5,6 +5,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ej)
 
+enable_language(ASM)
+
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug, Release" FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
@@ -18,5 +20,5 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native -fno-asynchronous-unwind-tables -fomit-frame-pointer -fno-math-errno -DNDEBUG")
 
 include_directories("h")
-file(GLOB source_files "src/*.cxx")
+file(GLOB source_files "src/*.cxx" "src/x86_64/*.S")
 add_library(ej STATIC ${source_files})

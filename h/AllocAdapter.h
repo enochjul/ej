@@ -63,7 +63,7 @@ public:
 	static T *alloc_array_range(const T *first, const T *last) noexcept {
 		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
 
-		size_t n = (last - first) * sizeof(T);
+		auto n = reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first);
 		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
@@ -156,7 +156,7 @@ public:
 	//! Deallocates memory for an array of objects
 	template <typename T, size_t sentinel_n = 0>
 	static void dealloc_array_range(T *ptr, const T *first, const T *last) noexcept {
-		deallocate(ptr, (last - first) * sizeof(T) + sentinel_n * sizeof(T));
+		deallocate(ptr, (reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first)) + sentinel_n * sizeof(T));
 	}
 
 	//! Deallocates memory for a flexible array
@@ -217,7 +217,7 @@ public:
 	static T *realloc_array_range(T *ptr, const T *first, const T *last) noexcept {
 		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
 
-		size_t n = (last - first) * sizeof(T);
+		auto n = reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first);
 		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
 			return static_cast<T *>(Base::template reallocate<alignof(T), may_fail>(n + sentinel_n * sizeof(T)));
 		} else if (may_fail) {

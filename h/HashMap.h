@@ -140,7 +140,7 @@ HashMap<K, T, HasherType, CacheHash, Alloc>::HashMap() noexcept {
 	Nodes = Alloc::template alloc_array<node_type *>(INITIAL_MASK + 1);
 	Mask = INITIAL_MASK;
 	Size = 0;
-	memset(Nodes, 0, sizeof(node_type *) * (INITIAL_MASK + 1));
+	fill_n(Nodes, INITIAL_MASK + 1, nullptr);
 }
 
 template <typename K, typename T, class HasherType, bool CacheHash, class Alloc>

@@ -2,6 +2,8 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <stddef.h>
+
 #include "StringTo.h"
 
 namespace ej {
@@ -501,11 +503,11 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 	ch = static_cast<unsigned char>(*s);
 	s++;
 	if (ch >= '1' && ch <= '9') {
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 
 		ch = static_cast<unsigned char>(s[0]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -514,7 +516,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[1]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -523,7 +525,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[2]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -532,7 +534,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[3]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -541,7 +543,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[4]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -550,7 +552,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[5]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -559,7 +561,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[6]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -568,7 +570,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[7]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -577,7 +579,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -586,7 +588,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[9]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -595,7 +597,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[10]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -604,7 +606,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[11]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -613,7 +615,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[12]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -622,7 +624,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[13]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -631,7 +633,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[14]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -640,7 +642,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[15]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -649,7 +651,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[16]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { static_cast<int64_t>(value), true };
 		} else {
@@ -659,7 +661,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 		ch = static_cast<unsigned char>(s[17]);
 		if (ch >= '0' && ch <= '9') {
 			if (value < UINT64_C(922337203685477580) || value == UINT64_C(922337203685477580) && ch <= '7') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[18]);
 				if (ch == '\0') {
 					return { static_cast<int64_t>(value), true };
@@ -685,11 +687,11 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 		ch = static_cast<unsigned char>(*s);
 		s++;
 		if (ch >= '1' && ch <= '9') {
-			value = ch - '0';
+			value = static_cast<size_t>(ch) - '0';
 
 			ch = static_cast<unsigned char>(s[0]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -698,7 +700,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[1]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -707,7 +709,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[2]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -716,7 +718,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[3]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -725,7 +727,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[4]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -734,7 +736,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[5]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -743,7 +745,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[6]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -752,7 +754,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[7]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -761,7 +763,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[8]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -770,7 +772,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[9]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -779,7 +781,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[10]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -788,7 +790,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[11]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -797,7 +799,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[12]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -806,7 +808,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[13]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -815,7 +817,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[14]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -824,7 +826,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[15]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -833,7 +835,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[16]);
 			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 			} else if (ch == '\0') {
 				return { -static_cast<int64_t>(value), true };
 			} else {
@@ -844,7 +846,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 			if (ch >= '0') {
 				if (ch <= '9') {
 					if (value < UINT64_C(922337203685477580) || value == UINT64_C(922337203685477580) && ch <= '8') {
-						value = value * 10 + (ch - '0');
+						value = value * 10 + (static_cast<size_t>(ch) - '0');
 						ch = static_cast<unsigned char>(s[18]);
 						if (ch == '\0') {
 							return { -static_cast<int64_t>(value), true };
@@ -887,7 +889,7 @@ state_hex_skip_first_zero:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_hex_digits;
 
 	case 'A':
@@ -896,7 +898,7 @@ state_hex_skip_first_zero:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_hex_digits;
 
 	case 'a':
@@ -905,7 +907,7 @@ state_hex_skip_first_zero:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_hex_digits;
 
 	default:
@@ -931,7 +933,7 @@ state_hex_skip_zeros:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_hex_digits;
 
 	case 'A':
@@ -940,7 +942,7 @@ state_hex_skip_zeros:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_hex_digits;
 
 	case 'a':
@@ -949,7 +951,7 @@ state_hex_skip_zeros:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_hex_digits;
 
 	default:
@@ -974,7 +976,7 @@ state_hex_digits:
 		case '7':
 		case '8':
 		case '9':
-			value = value * 16 + (ch - '0');
+			value = value * 16 + (static_cast<size_t>(ch) - '0');
 			break;
 
 		case 'A':
@@ -983,7 +985,7 @@ state_hex_digits:
 		case 'D':
 		case 'E':
 		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
 			break;
 
 		case 'a':
@@ -992,7 +994,7 @@ state_hex_digits:
 		case 'd':
 		case 'e':
 		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
 			break;
 
 		default:
@@ -1024,7 +1026,7 @@ state_neg_hex_skip_first_zero:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_neg_hex_digits;
 
 	case 'A':
@@ -1033,7 +1035,7 @@ state_neg_hex_skip_first_zero:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_neg_hex_digits;
 
 	case 'a':
@@ -1042,7 +1044,7 @@ state_neg_hex_skip_first_zero:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_neg_hex_digits;
 
 	default:
@@ -1068,7 +1070,7 @@ state_neg_hex_skip_zeros:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_neg_hex_digits;
 
 	case 'A':
@@ -1077,7 +1079,7 @@ state_neg_hex_skip_zeros:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_neg_hex_digits;
 
 	case 'a':
@@ -1086,7 +1088,7 @@ state_neg_hex_skip_zeros:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_neg_hex_digits;
 
 	default:
@@ -1111,7 +1113,7 @@ state_neg_hex_digits:
 		case '7':
 		case '8':
 		case '9':
-			value = value * 16 + (ch - '0');
+			value = value * 16 + (static_cast<size_t>(ch) - '0');
 			break;
 
 		case 'A':
@@ -1120,7 +1122,7 @@ state_neg_hex_digits:
 		case 'D':
 		case 'E':
 		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
 			break;
 
 		case 'a':
@@ -1129,7 +1131,7 @@ state_neg_hex_digits:
 		case 'd':
 		case 'e':
 		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
 			break;
 
 		default:
@@ -1399,11 +1401,11 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 	ch = static_cast<unsigned char>(*s);
 	s++;
 	if (ch >= '1' && ch <= '9') {
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 
 		ch = static_cast<unsigned char>(s[0]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1412,7 +1414,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[1]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1421,7 +1423,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[2]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1430,7 +1432,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[3]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1439,7 +1441,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[4]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1448,7 +1450,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[5]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1457,7 +1459,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[6]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1466,7 +1468,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[7]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1475,7 +1477,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1484,7 +1486,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[9]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1493,7 +1495,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[10]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1502,7 +1504,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[11]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1511,7 +1513,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[12]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1520,7 +1522,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[13]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1529,7 +1531,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[14]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1538,7 +1540,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[15]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1547,7 +1549,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[16]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1556,7 +1558,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[17]);
 		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 		} else if (ch == '\0') {
 			return { value, true };
 		} else {
@@ -1566,7 +1568,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 		ch = static_cast<unsigned char>(s[18]);
 		if (ch >= '0' && ch <= '9') {
 			if (value < UINT64_C(1844674407370955161) || value == UINT64_C(1844674407370955161) && ch <= '5') {
-				value = value * 10 + (ch - '0');
+				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[19]);
 				if (ch == '\0') {
 					return { value, true };
@@ -1607,7 +1609,7 @@ state_hex_skip_first_zero:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_hex_digits;
 
 	case 'A':
@@ -1616,7 +1618,7 @@ state_hex_skip_first_zero:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_hex_digits;
 
 	case 'a':
@@ -1625,7 +1627,7 @@ state_hex_skip_first_zero:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_hex_digits;
 
 	default:
@@ -1651,7 +1653,7 @@ state_hex_skip_zeros:
 	case '7':
 	case '8':
 	case '9':
-		value = ch - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_hex_digits;
 
 	case 'A':
@@ -1660,7 +1662,7 @@ state_hex_skip_zeros:
 	case 'D':
 	case 'E':
 	case 'F':
-		value = ch - 'A' + 10;
+		value = static_cast<size_t>(ch) - 'A' + 10;
 		goto state_hex_digits;
 
 	case 'a':
@@ -1669,7 +1671,7 @@ state_hex_skip_zeros:
 	case 'd':
 	case 'e':
 	case 'f':
-		value = ch - 'a' + 10;
+		value = static_cast<size_t>(ch) - 'a' + 10;
 		goto state_hex_digits;
 
 	default:
@@ -1694,7 +1696,7 @@ state_hex_digits:
 		case '7':
 		case '8':
 		case '9':
-			value = value * 16 + (ch - '0');
+			value = value * 16 + (static_cast<size_t>(ch) - '0');
 			break;
 
 		case 'A':
@@ -1703,7 +1705,7 @@ state_hex_digits:
 		case 'D':
 		case 'E':
 		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
 			break;
 
 		case 'a':
@@ -1712,7 +1714,7 @@ state_hex_digits:
 		case 'd':
 		case 'e':
 		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
+			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
 			break;
 
 		default:

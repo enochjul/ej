@@ -13,12 +13,12 @@ namespace ej {
 
 template <class Base>
 class MonotonicAllocAdapter : public AllocAdapter<Base> {
+public:
 	using Base::initialize;
 	using Base::destroy;
 	using Base::getEnd;
 	using Base::pop_frame;
 
-public:
 	template <typename F, typename ... A>
 	EJ_ALWAYS_INLINE static bool with(F f, A && ... args) noexcept {
 		if (EJ_LIKELY(initialize(std::forward<A>(args) ...))) {

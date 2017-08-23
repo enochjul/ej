@@ -297,7 +297,7 @@ auto PageArrayBase<T, M, always_default_construct, Alloc>::alloc() -> value_type
 		//Double the number of page entries if needed
 		if ((page_begin + number_of_full_pages) == PagesReservedLast) {
 			size_type new_number_of_pages = number_of_full_pages > 0 ? number_of_full_pages * 2 : 4;
-			page_begin = Alloc::template realloc_array<value_type *>(page_begin, new_number_of_pages);
+			page_begin = Alloc::template realloc_array<value_type *>(page_begin, number_of_full_pages, new_number_of_pages);
 			PagesFirst = page_begin;
 			PagesReservedLast = page_begin + new_number_of_pages;
 		}

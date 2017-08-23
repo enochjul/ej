@@ -100,6 +100,22 @@ public:
 	MmapLinearAllocBase(const MmapLinearAllocBase &) = delete;
 	MmapLinearAllocBase &operator =(const MmapLinearAllocBase &) = delete;
 
+	static constexpr bool always_zero() noexcept {
+		return false;
+	}
+
+	static constexpr size_t min_size() noexcept {
+		return 1;
+	}
+
+	static constexpr size_t max_size() noexcept {
+		return SIZE_MAX;
+	}
+
+	static void *getStart() noexcept {
+		return Start;
+	}
+
 	static void *getEnd() noexcept {
 		return End;
 	}
@@ -110,7 +126,7 @@ public:
 
 	static bool initialize(size_t n) noexcept {
 		assert(Start == nullptr);
-		if (n <= SIZE_MAX - (CommitGranularity - 1)) {
+		if (n <= max_size() - (CommitGranularity - 1)) {
 			n = (n + (CommitGranularity - 1)) & ~(CommitGranularity - 1);
 			auto new_start = mmap(nullptr, n, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE, -1, 0);
 			if (new_start != MAP_FAILED) {

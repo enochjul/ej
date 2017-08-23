@@ -42,9 +42,9 @@ protected:
 	}
 
 	template <size_t Alignment, bool may_fail>
-	static void *reallocate(void *ptr, size_t n) noexcept {
+	static void *reallocate(void *ptr, size_t old_n, size_t new_n) noexcept {
 		static_assert(Alignment <= alignof(max_align_t));
-		ptr = ::realloc(ptr, n);
+		ptr = ::realloc(ptr, new_n);
 		if (may_fail || ptr != nullptr) {
 			return ptr;
 		} else {
@@ -55,6 +55,14 @@ protected:
 public:
 	CAllocBase(const CAllocBase &) = delete;
 	CAllocBase &operator =(const CAllocBase &) = delete;
+
+	static constexpr bool always_zero() noexcept {
+		return false;
+	}
+
+	static constexpr size_t min_size() noexcept {
+		return alignof(max_align_t);
+	}
 
 	static constexpr size_t max_size() noexcept {
 		return SIZE_MAX;

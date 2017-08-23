@@ -15,6 +15,8 @@ class AllocatorAdapter : public Base {
 	using Base::deallocate;
 
 public:
+	using Base::max_size;
+
 	//! Allocates memory for an object of the specified type
 	template <typename T, bool may_fail = false>
 	T *alloc() noexcept {
@@ -42,9 +44,9 @@ public:
 	//! Allocates memory for an array of objects of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	T *alloc_array(size_t n) noexcept {
-		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
+		static_assert(sentinel_n <= max_size() / sizeof(T));
 
-		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((SIZE_MAX / sizeof(T)) - sentinel_n)) {
+		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((max_size() / sizeof(T)) - sentinel_n)) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(T) + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
@@ -61,10 +63,10 @@ public:
 	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	T *alloc_array_range(const T *first, const T *last) noexcept {
-		static_assert(sentinel_n <= SIZE_MAX / sizeof(T));
+		static_assert(sentinel_n <= max_size() / sizeof(T));
 
 		auto n = reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first);
-		if (sentinel_n == 0 || n <= SIZE_MAX - sentinel_n * sizeof(T)) {
+		if (sentinel_n == 0 || n <= max_size() - sentinel_n * sizeof(T)) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
@@ -81,9 +83,9 @@ public:
 	//! Allocates memory for a flexible array of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
 	T *alloc_flexible_array(size_t n) noexcept {
-		static_assert(sentinel_n <= (SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type));
+		static_assert(sentinel_n <= (max_size() - T::sizeofHeader()) / sizeof(typename T::value_type));
 
-		if (n <= ((SIZE_MAX - T::sizeofHeader()) / sizeof(typename T::value_type) - sentinel_n)) {
+		if (n <= ((max_size() - T::sizeofHeader()) / sizeof(typename T::value_type) - sentinel_n)) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(typename T::value_type) + sentinel_n * sizeof(typename T::value_type) + T::sizeofHeader()));
 		} else if (may_fail) {
 			return nullptr;
@@ -102,7 +104,7 @@ public:
 	T *alloc_2d_array(size_t width, size_t height) noexcept {
 		size_t n;
 
-		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
+		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (max_size() / sizeof(T)))) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(height * width * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
@@ -121,7 +123,7 @@ public:
 	T *alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
 		size_t m, n;
 
-		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (SIZE_MAX / sizeof(T)))) {
+		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (max_size() / sizeof(T)))) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(depth * height * width * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;

@@ -174,7 +174,7 @@ EJ_ALWAYS_INLINE typename std::enable_if<std::is_enum<T>::value, void>::type fil
 
 template <typename T>
 inline typename std::enable_if<!std::is_scalar<T>::value, void>::type fill_n(T *first, size_t n, typename CallType<T>::param_type value) noexcept(std::is_nothrow_copy_assignable<T>::value) {
-	assert(&value < first || &value >= last);
+	assert(&value < first || &value >= first + n);
 	for (auto i = first, last = first + n; i != last; ++i) {
 		*i = value;
 	}

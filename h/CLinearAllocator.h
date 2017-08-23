@@ -98,6 +98,18 @@ public:
 	CLinearAllocatorBase(const CLinearAllocatorBase &) = delete;
 	CLinearAllocatorBase &operator =(const CLinearAllocatorBase &) = delete;
 
+	static constexpr bool always_zero() noexcept {
+		return false;
+	}
+
+	static constexpr size_t min_size() noexcept {
+		return 1;
+	}
+
+	static constexpr size_t max_size() noexcept {
+		return SIZE_MAX;
+	}
+
 	void *getEnd() const noexcept {
 		return End;
 	}
@@ -108,7 +120,7 @@ public:
 
 	bool initialize(size_t n) noexcept {
 		assert(Start == nullptr);
-		if (n < SIZE_MAX - alignof(max_align_t) + 1) {
+		if (n < max_size() - alignof(max_align_t) + 1) {
 			n = ((n + alignof(max_align_t) - 1) / alignof(max_align_t)) * alignof(max_align_t);
 			auto new_start = malloc(n);
 			if (new_start != nullptr) {

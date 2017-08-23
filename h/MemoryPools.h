@@ -47,7 +47,7 @@ class MemoryPools {
 	size_t FreeSize;
 
 	//! Allocates memory for a block of the given size (which must be a multiple of the alignment)
-	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) void *allocate (size_t n) noexcept;
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) void *allocate(size_t n) noexcept;
 
 public:
 	constexpr MemoryPools() noexcept : Pools(nullptr), FreeSize(0) {

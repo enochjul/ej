@@ -65,7 +65,7 @@ public:
 	}
 
 	static constexpr size_t max_size() noexcept {
-		return SIZE_MAX;
+		return PTRDIFF_MAX <= SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX;
 	}
 };
 

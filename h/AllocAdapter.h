@@ -46,7 +46,7 @@ public:
 	static T *alloc_array(size_t n) noexcept {
 		static_assert(sentinel_n <= max_size() / sizeof(T));
 
-		if ((sizeof(T) <= 1 && sentinel_n == 0) || n <= ((max_size() / sizeof(T)) - sentinel_n)) {
+		if ((sizeof(T) <= 1 && max_size() == SIZE_MAX && sentinel_n == 0) || n <= ((max_size() / sizeof(T)) - sentinel_n)) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(T) + sentinel_n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
@@ -104,8 +104,11 @@ public:
 	static T *alloc_2d_array(size_t width, size_t height) noexcept {
 		size_t n;
 
-		if (!__builtin_mul_overflow(width, height, &n) && (sizeof(T) <= 1 || n <= (max_size() / sizeof(T)))) {
+		if ((__builtin_constant_p(width) && height <= (max_size() / (sizeof(T) * width))) ||
+			(__builtin_constant_p(height) && width <= (max_size() / (sizeof(T) * height)))) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(height * width * sizeof(T)));
+		} else if (!__builtin_mul_overflow(width, height, &n) && ((sizeof(T) <= 1 && max_size() == SIZE_MAX) || n <= (max_size() / sizeof(T)))) {
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
 		}
@@ -118,12 +121,33 @@ public:
 		return alloc_2d_array<T, true>(width, height);
 	}
 
+	//! Allocates memory for a 2 dimensional flexible array of the specified type
+	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
+	static T *alloc_flexible_2d_array(size_t width, size_t height) noexcept {
+		size_t n;
+
+		if ((__builtin_constant_p(width) && height <= (max_size() / (sizeof(typename T::value_type) * width))) ||
+			(__builtin_constant_p(height) && width <= (max_size() / (sizeof(typename T::value_type) * height)))) {
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(height * width * sizeof(typename T::value_type) + T::sizeofHeader()));
+		} else if (!__builtin_mul_overflow(width, height, &n) && n <= ((max_size() - T::sizeofHeader()) / sizeof(typename T::value_type))) {
+			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n * sizeof(typename T::value_type) + T::sizeofHeader()));
+		} else if (may_fail) {
+			return nullptr;
+		}
+		abort();
+	}
+
+	template <typename T>
+	static T *try_alloc_flexible_2d_array(size_t width, size_t height) noexcept {
+		return alloc_flexible_2d_array<T, true>(width, height);
+	}
+
 	//! Allocates memory for a 3 dimensional array of objects of the specified type
 	template <typename T, bool may_fail = false>
 	static T *alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
 		size_t m, n;
 
-		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && (sizeof(T) <= 1 || n <= (max_size() / sizeof(T)))) {
+		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && ((sizeof(T) <= 1 && max_size() == SIZE_MAX) || n <= (max_size() / sizeof(T)))) {
 			return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(depth * height * width * sizeof(T)));
 		} else if (may_fail) {
 			return nullptr;
@@ -202,7 +226,7 @@ public:
 	static T *realloc_array(T *ptr, size_t old_n, size_t new_n) noexcept {
 		static_assert(sentinel_n <= max_size() / sizeof(T));
 
-		if ((sizeof(T) <= 1 && sentinel_n == 0) || new_n <= ((max_size() / sizeof(T)) - sentinel_n)) {
+		if ((sizeof(T) <= 1 && max_size() == SIZE_MAX && sentinel_n == 0) || new_n <= ((max_size() / sizeof(T)) - sentinel_n)) {
 			return static_cast<T *>(Base::template reallocate<alignof(T), may_fail>(
 				ptr,
 				old_n * sizeof(T) + sentinel_n * sizeof(T),

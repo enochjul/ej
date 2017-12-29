@@ -155,7 +155,7 @@ inline uint64_t murmur3_128_final_mix(uint64_t k) {
 	return k;
 }
 
-duint<uint64_t> murmur3_128(const void *s, size_t n, uint64_t seed) noexcept {
+duint64 murmur3_128(const void *s, size_t n, uint64_t seed) noexcept {
 	const uint64_t *start;
 	const void *end;
 	size_t aligned_n;
@@ -296,10 +296,10 @@ final_mix:
 	hash_low += hash_high;
 	hash_high += hash_low;
 
-	return duint<uint64_t>{hash_low, hash_high};
+	return make_duint64(hash_low, hash_high);
 }
 
-duint<uint64_t> murmur3_128(uint32_t value, uint64_t seed) noexcept {
+duint64 murmur3_128(uint32_t value, uint64_t seed) noexcept {
 	uint64_t hash_low, hash_high;
 	uint64_t k_low;
 
@@ -325,10 +325,10 @@ duint<uint64_t> murmur3_128(uint32_t value, uint64_t seed) noexcept {
 	hash_low += hash_high;
 	hash_high += hash_low;
 
-	return duint<uint64_t>{hash_low, hash_high};
+	return make_duint64(hash_low, hash_high);
 }
 
-duint<uint64_t> murmur3_128(uint64_t value, uint64_t seed) noexcept {
+duint64 murmur3_128(uint64_t value, uint64_t seed) noexcept {
 	uint64_t hash_low, hash_high;
 	uint64_t k_low;
 
@@ -354,7 +354,7 @@ duint<uint64_t> murmur3_128(uint64_t value, uint64_t seed) noexcept {
 	hash_low += hash_high;
 	hash_high += hash_low;
 
-	return duint<uint64_t>{hash_low, hash_high};
+	return make_duint64(hash_low, hash_high);
 }
 
 }

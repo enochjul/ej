@@ -13,15 +13,9 @@
 
 namespace ej {
 
-template <typename T>
-struct duint {
-	T Low;
-	T High;
-};
-
-template <typename T>
-EJ_ALWAYS_INLINE bool operator ==(const duint<T> &a, const duint<T> &b) {
-	return a.Low == b.Low && a.High == b.High;
+template <typename T, size_t N>
+EJ_ALWAYS_INLINE constexpr size_t get_size(const T (&a)[N]) noexcept {
+	return N;
 }
 
 enum : size_t {

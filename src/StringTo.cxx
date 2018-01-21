@@ -98,7 +98,7 @@ StringToReturnType<int32_t> c_string_to_int32(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			if (value < 214748364 || value == 214748364 && ch <= '7') {
+			if (EJ_LIKELY(value < 214748364) || value == 214748364 && ch <= '7') {
 				value = value * 10 + (ch - '0');
 				ch = static_cast<unsigned char>(s[9]);
 				if (ch == '\0') {
@@ -201,7 +201,7 @@ StringToReturnType<int32_t> c_string_to_int32(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[8]);
 			if (ch >= '0' && ch <= '9') {
-				if (value < 214748364 || value == 214748364 && ch <= '8') {
+				if (EJ_LIKELY(value < 214748364) || value == 214748364 && ch <= '8') {
 					value = value * 10 + (ch - '0');
 					ch = static_cast<unsigned char>(s[9]);
 					if (ch == '\0') {
@@ -667,7 +667,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[17]);
 		if (ch >= '0' && ch <= '9') {
-			if (value < UINT64_C(922337203685477580) || value == UINT64_C(922337203685477580) && ch <= '7') {
+			if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || value == UINT64_C(922337203685477580) && ch <= '7') {
 				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[18]);
 				if (ch == '\0') {
@@ -852,7 +852,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 			ch = static_cast<unsigned char>(s[17]);
 			if (ch >= '0') {
 				if (ch <= '9') {
-					if (value < UINT64_C(922337203685477580) || value == UINT64_C(922337203685477580) && ch <= '8') {
+					if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || value == UINT64_C(922337203685477580) && ch <= '8') {
 						value = value * 10 + (static_cast<size_t>(ch) - '0');
 						ch = static_cast<unsigned char>(s[18]);
 						if (ch == '\0') {
@@ -1238,7 +1238,7 @@ StringToReturnType<uint32_t> c_string_to_uint32(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			if (value < 429496729 || value == 429496729 && ch <= '5') {
+			if (EJ_LIKELY(value < 429496729) || value == 429496729 && ch <= '5') {
 				value = value * 10 + (ch - '0');
 				ch = static_cast<unsigned char>(s[9]);
 				if (ch == '\0') {
@@ -1574,7 +1574,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[18]);
 		if (ch >= '0' && ch <= '9') {
-			if (value < UINT64_C(1844674407370955161) || value == UINT64_C(1844674407370955161) && ch <= '5') {
+			if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || value == UINT64_C(1844674407370955161) && ch <= '5') {
 				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[19]);
 				if (ch == '\0') {
@@ -1737,7 +1737,7 @@ state_hex_digits:
 	}
 }
 
-static const float FloatPowersOfTen[] = {
+static const float FloatPowersOf10[] = {
 	1e0f,
 	1e1f,
 	1e2f,
@@ -2441,7 +2441,10 @@ const uint16_t NormalizedReciprocalExponentsOfFiveUint64[] = {
 	858,
 };
 
-static const uint64_t SmallPowersOfFiveUint64[] = {
+#define EJ_MAX_SMALL_POWER_OF_FIVE_BITS 4
+#define EJ_MAX_SMALL_POWER_OF_FIVE_MASK ((1u << (EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1)
+
+static const uint64_t SmallPowersOfFive[] = {
 	UINT64_C(1),	//5e0 at: 0
 	UINT64_C(5),	//5e1 at: 1
 	UINT64_C(25),	//5e2 at: 2
@@ -2504,7 +2507,7 @@ static const uint8_t SmallPowersOfFiveOffsets[] = {
 	28,
 };
 
-static const uint64_t LargePowersOfFiveUint64[] = {
+static const uint64_t LargePowersOfFive[] = {
 	UINT64_C(152587890625),	//5e16 at: 0
 	UINT64_C(3273344365508751233),	//5e32 at: 1
 	UINT64_C(1262),
@@ -2726,7 +2729,7 @@ EJ_ALWAYS_INLINE float make_float(uint32_t mantissa, int exponent, bool negative
 		float f;
 	} uf;
 
-	uf.u = (static_cast<uint32_t>(negative) << 31) |
+	uf.u = (static_cast<uint32_t>(negative) << (sizeof(uint32_t) * CHAR_BIT - 1)) |
 		(static_cast<uint32_t>(exponent + (2 - FLT_MIN_EXP)) << (FLT_MANT_DIG - 1)) |
 		(mantissa & ((static_cast<uint32_t>(1) << (FLT_MANT_DIG - 1)) - 1u));
 	return uf.f;
@@ -2756,6 +2759,64 @@ EJ_ALWAYS_INLINE float make_subnormal_float(uint32_t mantissa, int exponent, uin
 	}
 }
 
+//! Rounds a 55 bit mantissa to 53 bits using round to nearest even, and updates the exponent if necessary
+EJ_ALWAYS_INLINE void double_round_to_nearest_even(uint64_t *mantissa, int *exponent, uint64_t remainder) noexcept {
+	uint64_t m = *mantissa;
+	int e = *exponent;
+
+	//Extract the last bit of the mantissa and combine it with the remainder
+	remainder |= m & 4;
+	//Update the last bit of the mantissa based on the remainder, and use addition to implement rounding
+	m |= remainder != 0 ? 1 : 0;
+	++m;
+	m >>= 2;
+	//In the unlikely event that the mantissa is all ones, then the rounding will increase the size of the mantissa by one bit
+	//Shift the mantissa back to the correct position in that case
+	if ((m & (static_cast<uint64_t>(1) << DBL_MANT_DIG)) != 0) {
+		m >>= 1;
+		++e;
+	}
+
+	*mantissa = m;
+	*exponent = e;
+}
+
+EJ_ALWAYS_INLINE double make_double(uint64_t mantissa, int exponent, bool negative) noexcept {
+	union {
+		uint64_t u;
+		double d;
+	} ud;
+
+	ud.u = (static_cast<uint64_t>(negative) << (sizeof(uint64_t) * CHAR_BIT - 1)) |
+		(static_cast<uint64_t>(exponent + (2 - DBL_MIN_EXP)) << (DBL_MANT_DIG - 1)) |
+		(mantissa & ((static_cast<uint64_t>(1) << (DBL_MANT_DIG - 1)) - 1u));
+	return ud.d;
+}
+
+EJ_ALWAYS_INLINE double make_subnormal_double(uint64_t mantissa, int exponent, uint64_t remainder, bool negative) noexcept {
+	int remainder_bits;
+
+	remainder_bits = (DBL_MIN_EXP - 1) - exponent;
+	if (remainder_bits <= DBL_MANT_DIG) {
+		remainder |= mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+		mantissa >>= remainder_bits;
+		exponent = DBL_MIN_EXP - 2;
+
+		//Round to nearest even
+		remainder |= mantissa & 4;
+		mantissa |= remainder != 0 ? 1 : 0;
+		++mantissa;
+		mantissa >>= 2;
+		if ((mantissa & (UINT64_C(1) << (DBL_MANT_DIG - 1))) != 0) {
+			exponent = DBL_MIN_EXP - 1;
+		}
+
+		return make_double(mantissa, exponent, negative);
+	} else {
+		return !negative ? 0. : -0.;
+	}
+}
+
 EJ_ALWAYS_INLINE void tuint64_mul(uint64_t *r_0, uint64_t *r_1, uint64_t *r_2, duint64 a, uint64_t b) noexcept {
 	duint64 low_product, high_product;
 
@@ -2776,8 +2837,13 @@ EJ_ALWAYS_INLINE void tuint64_shl(uint64_t *r_0, uint64_t *r_1, uint64_t *r_2, u
 		*r_2 = 0;
 	} else if (n < sizeof(uint64_t) * CHAR_BIT * 2) {
 		*r_0 = 0;
-		*r_1 = a << (n - sizeof(uint64_t) * CHAR_BIT);
-		*r_2 = a >> (sizeof(uint64_t) * CHAR_BIT * 2 - n);
+		if (n > sizeof(uint64_t) * CHAR_BIT) {
+			*r_1 = a << (n - sizeof(uint64_t) * CHAR_BIT);
+			*r_2 = a >> (sizeof(uint64_t) * CHAR_BIT * 2 - n);
+		} else {
+			*r_1 = a;
+			*r_2 = 0;
+		}
 	} else {
 		*r_0 = 0;
 		*r_1 = 0;
@@ -2796,8 +2862,7 @@ EJ_ALWAYS_INLINE bool tuint64_sub_assign(uint64_t *a_0, uint64_t *a_1, uint64_t 
 }
 
 float decimal_to_float(uint32_t significand, int exponent, bool negative) noexcept {
-	constexpr unsigned float_max_exponent_of_five = 38;
-	constexpr unsigned max_small_power_of_five_uint64_mask = 16 - 1;
+	constexpr unsigned max_exponent_of_five = 38;
 	constexpr unsigned max_reciprocal_exponent_of_five = 54;
 	duint64 product128;
 	uint64_t remainder64, mantissa64, difference64;
@@ -2811,14 +2876,14 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 			//Float arithmetic should be strictly IEEE compliant for the following to get a correct rounded result,
 			//so do a simple test to determine if the target architecture supports it
 #if !defined(__i386__) || (defined(__SSE_MATH__) && !defined(__FAST_MATH__))
-			if (abs_exponent < get_size(FloatPowersOfTen) && significand < (1 << FLT_MANT_DIG)) {
+			if (abs_exponent < get_size(FloatPowersOf10) && significand < (1 << FLT_MANT_DIG)) {
 				int32_t signed_significand = !negative ? static_cast<int32_t>(significand) : -static_cast<int32_t>(significand);
-				return static_cast<float>(signed_significand) * FloatPowersOfTen[abs_exponent];
+				return static_cast<float>(signed_significand) * FloatPowersOf10[abs_exponent];
 			}
 #endif
 
-			if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFiveUint64))) {
-				product128 = duint64_mul(static_cast<uint64_t>(significand), SmallPowersOfFiveUint64[abs_exponent]);
+			if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
+				product128 = duint64_mul(static_cast<uint64_t>(significand), SmallPowersOfFive[abs_exponent]);
 				remainder64 = duint64_get_low(product128);
 				mantissa64 = duint64_get_high(product128);
 				auto bsr_rv = bsr64(mantissa64);
@@ -2843,15 +2908,15 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					if (remainder_bits > 0) {
 						remainder64 = mantissa64 << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
 						mantissa64 >>= remainder_bits;
-					} else if (remainder_bits < 0) {
+					} else {
 						mantissa64 <<= -remainder_bits;
 					}
 				}
 				mantissa32 = static_cast<uint32_t>(mantissa64);
 				float_round_to_nearest_even(&mantissa32, &final_exponent, remainder64);
 				return make_float(mantissa32, final_exponent, negative);
-			} else if (abs_exponent <= float_max_exponent_of_five) {
-				auto power_of_five_of_low_bits = SmallPowersOfFiveUint64[abs_exponent & max_small_power_of_five_uint64_mask];
+			} else if (abs_exponent <= max_exponent_of_five) {
+				auto power_of_five_of_low_bits = SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
 				if (abs_exponent < 32) {
 					product128 = duint64_mul(152587890625u, power_of_five_of_low_bits);
 				} else {
@@ -2885,9 +2950,9 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 			//Float arithmetic should be strictly IEEE compliant for the following to get a correct rounded result,
 			//so do a simple test to determine if the target architecture supports it
 #if !defined(__i386__) || (defined(__SSE_MATH__) && !defined(__FAST_MATH__))
-			if (abs_exponent < get_size(FloatPowersOfTen) && significand < (1 << FLT_MANT_DIG)) {
+			if (abs_exponent < get_size(FloatPowersOf10) && significand < (1 << FLT_MANT_DIG)) {
 				int32_t signed_significand = !negative ? static_cast<int32_t>(significand) : -static_cast<int32_t>(significand);
-				return static_cast<float>(signed_significand) / FloatPowersOfTen[abs_exponent];
+				return static_cast<float>(signed_significand) / FloatPowersOf10[abs_exponent];
 			}
 #endif
 
@@ -2909,11 +2974,12 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						remainder_bits += sizeof(remainder64) * CHAR_BIT;
 					}
 					assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
-					if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFiveUint64))) {
-						auto denominator = SmallPowersOfFiveUint64[abs_exponent];
+					if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
+						auto denominator = SmallPowersOfFive[abs_exponent];
 						remainder_bits = reciprocal_exponent - remainder_bits;
 						if (remainder_bits > 0) {
 							auto numerator = duint64_shl(static_cast<uint64_t>(significand), remainder_bits);
+							remainder64 = 0;
 							auto qd = duint64_mul(mantissa64, denominator);
 							auto full_difference = numerator - qd;
 							difference64 = duint64_get_low(full_difference);
@@ -2933,7 +2999,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						if (difference64 >= denominator) {
 							++mantissa32;
 							if (mantissa32 >= (1 << (FLT_MANT_DIG + 2))) {
-								assert(mantissa32 % 2 == 0);
+								assert((mantissa32 % 2) == 0);
 								mantissa32 >>= 1;
 								++final_exponent;
 							}
@@ -2950,21 +3016,22 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						uint64_t qd_0, qd_1, qd_2;
 						uint64_t difference_0, difference_1, difference_2;
 
-						auto power_of_five_of_low_bits = SmallPowersOfFiveUint64[abs_exponent & max_small_power_of_five_uint64_mask];
+						auto power_of_five_of_low_bits = SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
 						if (abs_exponent < 32) {
 							denominator = duint64_mul(152587890625u, power_of_five_of_low_bits);
 						} else {
-							denominator = make_duint64(UINT64_C(3273344365508751233), UINT64_C(1262)) * power_of_five_of_low_bits;
+							auto *denominator_start = LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1];
+							denominator = make_duint64(denominator_start[0], denominator_start[1]) * power_of_five_of_low_bits;
 						}
 						tuint64_mul(&qd_0, &qd_1, &qd_2, denominator, mantissa64);
 
-						tuint64_shl(&difference_0, &difference_1, &difference_2, significand, NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1] - remainder_bits);
+						tuint64_shl(&difference_0, &difference_1, &difference_2, significand, reciprocal_exponent - remainder_bits);
 						tuint64_sub_assign(&difference_0, &difference_1, &difference_2, qd_0, qd_1, qd_2);
 						mantissa32 = static_cast<uint32_t>(mantissa64);
 						if (!tuint64_sub_assign(&difference_0, &difference_1, &difference_2, duint64_get_low(denominator), duint64_get_high(denominator), 0)) {
 							++mantissa32;
 							if (mantissa32 >= (1 << (FLT_MANT_DIG + 2))) {
-								assert(mantissa32 % 2 == 0);
+								assert((mantissa32 % 2) == 0);
 								mantissa32 >>= 1;
 								++final_exponent;
 							}
@@ -3518,7 +3585,7 @@ state_optional_digit_10:
 	case '7':
 	case '8':
 	case '9':
-		if (value < 429496729 || value == 429496729 && ch <= '5') {
+		if (EJ_LIKELY(value < 429496729) || value == 429496729 && ch <= '5') {
 			value = value * 10 + (ch - '0');
 			ch = static_cast<unsigned char>(*s);
 			s++;
@@ -3657,6 +3724,1441 @@ state_exponent_optional_digits:
 		goto state_exponent_optional_digits;
 	} else if (ch == '\0') {
 		return { decimal_to_float(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
+	} else {
+		return { 0.0f, false };
+	}
+}
+
+static const double DoublePowersOf10[] = {
+	1e0,
+	1e1,
+	1e2,
+	1e3,
+	1e4,
+	1e5,
+	1e6,
+	1e7,
+	1e8,
+	1e9,
+	1e10,
+	1e11,
+	1e12,
+	1e13,
+	1e14,
+	1e15,
+	1e16,
+	1e17,
+	1e18,
+	1e19,
+	1e20,
+	1e21,
+	1e22,
+};
+
+//The third parameter uses rdx in the API calling convention, which maps to the implicit input in the mulx instruction
+uint64_t *decimal_to_double_mp_uint64_mul(uint64_t *d, const uint64_t *a, uint64_t b, const uint64_t *a_end) noexcept {
+	duint64 p;
+	uintptr_t offset, max_offset;
+	uint64_t carry;
+
+	assert((d <= a || d >= a_end) && a_end - a >= 1);
+
+	p = duint64_mul(*a, b);
+	*d = duint64_get_low(p);
+	carry = duint64_get_high(p);
+	offset = sizeof(*a);
+	max_offset = reinterpret_cast<uintptr_t>(a_end) - reinterpret_cast<uintptr_t>(a);
+
+	for (; offset < max_offset; offset += sizeof(*a)) {
+		p = duint64_mul(*lea(a, offset), b) + carry;
+		*lea(d, offset) = duint64_get_low(p);
+		carry = duint64_get_high(p);
+	}
+
+	auto *d_i = lea(d, max_offset);
+	*d_i = carry;
+	if (carry != 0) {
+		++d_i;
+	}
+	return d_i;
+}
+
+inline bool decimal_to_double_mp_uint64_is_zero(const uint64_t *a, const uint64_t *a_end) noexcept {
+	for (const auto *a_i = a; a_i < a_end; a_i++) {
+		if (*a_i != 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+double decimal_to_double(uint64_t significand, int exponent, bool negative) noexcept {
+	constexpr unsigned max_exponent_of_five = 308;
+	constexpr unsigned max_reciprocal_exponent_of_five = get_size(NormalizedReciprocalsOfFiveUint64);
+	constexpr unsigned max_mp_uints = 1024 / (sizeof(uint64_t) * CHAR_BIT);
+	duint64 product;
+	uint64_t remainder, mantissa, difference;
+	int mantissa_bits_less_1, remainder_bits;
+	int final_exponent, reciprocal_exponent;
+
+	if (significand != 0) {
+		if (exponent >= 0) {
+			auto abs_exponent = static_cast<unsigned>(exponent);
+			//Double arithmetic should be strictly IEEE compliant for the following to get a correct rounded result
+			if (abs_exponent < get_size(DoublePowersOf10) && significand < (UINT64_C(1) << DBL_MANT_DIG)) {
+				int64_t signed_significand = !negative ? static_cast<int64_t>(significand) : -static_cast<int64_t>(significand);
+				return static_cast<double>(signed_significand) * DoublePowersOf10[abs_exponent];
+			}
+
+			if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
+				product = duint64_mul(static_cast<uint64_t>(significand), SmallPowersOfFive[abs_exponent]);
+				remainder = duint64_get_low(product);
+				mantissa = duint64_get_high(product);
+				auto bsr_rv = bsr64(mantissa);
+				if (!bsr_rv.ZeroValue) {
+					mantissa_bits_less_1 = static_cast<int>(bsr_rv.Count);
+					final_exponent = exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
+					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+
+					if (remainder_bits > 0) {
+						remainder |= mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+						mantissa >>= remainder_bits;
+					} else if (remainder_bits < 0) {
+						duint64_small_shl_assign(&remainder, &mantissa, -remainder_bits);
+					}
+				} else {
+					mantissa = remainder;
+					remainder = 0;
+
+					mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa).Count);
+					final_exponent = exponent + mantissa_bits_less_1;
+					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+					if (remainder_bits > 0) {
+						remainder = mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+						mantissa >>= remainder_bits;
+					} else {
+						mantissa <<= -remainder_bits;
+					}
+				}
+
+				double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+				return make_double(mantissa, final_exponent, negative);
+			} else if (abs_exponent <= max_exponent_of_five) {
+				uint64_t full_product[max_mp_uints];
+				uint64_t *full_product_end;
+
+				full_product_end = decimal_to_double_mp_uint64_mul(
+					full_product,
+					LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
+					SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
+					LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
+				full_product_end = decimal_to_double_mp_uint64_mul(full_product, full_product, significand, full_product_end);
+
+				remainder = *(full_product_end - 2);
+				mantissa = *(full_product_end - 1);
+				mantissa_bits_less_1 = bsr64(mantissa).Count;
+				//Compute the exponent
+				final_exponent = exponent + mantissa_bits_less_1 + ((full_product_end - full_product) - 1) * sizeof(uint64_t) * CHAR_BIT;
+				//Normalize the mantissa and remainder
+				remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+				if (remainder_bits > 0) {
+					//Parts of the mantissa belongs to the remainder
+					remainder |= mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+					mantissa >>= remainder_bits;
+				} else if (remainder_bits < 0) {
+					//Parts of the remainders belongs to the mantissa
+					duint64_small_shl_assign(&remainder, &mantissa, -remainder_bits);
+				}
+				assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+				//Combine the rest of the remainder
+				for (auto full_product_i = full_product; full_product_i < (full_product_end - 2); ++full_product_i) {
+					remainder |= *full_product_i;
+				}
+
+				//Round and return the result
+				double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+				if (final_exponent < DBL_MAX_EXP) {
+					return make_double(mantissa, final_exponent, negative);
+				} else {
+					return !negative ? HUGE_VAL : -HUGE_VAL;
+				}
+			} else {
+				return !negative ? HUGE_VAL : -HUGE_VAL;
+			}
+		} else {
+			auto abs_exponent = static_cast<unsigned>(-exponent);
+			//Double arithmetic should be strictly IEEE compliant for the following to get a correct rounded result
+			if (abs_exponent < get_size(DoublePowersOf10) && significand < (UINT64_C(1) << DBL_MANT_DIG)) {
+				int64_t signed_significand = !negative ? static_cast<int64_t>(significand) : -static_cast<int64_t>(significand);
+				return static_cast<double>(signed_significand) / DoublePowersOf10[abs_exponent];
+			}
+
+			if (abs_exponent <= max_reciprocal_exponent_of_five) {
+				if (significand != 1) {
+					product = duint64_mul(significand, NormalizedReciprocalsOfFiveUint64[abs_exponent - 1]);
+					remainder = duint64_get_low(product);
+					mantissa = duint64_get_high(product);
+					mantissa_bits_less_1 = bsr64(mantissa).Count;
+					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+					reciprocal_exponent = NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1];
+					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
+					if (remainder_bits < 0) {
+						remainder_bits = -remainder_bits;
+						mantissa = (mantissa << remainder_bits) | (remainder >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+						remainder_bits = sizeof(uint64_t) * CHAR_BIT - remainder_bits;
+					} else {
+						mantissa >>= remainder_bits;
+						remainder_bits += sizeof(uint64_t) * CHAR_BIT;
+					}
+					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+					if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
+						auto denominator = SmallPowersOfFive[abs_exponent];
+						remainder_bits = reciprocal_exponent - remainder_bits;
+						if (remainder_bits > 0) {
+							auto numerator = duint64_shl(significand, remainder_bits);
+							remainder = 0;
+							auto qd = duint64_mul(mantissa, denominator);
+							auto full_difference = numerator - qd;
+							difference = duint64_get_low(full_difference);
+							assert(duint64_get_high(full_difference) == 0);
+						} else if (remainder_bits < 0) {
+							auto numerator = significand;
+							remainder = numerator << (sizeof(uint64_t) * CHAR_BIT + remainder_bits);
+							numerator >>= -remainder_bits;
+							assert(numerator >= duint64_mul(mantissa, denominator));
+							difference = numerator - mantissa * denominator;
+						} else {
+							remainder = 0;
+							difference = significand - mantissa * denominator;
+						}
+
+						if (difference >= denominator) {
+							++mantissa;
+							if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
+								assert((mantissa % 2) == 0);
+								mantissa >>= 1;
+								++final_exponent;
+							}
+							difference -= denominator;
+							assert(difference < denominator);
+						}
+						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+						remainder |= difference;
+
+						double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+						return make_double(mantissa, final_exponent, negative);
+					} else {
+						uint64_t full_estimate[max_mp_uints];
+						uint64_t *full_estimate_end;
+						uint64_t *estimate_integer;
+						uint64_t estimate, estimate_fraction_mask;
+						unsigned estimate_bits;
+						unsigned estimate_fraction_bits;
+						unsigned estimate_integer_bits;
+						unsigned estimate_shr_bits;
+
+						full_estimate_end = decimal_to_double_mp_uint64_mul(
+							full_estimate,
+							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
+							SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
+							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
+						full_estimate_end = decimal_to_double_mp_uint64_mul(full_estimate, full_estimate, mantissa + 1, full_estimate_end);
+
+						assert(*(estimate_uints_end - 1) != 0);
+
+						estimate_bits = static_cast<unsigned>(bsr64(*(full_estimate_end - 1)).Count) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
+						estimate_fraction_bits = reciprocal_exponent - remainder_bits;
+						estimate_integer_bits = estimate_bits - estimate_fraction_bits;
+						if (EJ_LIKELY(estimate_integer_bits <= (sizeof(estimate) * CHAR_BIT))) {
+							estimate_integer = full_estimate + estimate_fraction_bits / (sizeof(estimate) * CHAR_BIT);
+							estimate = *estimate_integer;
+							auto *estimate_fraction_end = estimate_integer + 1;
+							estimate_shr_bits = estimate_fraction_bits % (sizeof(estimate) * CHAR_BIT);
+							if (estimate_shr_bits > 0) {
+								estimate_fraction_mask = (UINT64_C(1) << estimate_shr_bits) - 1;
+								*estimate_integer = estimate & estimate_fraction_mask;
+								estimate >>= estimate_shr_bits;
+								if (estimate_fraction_end < full_estimate_end) {
+									estimate |= *(full_estimate_end - 1) << (sizeof(estimate) * CHAR_BIT - estimate_shr_bits);
+								}
+								full_estimate_end = estimate_fraction_end + 1;
+							} else {
+								full_estimate_end = estimate_integer;
+							}
+
+							if (significand > estimate) {
+								++mantissa;
+								if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
+									assert((mantissa % 2) == 0);
+									mantissa >>= 1;
+									++final_exponent;
+								}
+								remainder = 1;
+							} else if (significand == estimate) {
+								if (EJ_LIKELY(!decimal_to_double_mp_uint64_is_zero(full_estimate, full_estimate_end))) {
+									remainder = 1;
+								} else {
+									++mantissa;
+									if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
+										assert((mantissa % 2) == 0);
+										mantissa >>= 1;
+										++final_exponent;
+									}
+									remainder = 0;
+								}
+							} else {
+								remainder = 1;
+							}
+						} else {
+							remainder = 1;
+						}
+						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+					}
+				} else {
+					mantissa = NormalizedReciprocalsOfFiveUint64[abs_exponent - 1] >> (sizeof(uint64_t) * CHAR_BIT - (DBL_MANT_DIG + 2));
+					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+					remainder = 1;
+					final_exponent = exponent - NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1] + sizeof(uint64_t) * CHAR_BIT - 1;
+				}
+
+				if (final_exponent >= (DBL_MIN_EXP - 1)) {
+					double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+					return make_double(mantissa, final_exponent, negative);
+				} else {
+					return make_subnormal_double(mantissa, final_exponent, remainder, negative);
+				}
+			} else {
+				return !negative ? 0. : -0.;
+			}
+		}
+	} else {
+		return !negative ? 0. : -0.;
+	}
+}
+
+StringToReturnType<double> c_string_to_double(const char *s) noexcept {
+	const char *dot_next_ch_ptr = nullptr;
+	uint64_t value;
+	int fraction_exponent, exponent;
+	unsigned char ch;
+	bool negate, negate_exponent;
+
+	//Checks for a negative sign
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	negate = ch == '-';
+	if (!negate) {
+		goto action_skip_zero;
+	}
+
+	ch = static_cast<unsigned char>(*s);
+	s++;
+action_skip_zero:
+	switch (ch) {
+	case '0':
+		goto state_leading_zero;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = static_cast<uint64_t>(ch) - '0';
+		goto state_optional_digit_2;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_fraction_skip_zero;
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_fraction_skip_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		goto state_optional_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = static_cast<uint64_t>(ch) - '0';
+		goto state_optional_digit_2;
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_leading_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		value = 0;
+		fraction_exponent = 0;
+		goto state_exponent_optional_sign;
+
+	case 'x':
+		return { 0.0f, false };
+
+	case '\0':
+		return { 0.0f, true };
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_skip_zeros:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		goto state_optional_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = static_cast<uint64_t>(ch) - '0';
+		goto state_optional_digit_2;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		value = 0;
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		return { 0.0f, true };
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_2:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_3;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_2;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_3:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_4;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_3;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_4:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_5;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_4;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_5:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_6;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_5;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_6:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_7;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_6;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_7:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_8;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_7;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_8:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_9;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_8;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_9:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_10;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_9;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_10:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_11;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_10;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_11:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_12;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_11;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_12:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_13;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_12;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_13:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_14;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_13;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_14:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_15;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_14;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_15:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_16;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_15;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_16:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_17;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_16;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_17:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_18;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_17;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_18:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_19;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_18;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_19:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		goto state_optional_digit_20;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_19;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_optional_digit_20:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || value == UINT64_C(1844674407370955161) && ch <= '5') {
+			value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			switch (ch) {
+			case '.':
+				if (dot_next_ch_ptr == nullptr) {
+					ch = static_cast<unsigned char>(*s);
+					s++;
+					switch (ch) {
+					case 'e':
+					case 'E':
+						fraction_exponent = 0;
+						goto state_exponent_optional_sign;
+
+					case '\0':
+						return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+
+					default:
+						return { 0.0f, false };
+					}
+				} else {
+					return{ 0.0f, false };
+				}
+
+			case 'e':
+			case 'E':
+				if (dot_next_ch_ptr != nullptr) {
+					fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				} else {
+					fraction_exponent = 0;
+				}
+				goto state_exponent_optional_sign;
+
+			case '\0':
+				if (dot_next_ch_ptr != nullptr) {
+					fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+					return { decimal_to_double(value, fraction_exponent, negate), true };
+				} else {
+					return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+				}
+
+			default:
+				return { 0.0f, false };
+			}
+		} else {
+			return { 0.0f, false };
+		}
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_optional_digit_20;
+		} else {
+			return { 0.0f, false };
+		}
+
+	case 'e':
+	case 'E':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_exponent_optional_sign;
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_exponent_optional_sign:
+	negate_exponent = false;
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		exponent = ch - '0';
+		goto state_exponent_optional_digits;
+
+	case '-':
+		negate_exponent = true;
+		goto state_exponent_skip_zero;
+
+	default:
+		return { 0.0f, false };
+	}
+	return { 0.0f, false };
+
+state_exponent_skip_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '1' && ch <= '9') {
+		exponent = ch - '0';
+		goto state_exponent_optional_digits;
+	} else if (ch == '0') {
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { decimal_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+	} else {
+		return { 0.0f, false };
+	}
+
+state_exponent_optional_digits:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '0' && ch <= '9') {
+		exponent = exponent * 10 + (ch - '0');
+		goto state_exponent_optional_digits;
+	} else if (ch == '\0') {
+		return { decimal_to_double(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
 		return { 0.0f, false };
 	}

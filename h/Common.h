@@ -6,6 +6,7 @@
 #define EJ_COMMON_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #define EJ_ALWAYS_INLINE	inline __attribute__((always_inline))
 #define EJ_LIKELY(cond)		__builtin_expect(static_cast<bool>(cond), true)
@@ -16,6 +17,11 @@ namespace ej {
 template <typename T, size_t N>
 EJ_ALWAYS_INLINE constexpr size_t get_size(const T (&a)[N]) noexcept {
 	return N;
+}
+
+template <typename T>
+EJ_ALWAYS_INLINE constexpr T *lea(T *ptr, uintptr_t offset) noexcept {
+	return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(ptr) + offset);
 }
 
 enum : size_t {

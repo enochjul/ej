@@ -20,6 +20,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept;
 StringToReturnType<uint32_t> c_string_to_uint32(const char *s) noexcept;
 StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept;
 StringToReturnType<float> c_string_to_float(const char *s) noexcept;
+StringToReturnType<double> c_string_to_double(const char *s) noexcept;
 
 }
 

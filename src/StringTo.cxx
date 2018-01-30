@@ -3062,6 +3062,41 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 	}
 }
 
+float binary_to_float(uint32_t significand, int exponent, bool negative) noexcept {
+	uint32_t mantissa, remainder;
+	int mantissa_bits_less_1, remainder_bits, final_exponent;
+
+	auto rv = bsr32(significand);
+	if (!rv.ZeroValue) {
+		mantissa_bits_less_1 = rv.Count;
+		remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
+
+		remainder = 0;
+		if (remainder_bits <= 0) {
+			mantissa = significand << -remainder_bits;
+		} else {
+			remainder = significand << (sizeof(significand) * CHAR_BIT - remainder_bits);
+			mantissa = significand >> remainder_bits;
+		}
+		final_exponent = exponent + mantissa_bits_less_1;
+
+		//Check if exponent is big enough
+		if (final_exponent >= (FLT_MIN_EXP - 1)) {
+			//Round and check overflow
+			float_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+			if (final_exponent < FLT_MAX_EXP) {
+				return make_float(mantissa, final_exponent, negative);
+			} else {
+				return !negative ? HUGE_VALF : -HUGE_VALF;
+			}
+		} else {
+			return make_subnormal_float(mantissa, final_exponent, remainder, negative);
+		}
+	} else {
+		return !negative ? 0.f : -0.f;
+	}
+}
+
 StringToReturnType<float> c_string_to_float(const char *s) noexcept {
 	const char *dot_next_ch_ptr = nullptr;
 	int fraction_exponent, exponent;
@@ -3150,7 +3185,7 @@ state_leading_zero:
 		goto state_exponent_optional_sign;
 
 	case 'x':
-		return { 0.0f, false };
+		goto state_hex_skip_first_zero;
 
 	case '\0':
 		return { 0.0f, true };
@@ -3696,7 +3731,6 @@ state_exponent_optional_sign:
 	default:
 		return { 0.0f, false };
 	}
-	return { 0.0f, false };
 
 state_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
@@ -3720,10 +3754,304 @@ state_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
 	if (ch >= '0' && ch <= '9') {
-		exponent = exponent * 10 + (ch - '0');
+		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
+			exponent = exponent * 10 + (ch - '0');
+		}
 		goto state_exponent_optional_digits;
 	} else if (ch == '\0') {
 		return { decimal_to_float(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
+	} else {
+		return { 0.0f, false };
+	}
+
+state_hex_skip_first_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		goto state_hex_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = ch - '0';
+		goto state_hex_digits;
+
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+		value = ch - 'A' + 10;
+		goto state_hex_digits;
+
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+		value = ch - 'a' + 10;
+		goto state_hex_digits;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_hex_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0, false };
+	}
+
+state_hex_skip_zeros:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '\0':
+		return { 0, true };
+
+	case '0':
+		goto state_hex_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = ch - '0';
+		goto state_hex_digits;
+
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+		value = ch - 'A' + 10;
+		goto state_hex_digits;
+
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+		value = ch - 'a' + 10;
+		goto state_hex_digits;
+
+	case 'P':
+	case 'p':
+		value = 0;
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_binary_exponent_optional_sign;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_hex_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0, false };
+	}
+
+state_hex_digits:
+	for (unsigned i = 0; i < 7;) {
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		switch (ch) {
+		case '\0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			value = value * 16 + (ch - '0');
+			i++;
+			break;
+
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+			value = value * 16 + (ch - 'A' + 10);
+			i++;
+			break;
+
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+			value = value * 16 + (ch - 'a' + 10);
+			i++;
+			break;
+
+		case 'P':
+		case 'p':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case '.':
+			if (dot_next_ch_ptr == nullptr) {
+				dot_next_ch_ptr = s;
+				break;
+			} else {
+				return { 0.0f, false };
+			}
+
+		default:
+			return { 0, false };
+		}
+	}
+
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch)
+	{
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			return { binary_to_float(value, fraction_exponent, negate), true };
+		} else {
+			return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+		}
+
+	case 'P':
+	case 'p':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_binary_exponent_optional_sign;
+
+	case '.':
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+			dot_next_ch_ptr = s;
+			ch = static_cast<unsigned char>(*s);
+			switch (ch) {
+			case '\0':
+				return { binary_to_float(value, 0, negate), true };
+
+			case 'P':
+			case 'p':
+				s++;
+				fraction_exponent = 0;
+				goto state_binary_exponent_optional_sign;
+
+			default:
+				return { 0.0f, false };
+			}
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0, false };
+	}
+
+state_binary_exponent_optional_sign:
+	negate_exponent = false;
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { binary_to_float(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		exponent = ch - '0';
+		goto state_binary_exponent_optional_digits;
+
+	case '-':
+		negate_exponent = true;
+		goto state_binary_exponent_skip_zero;
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_binary_exponent_skip_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '1' && ch <= '9') {
+		exponent = ch - '0';
+		goto state_binary_exponent_optional_digits;
+	} else if (ch == '0') {
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { binary_to_float(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+	} else {
+		return { 0.0f, false };
+	}
+
+state_binary_exponent_optional_digits:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '0' && ch <= '9') {
+		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
+			exponent = exponent * 10 + (ch - '0');
+		}
+		goto state_binary_exponent_optional_digits;
+	} else if (ch == '\0') {
+		return { binary_to_float(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
 		return { 0.0f, false };
 	}
@@ -3965,7 +4293,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
 						full_estimate_end = decimal_to_double_mp_uint64_mul(full_estimate, full_estimate, mantissa + 1, full_estimate_end);
 
-						assert(*(estimate_uints_end - 1) != 0);
+						assert(*(full_estimate_end - 1) != 0);
 
 						estimate_bits = static_cast<unsigned>(bsr64(*(full_estimate_end - 1)).Count) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
 						estimate_fraction_bits = reciprocal_exponent - remainder_bits;
@@ -4037,6 +4365,41 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 	}
 }
 
+double binary_to_double(uint64_t significand, int exponent, bool negative) noexcept {
+	uint64_t mantissa, remainder;
+	int mantissa_bits_less_1, remainder_bits, final_exponent;
+
+	auto rv = bsr64(significand);
+	if (!rv.ZeroValue) {
+		mantissa_bits_less_1 = static_cast<int>(rv.Count);
+		remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+
+		remainder = 0;
+		if (remainder_bits <= 0) {
+			mantissa = significand << -remainder_bits;
+		} else {
+			remainder = significand << (sizeof(significand) * CHAR_BIT - remainder_bits);
+			mantissa = significand >> remainder_bits;
+		}
+		final_exponent = exponent + mantissa_bits_less_1;
+
+		//Check if exponent is big enough
+		if (final_exponent >= (DBL_MIN_EXP - 1)) {
+			//Round and check overflow
+			double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
+			if (final_exponent < DBL_MAX_EXP) {
+				return make_double(mantissa, final_exponent, negative);
+			} else {
+				return !negative ? HUGE_VAL : -HUGE_VAL;
+			}
+		} else {
+			return make_subnormal_double(mantissa, final_exponent, remainder, negative);
+		}
+	} else {
+		return !negative ? 0. : -0.;
+	}
+}
+
 StringToReturnType<double> c_string_to_double(const char *s) noexcept {
 	const char *dot_next_ch_ptr = nullptr;
 	uint64_t value;
@@ -4068,7 +4431,7 @@ action_skip_zero:
 	case '7':
 	case '8':
 	case '9':
-		value = static_cast<uint64_t>(ch) - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_optional_digit_2;
 
 	case '.':
@@ -4099,7 +4462,7 @@ state_fraction_skip_zero:
 	case '7':
 	case '8':
 	case '9':
-		value = static_cast<uint64_t>(ch) - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_optional_digit_2;
 
 	default:
@@ -4125,7 +4488,7 @@ state_leading_zero:
 		goto state_exponent_optional_sign;
 
 	case 'x':
-		return { 0.0f, false };
+		goto state_hex_skip_first_zero;
 
 	case '\0':
 		return { 0.0f, true };
@@ -4150,7 +4513,7 @@ state_optional_skip_zeros:
 	case '7':
 	case '8':
 	case '9':
-		value = static_cast<uint64_t>(ch) - '0';
+		value = static_cast<size_t>(ch) - '0';
 		goto state_optional_digit_2;
 
 	case '.':
@@ -4192,7 +4555,7 @@ state_optional_digit_2:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_3;
 
 	case '.':
@@ -4238,7 +4601,7 @@ state_optional_digit_3:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_4;
 
 	case '.':
@@ -4284,7 +4647,7 @@ state_optional_digit_4:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_5;
 
 	case '.':
@@ -4330,7 +4693,7 @@ state_optional_digit_5:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_6;
 
 	case '.':
@@ -4376,7 +4739,7 @@ state_optional_digit_6:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_7;
 
 	case '.':
@@ -4422,7 +4785,7 @@ state_optional_digit_7:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_8;
 
 	case '.':
@@ -4468,7 +4831,7 @@ state_optional_digit_8:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_9;
 
 	case '.':
@@ -4514,7 +4877,7 @@ state_optional_digit_9:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_10;
 
 	case '.':
@@ -4560,7 +4923,7 @@ state_optional_digit_10:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_11;
 
 	case '.':
@@ -4606,7 +4969,7 @@ state_optional_digit_11:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_12;
 
 	case '.':
@@ -4652,7 +5015,7 @@ state_optional_digit_12:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_13;
 
 	case '.':
@@ -4698,7 +5061,7 @@ state_optional_digit_13:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_14;
 
 	case '.':
@@ -4744,7 +5107,7 @@ state_optional_digit_14:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_15;
 
 	case '.':
@@ -4790,7 +5153,7 @@ state_optional_digit_15:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_16;
 
 	case '.':
@@ -4836,7 +5199,7 @@ state_optional_digit_16:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_17;
 
 	case '.':
@@ -4882,7 +5245,7 @@ state_optional_digit_17:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_18;
 
 	case '.':
@@ -4928,7 +5291,7 @@ state_optional_digit_18:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_19;
 
 	case '.':
@@ -4974,7 +5337,7 @@ state_optional_digit_19:
 	case '7':
 	case '8':
 	case '9':
-		value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+		value = value * 10 + (static_cast<size_t>(ch) - '0');
 		goto state_optional_digit_20;
 
 	case '.':
@@ -5021,7 +5384,7 @@ state_optional_digit_20:
 	case '8':
 	case '9':
 		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || value == UINT64_C(1844674407370955161) && ch <= '5') {
-			value = value * 10 + (static_cast<uint64_t>(ch) - '0');
+			value = value * 10 + (static_cast<size_t>(ch) - '0');
 			ch = static_cast<unsigned char>(*s);
 			s++;
 			switch (ch) {
@@ -5092,6 +5455,7 @@ state_optional_digit_20:
 			return { decimal_to_double(value, fraction_exponent, negate), true };
 		} else {
 			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+
 		}
 
 	default:
@@ -5131,7 +5495,6 @@ state_exponent_optional_sign:
 	default:
 		return { 0.0f, false };
 	}
-	return { 0.0f, false };
 
 state_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
@@ -5155,10 +5518,303 @@ state_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
 	if (ch >= '0' && ch <= '9') {
-		exponent = exponent * 10 + (ch - '0');
+		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
+			exponent = exponent * 10 + (ch - '0');
+		}
 		goto state_exponent_optional_digits;
 	} else if (ch == '\0') {
 		return { decimal_to_double(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
+	} else {
+		return { 0.0f, false };
+	}
+
+state_hex_skip_first_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		goto state_hex_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = static_cast<size_t>(ch) - '0';
+		goto state_hex_digits;
+
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+		value = static_cast<size_t>(ch) - 'A' + 10;
+		goto state_hex_digits;
+
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+		value = static_cast<size_t>(ch) - 'a' + 10;
+		goto state_hex_digits;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_hex_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_hex_skip_zeros:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '\0':
+		return { 0.0f, true };
+
+	case '0':
+		goto state_hex_skip_zeros;
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		value = static_cast<size_t>(ch) - '0';
+		goto state_hex_digits;
+
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+		value = static_cast<size_t>(ch) - 'A' + 10;
+		goto state_hex_digits;
+
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+		value = static_cast<size_t>(ch) - 'a' + 10;
+		goto state_hex_digits;
+
+	case 'P':
+	case 'p':
+		value = 0;
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_binary_exponent_optional_sign;
+
+	case '.':
+		if (dot_next_ch_ptr == nullptr) {
+			dot_next_ch_ptr = s;
+			goto state_hex_skip_zeros;
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_hex_digits:
+	for (unsigned i = 0; i < 15;) {
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		switch (ch) {
+		case '\0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			value = value * 16 + (static_cast<size_t>(ch) - '0');
+			i++;
+			break;
+
+		case 'A':
+		case 'B':
+		case 'C':
+		case 'D':
+		case 'E':
+		case 'F':
+			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
+			i++;
+			break;
+
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
+			i++;
+			break;
+
+		case 'P':
+		case 'p':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case '.':
+			if (dot_next_ch_ptr == nullptr) {
+				dot_next_ch_ptr = s;
+				break;
+			} else {
+				return { 0.0f, false };
+			}
+
+		default:
+			return { 0.0f, false };
+		}
+	}
+
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch)
+	{
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			return { binary_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+		}
+
+	case 'P':
+	case 'p':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+		} else {
+			fraction_exponent = 0;
+		}
+		goto state_binary_exponent_optional_sign;
+
+	case '.':
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+			ch = static_cast<unsigned char>(*s);
+			switch (ch) {
+			case '\0':
+				return { binary_to_double(value, 0, negate), true };
+
+			case 'P':
+			case 'p':
+				s++;
+				fraction_exponent = 0;
+				goto state_binary_exponent_optional_sign;
+
+			default:
+				return { 0.0f, false };
+			}
+		} else {
+			return { 0.0f, false };
+		}
+
+	default:
+		return { 0, false };
+	}
+
+state_binary_exponent_optional_sign:
+	negate_exponent = false;
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	switch (ch) {
+	case '0':
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { binary_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		exponent = ch - '0';
+		goto state_binary_exponent_optional_digits;
+
+	case '-':
+		negate_exponent = true;
+		goto state_binary_exponent_skip_zero;
+
+	default:
+		return { 0.0f, false };
+	}
+
+state_binary_exponent_skip_zero:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '1' && ch <= '9') {
+		exponent = ch - '0';
+		goto state_binary_exponent_optional_digits;
+	} else if (ch == '0') {
+		ch = static_cast<unsigned char>(*s);
+		s++;
+		if (ch == '\0') {
+			return { binary_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { 0.0f, false };
+		}
+	} else {
+		return { 0.0f, false };
+	}
+
+state_binary_exponent_optional_digits:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	if (ch >= '0' && ch <= '9') {
+		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
+			exponent = exponent * 10 + (ch - '0');
+		}
+		goto state_binary_exponent_optional_digits;
+	} else if (ch == '\0') {
+		return { binary_to_double(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
 		return { 0.0f, false };
 	}

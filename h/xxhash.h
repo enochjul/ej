@@ -119,8 +119,8 @@ public:
 	}
 
 	template <typename K>
-	value_type eval(const K &k, value_type seed = 0) const noexcept {
-		return eval(&k, sizeof(K), seed);
+	value_type eval(const K &k) const noexcept {
+		return eval(&k, sizeof(K), Seed);
 	}
 };
 
@@ -141,8 +141,8 @@ public:
 	}
 
 	template <typename K>
-	value_type eval(const K &k, value_type seed = 0) const noexcept {
-		return eval(&k, sizeof(K), seed);
+	value_type eval(const K &k) const noexcept {
+		return eval(&k, sizeof(K), Seed);
 	}
 };
 

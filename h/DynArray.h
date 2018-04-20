@@ -10,7 +10,7 @@
 
 #include <type_traits>
 
-#include "ej/h/Common.h"
+#include "Common.h"
 #include "CAlloc.h"
 #include "CallType.h"
 #include "Construct.h"

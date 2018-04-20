@@ -60,6 +60,11 @@ public:
 	static value_type eval(int64_t value, value_type seed = 0) noexcept {
 		return xxhash_32(value, seed);
 	}
+
+	template <typename K>
+	static value_type eval(const K &k, value_type seed = 0) noexcept {
+		return eval(&k, sizeof(K), seed);
+	}
 };
 
 template <>
@@ -86,6 +91,11 @@ public:
 	static value_type eval(int64_t value, value_type seed = 0) noexcept {
 		return xxhash_64(value, seed);
 	}
+
+	template <typename K>
+	static value_type eval(const K &k, value_type seed = 0) noexcept {
+		return eval(&k, sizeof(K), seed);
+	}
 };
 
 //! Helper class for computing the hash of a string using a specific seed
@@ -107,6 +117,11 @@ public:
 	value_type eval(const void *s, size_t n) const noexcept {
 		return xxhash_32(s, n, Seed);
 	}
+
+	template <typename K>
+	value_type eval(const K &k, value_type seed = 0) const noexcept {
+		return eval(&k, sizeof(K), seed);
+	}
 };
 
 template <>
@@ -123,6 +138,11 @@ public:
 
 	value_type eval(const void *s, size_t n) const noexcept {
 		return xxhash_64(s, n, Seed);
+	}
+
+	template <typename K>
+	value_type eval(const K &k, value_type seed = 0) const noexcept {
+		return eval(&k, sizeof(K), seed);
 	}
 };
 

@@ -214,7 +214,7 @@ auto PrimeHashMap<K, T, HasherType, Resize2X, Alloc>::emplace(key_param_type key
 	}
 
 	auto new_entry = Alloc::template alloc<Entry>();
-	new(new_entry, 0) Entry(*hash_entries_i, key, value);
+	forward_construct(new_entry, *hash_entries_i, key, value);
 	*hash_entries_i = new_entry;
 	Size = n + 1;
 	return { &(new_entry->myKeyValue), true };

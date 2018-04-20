@@ -9,6 +9,8 @@
 
 #ifdef __GCC_ASM_FLAG_OUTPUTS__
 
+namespace ej {
+
 template <typename T>
 struct BitScanReturnType {
 	T Count;
@@ -87,52 +89,6 @@ inline BitScanReturnType<uint64_t> bsr64(uint64_t value) noexcept {
 	return { count, zero_value };
 }
 
-template <typename T>
-struct CeilLog2ReturnType {
-	T Result;
-	bool Valid;
-};
-
-//! Computes the ceiling of the log base 2 of the specified value
-inline CeilLog2ReturnType<uint16_t> ceil_log2_16(uint16_t value) noexcept {
-	auto rv = bsr16(value);
-	if (!rv.ZeroValue) {
-		auto count = rv.Count;
-		if ((value & (value - 1)) != 0) {
-			count += 1;
-		}
-		return { count, true };
-	} else {
-		return { 0, false };
-	}
-}
-
-//! Computes the ceiling of the log base 2 of the specified value
-inline CeilLog2ReturnType<uint32_t> ceil_log2_32(uint32_t value) noexcept {
-	auto rv = bsr32(value);
-	if (!rv.ZeroValue) {
-		auto count = rv.Count;
-		if ((value & (value - 1)) != 0) {
-			count += 1;
-		}
-		return { count, true };
-	} else {
-		return { 0, false };
-	}
-}
-
-//! Computes the ceiling of the log base 2 of the specified value
-inline CeilLog2ReturnType<uint64_t> ceil_log2_64(uint64_t value) noexcept {
-	auto rv = bsr64(value);
-	if (!rv.ZeroValue) {
-		auto count = rv.Count;
-		if ((value & (value - 1)) != 0) {
-			count += 1;
-		}
-		return { count, true };
-	} else {
-		return { 0, false };
-	}
 }
 
 #else

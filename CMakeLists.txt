@@ -12,12 +12,15 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -std=c++17 -fvisibility=hidden -fno-exceptions -fno-rtti")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wstrict-aliasing -Wreturn-type -Wuninitialized -Wunused-variable -Wunused-but-set-variable -Wformat")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wshadow -Wsuggest-override -Wtrampolines -Winline")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -Wl,--gc-sections -Wl,-z,relro,-z,now")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fuse-ld=gold -Wl,--gc-sections -Wl,-z,relro,-z,now")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native -fno-asynchronous-unwind-tables -fomit-frame-pointer -fno-math-errno -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -flto -march=native -fno-asynchronous-unwind-tables -fomit-frame-pointer -fno-math-errno -DNDEBUG -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn")
+
+set(CMAKE_AR "gcc-ar")
+set(CMAKE_RANLIB "gcc-ranlib")
 
 include_directories("h")
 file(GLOB source_files "src/*.cxx" "src/x86_64/*.S")

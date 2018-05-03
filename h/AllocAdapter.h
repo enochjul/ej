@@ -19,31 +19,31 @@ public:
 
 	//! Allocates memory for an object of the specified type
 	template <typename T, bool may_fail = false>
-	static T *alloc() noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc() noexcept {
 		return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(sizeof(T)));
 	}
 
 	//! Allocates memory for an object of the specified type, and returns nullptr if it fails
 	template <typename T>
-	static T *try_alloc() noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc() noexcept {
 		return alloc<T, true>();
 	}
 
 	//! Allocates memory for an object of the specified type with an explicit size
 	template <typename T, bool may_fail = false>
-	static T *alloc_n(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_n(size_t n) noexcept {
 		return static_cast<T *>(Base::template allocate<alignof(T), may_fail>(n));
 	}
 
 	//! Allocates memory for an object of the specified type with an explicit size, and returns nullptr if it fails
 	template <typename T>
-	static T *try_alloc_n(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_n(size_t n) noexcept {
 		return alloc_n<T, true>(n);
 	}
 
 	//! Allocates memory for an array of objects of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	static T *alloc_array(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_array(size_t n) noexcept {
 		static_assert(sentinel_n <= max_size() / sizeof(T));
 
 		if ((sizeof(T) <= 1 && max_size() == SIZE_MAX && sentinel_n == 0) || n <= ((max_size() / sizeof(T)) - sentinel_n)) {
@@ -56,13 +56,13 @@ public:
 
 	//! Allocates memory for an array of object of the specified type, and returns nullptr if it fails
 	template <typename T, size_t sentinel_n = 0>
-	static T *try_alloc_array(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_array(size_t n) noexcept {
 		return alloc_array<T, sentinel_n, true>(n);
 	}
 
 	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last)
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	static T *alloc_array_range(const T *first, const T *last) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_array_range(const T *first, const T *last) noexcept {
 		static_assert(sentinel_n <= max_size() / sizeof(T));
 
 		auto n = reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first);
@@ -76,13 +76,13 @@ public:
 
 	//! Allocates memory for an array of objects of the specified type, where the size is determined from a range [first, last), and returns nullptr if it fails
 	template <typename T, size_t sentinel_n = 0>
-	static T *try_alloc_array_range(const T *first, const T *last) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_array_range(const T *first, const T *last) noexcept {
 		return alloc_array_range<T, sentinel_n, true>(first, last);
 	}
 
 	//! Allocates memory for a flexible array of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	static T *alloc_flexible_array(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_flexible_array(size_t n) noexcept {
 		static_assert(sentinel_n <= (max_size() - T::sizeofHeader()) / sizeof(typename T::value_type));
 
 		if (n <= ((max_size() - T::sizeofHeader()) / sizeof(typename T::value_type) - sentinel_n)) {
@@ -95,13 +95,13 @@ public:
 
 	//! Allocates memory for a flexible array of the specified type, and returns nullptr if it fails
 	template <typename T, size_t sentinel_n = 0>
-	static T *try_alloc_flexible_array(size_t n) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_flexible_array(size_t n) noexcept {
 		return alloc_flexible_array<T, sentinel_n, true>(n);
 	}
 
 	//! Allocates memory for a 2 dimensional array of objects of the specified type
 	template <typename T, bool may_fail = false>
-	static T *alloc_2d_array(size_t width, size_t height) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_2d_array(size_t width, size_t height) noexcept {
 		size_t n;
 
 		if ((__builtin_constant_p(width) && height <= (max_size() / (sizeof(T) * width))) ||
@@ -117,13 +117,13 @@ public:
 
 	//! Allocates memory for a 2 dimensional array of objects of the specified type, and returns nullptr if it fails
 	template <typename T>
-	static T *try_alloc_2d_array(size_t width, size_t height) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_2d_array(size_t width, size_t height) noexcept {
 		return alloc_2d_array<T, true>(width, height);
 	}
 
 	//! Allocates memory for a 2 dimensional flexible array of the specified type
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	static T *alloc_flexible_2d_array(size_t width, size_t height) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_flexible_2d_array(size_t width, size_t height) noexcept {
 		size_t n;
 
 		if ((__builtin_constant_p(width) && height <= (max_size() / (sizeof(typename T::value_type) * width))) ||
@@ -138,13 +138,13 @@ public:
 	}
 
 	template <typename T>
-	static T *try_alloc_flexible_2d_array(size_t width, size_t height) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_flexible_2d_array(size_t width, size_t height) noexcept {
 		return alloc_flexible_2d_array<T, true>(width, height);
 	}
 
 	//! Allocates memory for a 3 dimensional array of objects of the specified type
 	template <typename T, bool may_fail = false>
-	static T *alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
 		size_t m, n;
 
 		if (!__builtin_mul_overflow(width, height, &m) && !__builtin_mul_overflow(m, depth, &n) && ((sizeof(T) <= 1 && max_size() == SIZE_MAX) || n <= (max_size() / sizeof(T)))) {
@@ -157,7 +157,7 @@ public:
 
 	//! Allocates memory for a 3 dimensional array of objects of the specified type, and returns nullptr if it fails
 	template <typename T>
-	static T *try_alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
+	__attribute__((malloc, warn_unused_result)) static T *try_alloc_3d_array(size_t width, size_t height, size_t depth) noexcept {
 		return alloc_3d_array<T, true>(width, height, depth);
 	}
 

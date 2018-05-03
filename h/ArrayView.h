@@ -14,7 +14,7 @@ template <typename T, typename S = size_t>
 class ArrayView {
 public:
 	typedef T value_type;
-	typedef size_t size_type;
+	typedef S size_type;
 	typedef T *iterator;
 	typedef const T *const_iterator;
 

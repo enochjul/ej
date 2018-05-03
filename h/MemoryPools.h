@@ -47,7 +47,7 @@ class MemoryPools {
 	size_t FreeSize;
 
 	//! Allocates memory for a block of the given size (which must be a multiple of the alignment)
-	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) void *allocate(size_t n) noexcept;
+	__attribute__((malloc, assume_aligned(Alignment), alloc_size(2), warn_unused_result)) void *allocate(size_t n) noexcept;
 
 public:
 	constexpr MemoryPools() noexcept : Pools(nullptr), FreeSize(0) {
@@ -62,7 +62,7 @@ public:
 	//! Allocates memory for an object of the specified type
 	//! If there is not enough memory, returns nullptr if may_fail is true, otherwise aborts
 	template <typename T, bool may_fail = false>
-	inline T *alloc() noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *alloc() noexcept {
 		static_assert(alignof(T) <= Alignment);
 
 		if (sizeof(T) <= (SizeMax - (offsetof(Pool, Data) + PAGE_SIZE - 1) - (Alignment - 1))) {
@@ -78,14 +78,14 @@ public:
 
 	//! Allocates memory for an object of the specified type, and returns nullptr if there is not enough memory
 	template <typename T>
-	inline T *try_alloc() noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *try_alloc() noexcept {
 		return alloc<T, true>();
 	}
 
 	//! Allocates memory for an array of the specified type
 	//! If there is not enough memory, returns nullptr if may_fail is true, otherwise aborts
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	inline T *alloc_array(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *alloc_array(size_t n) noexcept {
 		static_assert(alignof(T) <= Alignment);
 		static_assert(sentinel_n <= (SizeMax - (offsetof(Pool, Data) + PAGE_SIZE - 1) - (Alignment - 1)) / sizeof(T));
 
@@ -104,14 +104,14 @@ public:
 
 	//! Allocates memory for an array of the specified type, and returns nullptr if there is not enough memory
 	template <typename T, size_t sentinel_n = 0>
-	inline T *try_alloc_array(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *try_alloc_array(size_t n) noexcept {
 		return alloc_array<T, sentinel_n, true>(n);
 	}
 
 	//! Allocates memory for a flexible array of the specified type
 	//! If there is not enough memory, returns nullptr if may_fail is true, otherwise aborts
 	template <typename T, size_t sentinel_n = 0, bool may_fail = false>
-	inline T *alloc_flexible_array(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *alloc_flexible_array(size_t n) noexcept {
 		static_assert(alignof(T) <= Alignment);
 		static_assert(sentinel_n <= ((SizeMax - (offsetof(Pool, Data) + PAGE_SIZE - 1) - (T::sizeofHeader() + Alignment - 1)) / sizeof(typename T::value_type)));
 
@@ -130,7 +130,7 @@ public:
 
 	//! Allocates memory for a flexible array of the specified type, and returns nullptr if there is not enough memory
 	template <typename T, size_t sentinel_n = 0>
-	inline T *try_alloc_flexible_array(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), warn_unused_result)) inline T *try_alloc_flexible_array(size_t n) noexcept {
 		return alloc_flexible_array<T, sentinel_n, true>(n);
 	}
 };

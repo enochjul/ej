@@ -220,7 +220,8 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) {
+	void for_each(Function f) noexcept {
+		static_assert(noexcept(f(value_type())));
 		for (auto &obj : *this) {
 			f(obj);
 		}
@@ -228,7 +229,8 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void cfor_each(Function f) const {
+	void cfor_each(Function f) const noexcept {
+		static_assert(noexcept(f(value_type())));
 		for (const auto &obj : *this) {
 			f(obj);
 		}
@@ -236,13 +238,13 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) const {
+	void for_each(Function f) const noexcept {
 		cfor_each(f);
 	}
 };
 
 template <typename T, bool reverse_destruct, bool always_default_construct, class Alloc>
-Array<T, reverse_destruct, always_default_construct, Alloc>::Array(size_type n) noexcept {
+Array<T, reverse_destruct, always_default_construct, Alloc>::Array(size_type n) noexcept(std::is_nothrow_default_constructible<value_type>::value) {
 	if (n > 0) {
 		auto new_first = Alloc::template alloc_array<value_type>(n);
 		auto new_last = new_first + n;

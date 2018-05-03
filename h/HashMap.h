@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <utility>
+
 #include "CAlloc.h"
 #include "CallType.h"
 #include "Construct.h"
@@ -28,7 +30,8 @@ struct HashMapKeyValue {
 	K Key;
 	T Value;
 
-	HashMapKeyValue(key_param_type key, value_param_type value) : Key(key), Value(value) {
+	template <class ... Args>
+	HashMapKeyValue(key_param_type key, Args && ... args) : Key(key), Value(std::forward<Args>(args) ...) {
 	}
 };
 
@@ -47,7 +50,8 @@ struct HashMapNode<K, T, S, false> {
 	HashMapNode *Next;
 	HashMapKeyValue<key_type, value_type> KeyValue;
 
-	HashMapNode(HashMapNode *next, size_type, key_param_type key, value_param_type value) noexcept : Next(next), KeyValue(key, value) {
+	template <class ... Args>
+	HashMapNode(HashMapNode *next, size_type, key_param_type key, Args && ... args) noexcept : Next(next), KeyValue(key, std::forward<Args>(args) ...) {
 	}
 
 	template <class HasherType>
@@ -69,7 +73,8 @@ struct HashMapNode<K, T, S, true> {
 	size_type Hash;
 	HashMapKeyValue<key_type, value_type> KeyValue;
 
-	HashMapNode(HashMapNode *next, size_type hash, key_param_type key, value_param_type value) noexcept : Next(next), Hash(hash), KeyValue(key, value) {
+	template <class ... Args>
+	HashMapNode(HashMapNode *next, size_type hash, key_param_type key, Args && ... args) noexcept : Next(next), Hash(hash), KeyValue(key, std::forward<Args>(args) ...) {
 	}
 
 	template <class HasherType>
@@ -126,7 +131,8 @@ public:
 		key_value_type *Value;
 		bool Status;
 	};
-	InsertReturnType emplace(key_param_type key, value_param_type value) noexcept;
+	template <class ... Args>
+	InsertReturnType emplace(key_param_type key, Args && ... args) noexcept;
 
 private:
 	key_value_type *lookup(key_param_type key) const noexcept;
@@ -137,6 +143,31 @@ public:
 	}
 	const key_value_type *find(key_param_type key) const noexcept {
 		return lookup(key);
+	}
+
+	template <typename Function>
+	void for_each(Function f) noexcept {
+		static_assert(noexcept(f(key_type(), value_type())));
+		for (auto nodes_i = Nodes, nodes_e = nodes_i + Mask + 1; nodes_i != nodes_e; ++nodes_i) {
+			for (auto node = *nodes_i; node != nullptr; node = node->Next) {
+				f(node->KeyValue.Key, node->KeyValue.Value);
+			}
+		}
+	}
+
+	template <typename Function>
+	void for_each(Function f) const noexcept {
+		static_assert(noexcept(f(key_type(), value_type())));
+		for (auto nodes_i = Nodes, nodes_e = nodes_i + Mask + 1; nodes_i != nodes_e; ++nodes_i) {
+			for (const auto *node = *nodes_i; node != nullptr; node = node->Next) {
+				f(node->KeyValue.Key, node->KeyValue.Value);
+			}
+		}
+	}
+
+	template <typename Function>
+	void cfor_each(Function f) const noexcept {
+		for_each(f);
 	}
 };
 
@@ -226,7 +257,8 @@ void HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::reserve(size_type 
 }
 
 template <typename K, typename T, class HasherType, bool CacheHash, class Alloc, class ArrayAlloc>
-auto HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::emplace(key_param_type key, value_param_type value) noexcept -> InsertReturnType {
+template <class ... Args>
+auto HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::emplace(key_param_type key, Args && ... args) noexcept -> InsertReturnType {
 	auto hash = HasherType::eval(key);
 	auto nodes = Nodes;
 	auto mask = Mask;
@@ -256,13 +288,13 @@ auto HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::emplace(key_param_
 				}
 				if (node != nullptr) {
 					do {
-						size_type hash;
+						size_type node_hash;
 						if constexpr (CacheHash) {
-							hash = node->Hash;
+							node_hash = node->Hash;
 						} else {
-							hash = node->findHash(this);
+							node_hash = node->findHash(this);
 						}
-						auto new_hash_nodes_i = new_nodes + (hash & new_mask);
+						auto new_hash_nodes_i = new_nodes + (node_hash & new_mask);
 						auto next_node = node->Next;
 						node->Next = *new_hash_nodes_i;
 						*new_hash_nodes_i = node;
@@ -279,7 +311,7 @@ auto HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::emplace(key_param_
 	}
 
 	auto new_node = Alloc::template alloc<node_type>();
-	forward_construct(new_node, *hash_nodes_i, hash, key, value);
+	forward_construct(new_node, *hash_nodes_i, hash, key, std::forward<Args>(args) ...);
 	*hash_nodes_i = new_node;
 	Size = n + 1;
 	return { &(new_node->KeyValue), true };

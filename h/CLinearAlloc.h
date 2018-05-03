@@ -29,7 +29,7 @@ class CLinearAllocBase {
 
 protected:
 	template <size_t Alignment, bool may_fail>
-	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1))) static void *allocate(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
 		static_assert(Alignment > 0 && Alignment <= alignof(max_align_t) && (Alignment & (Alignment - 1)) == 0);
 		assert(Start != nullptr);
 		assert(n % Alignment == 0);

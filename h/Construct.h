@@ -32,7 +32,7 @@ public:
 	}
 
 	static void run_array(T *first, T *last) noexcept(std::is_nothrow_default_constructible<T>::value) {
-		if (is_zero_default_constructible<T>::value) {
+		if constexpr (is_zero_default_constructible<T>::value) {
 			memset(first, 0, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
 		} else {
 			for (auto i = first, e = last; i != e; ++i) {
@@ -42,7 +42,7 @@ public:
 	}
 
 	static void run_array_n(T *first, size_t n) noexcept(std::is_nothrow_default_constructible<T>::value) {
-		if (is_zero_default_constructible<T>::value) {
+		if constexpr (is_zero_default_constructible<T>::value) {
 			memset(first, 0, n * sizeof(T));
 		} else {
 			for (auto i = first, e = first + n; i != e; ++i) {
@@ -103,7 +103,7 @@ inline void copy_construct(T *ptr, typename CallType<T>::param_type a) noexcept(
 
 template <typename T>
 inline void copy_construct_array(T *dst, const T *first, const T *last) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	if (std::is_trivially_copy_constructible<T>::value) {
+	if constexpr (std::is_trivially_copy_constructible<T>::value) {
 		memcpy(dst, first, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
 	} else {
 		for (auto i = first, e = last; i != e; ++i, ++dst) {
@@ -114,7 +114,7 @@ inline void copy_construct_array(T *dst, const T *first, const T *last) noexcept
 
 template <typename T>
 inline void copy_construct_array_n(T *dst, const T *first, size_t n) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	if (std::is_trivially_copy_constructible<T>::value) {
+	if constexpr (std::is_trivially_copy_constructible<T>::value) {
 		memcpy(dst, first, n * sizeof(T));
 	} else {
 		for (auto i = first, e = first + n; i != e; ++i, ++dst) {
@@ -125,7 +125,7 @@ inline void copy_construct_array_n(T *dst, const T *first, size_t n) noexcept(st
 
 template <typename T>
 inline void copy_construct_fill_array(T *first, T *last, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	if (std::is_scalar<T>::value) {
+	if constexpr (std::is_scalar<T>::value) {
 		fill(first, last, a);
 	} else {
 		for (auto i = first, e = last; i != e; ++i) {
@@ -136,7 +136,7 @@ inline void copy_construct_fill_array(T *first, T *last, typename CallType<T>::p
 
 template <typename T>
 inline void copy_construct_fill_array_n(T *first, size_t n, typename CallType<T>::param_type a) noexcept(std::is_nothrow_copy_constructible<T>::value) {
-	if (std::is_scalar<T>::value) {
+	if constexpr (std::is_scalar<T>::value) {
 		fill_n(first, n, a);
 	} else {
 		for (auto i = first, e = first + n; i != e; ++i) {
@@ -152,7 +152,7 @@ inline void move_construct(T *ptr, T &&a) noexcept(std::is_nothrow_move_construc
 
 template <typename T>
 inline void move_construct_array(T *dst, T *first, T *last) noexcept(std::is_nothrow_move_constructible<T>::value) {
-	if (std::is_trivially_move_constructible<T>::value) {
+	if constexpr (std::is_trivially_move_constructible<T>::value) {
 		memcpy(dst, first, reinterpret_cast<uintptr_t>(last) - reinterpret_cast<uintptr_t>(first));
 	} else {
 		for (auto i = first, e = last; i != e; ++i, ++dst) {
@@ -163,7 +163,7 @@ inline void move_construct_array(T *dst, T *first, T *last) noexcept(std::is_not
 
 template <typename T>
 inline void move_construct_array_n(T *dst, T *first, size_t n) noexcept(std::is_nothrow_move_constructible<T>::value) {
-	if (std::is_trivially_move_constructible<T>::value) {
+	if constexpr (std::is_trivially_move_constructible<T>::value) {
 		memcpy(dst, first, n * sizeof(T));
 	} else {
 		for (auto i = first, e = first + n; i != e; ++i, ++dst) {

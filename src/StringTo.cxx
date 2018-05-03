@@ -98,7 +98,7 @@ StringToReturnType<int32_t> c_string_to_int32(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < 214748364) || value == 214748364 && ch <= '7') {
+			if (EJ_LIKELY(value < 214748364) || (value == 214748364 && ch <= '7')) {
 				value = value * 10 + (ch - '0');
 				ch = static_cast<unsigned char>(s[9]);
 				if (ch == '\0') {
@@ -201,7 +201,7 @@ StringToReturnType<int32_t> c_string_to_int32(const char *s) noexcept {
 
 			ch = static_cast<unsigned char>(s[8]);
 			if (ch >= '0' && ch <= '9') {
-				if (EJ_LIKELY(value < 214748364) || value == 214748364 && ch <= '8') {
+				if (EJ_LIKELY(value < 214748364) || (value == 214748364 && ch <= '8')) {
 					value = value * 10 + (ch - '0');
 					ch = static_cast<unsigned char>(s[9]);
 					if (ch == '\0') {
@@ -667,7 +667,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[17]);
 		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || value == UINT64_C(922337203685477580) && ch <= '7') {
+			if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || (value == UINT64_C(922337203685477580) && ch <= '7')) {
 				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[18]);
 				if (ch == '\0') {
@@ -852,7 +852,7 @@ StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
 			ch = static_cast<unsigned char>(s[17]);
 			if (ch >= '0') {
 				if (ch <= '9') {
-					if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || value == UINT64_C(922337203685477580) && ch <= '8') {
+					if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || (value == UINT64_C(922337203685477580) && ch <= '8')) {
 						value = value * 10 + (static_cast<size_t>(ch) - '0');
 						ch = static_cast<unsigned char>(s[18]);
 						if (ch == '\0') {
@@ -1238,7 +1238,7 @@ StringToReturnType<uint32_t> c_string_to_uint32(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[8]);
 		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < 429496729) || value == 429496729 && ch <= '5') {
+			if (EJ_LIKELY(value < 429496729) || (value == 429496729 && ch <= '5')) {
 				value = value * 10 + (ch - '0');
 				ch = static_cast<unsigned char>(s[9]);
 				if (ch == '\0') {
@@ -1574,7 +1574,7 @@ StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
 
 		ch = static_cast<unsigned char>(s[18]);
 		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || value == UINT64_C(1844674407370955161) && ch <= '5') {
+			if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || (value == UINT64_C(1844674407370955161) && ch <= '5')) {
 				value = value * 10 + (static_cast<size_t>(ch) - '0');
 				ch = static_cast<unsigned char>(s[19]);
 				if (ch == '\0') {
@@ -2958,7 +2958,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 
 			if (abs_exponent <= max_reciprocal_exponent_of_five) {
 				if (significand != 1) {
-					auto product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedReciprocalsOfFiveUint64[abs_exponent - 1]);
+					product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedReciprocalsOfFiveUint64[abs_exponent - 1]);
 					remainder64 = duint64_get_low(product128);
 					mantissa64 = duint64_get_high(product128);
 					mantissa_bits_less_1 = bsr64(mantissa64).Count;
@@ -3620,7 +3620,7 @@ state_optional_digit_10:
 	case '7':
 	case '8':
 	case '9':
-		if (EJ_LIKELY(value < 429496729) || value == 429496729 && ch <= '5') {
+		if (EJ_LIKELY(value < 429496729) || (value == 429496729 && ch <= '5')) {
 			value = value * 10 + (ch - '0');
 			ch = static_cast<unsigned char>(*s);
 			s++;
@@ -5383,7 +5383,7 @@ state_optional_digit_20:
 	case '7':
 	case '8':
 	case '9':
-		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || value == UINT64_C(1844674407370955161) && ch <= '5') {
+		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || (value == UINT64_C(1844674407370955161) && ch <= '5')) {
 			value = value * 10 + (static_cast<size_t>(ch) - '0');
 			ch = static_cast<unsigned char>(*s);
 			s++;

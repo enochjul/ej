@@ -18,8 +18,8 @@ namespace ej {
 class CAllocBase {
 protected:
 	template <size_t Alignment, bool may_fail>
-	static void *allocate(size_t n) noexcept {
-		if (Alignment <= alignof(max_align_t)) {
+	__attribute__((malloc, assume_aligned(Alignment <= alignof(max_align_t) ? alignof(max_align_t) : Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
+		if constexpr (Alignment <= alignof(max_align_t)) {
 			auto ptr = malloc(n);
 			if (may_fail || ptr != nullptr) {
 				return ptr;

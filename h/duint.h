@@ -167,19 +167,19 @@ EJ_ALWAYS_INLINE duint64 duint64_mul(int64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) * b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_shl(uint64_t a, unsigned n) noexcept {
-	assert(n > 0 && n < sizeof(uint64_t) * CHAR_BIT * 2);
+EJ_ALWAYS_INLINE duint64 duint64_shl(uint64_t a, int n) noexcept {
+	assert(n > 0 && static_cast<unsigned>(n) < sizeof(uint64_t) * CHAR_BIT * 2);
 	return static_cast<duint64>(a) << n;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_shl(int64_t a, unsigned n) noexcept {
-	assert(n > 0 && n < sizeof(uint64_t) * CHAR_BIT * 2);
+EJ_ALWAYS_INLINE duint64 duint64_shl(int64_t a, int n) noexcept {
+	assert(n > 0 && static_cast<unsigned>(n) < sizeof(uint64_t) * CHAR_BIT * 2);
 	return static_cast<duint64>(a) << n;
 }
 
 template <typename T>
 EJ_ALWAYS_INLINE void duint_small_shl(T *result_low, T *result_high, T value_low, T value_high, int n) noexcept {
-	assert(n > 0 && n < sizeof(T) * CHAR_BIT);
+	assert(n > 0 && static_cast<unsigned>(n) < sizeof(T) * CHAR_BIT);
 
 	*result_high = (value_high << n) | (value_low >> (sizeof(T) * CHAR_BIT - n));
 	*result_low = value_low << n;

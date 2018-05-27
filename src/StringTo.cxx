@@ -15,1726 +15,1441 @@
 
 namespace ej {
 
+const uint8_t HexDigitValues[] = {
+	0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+	0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+	0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+};
+
 StringToReturnType<int32_t> c_string_to_int32(const char *s) noexcept {
-	uint32_t value;
+	uint32_t value32;
+	unsigned digit;
 	unsigned char ch;
 
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	if (ch >= '1' && ch <= '9') {
-		value = ch - '0';
-
-		ch = static_cast<unsigned char>(s[0]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[1]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[2]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[3]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[4]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[5]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[6]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[7]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[8]);
-		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < 214748364) || (value == 214748364 && ch <= '7')) {
-				value = value * 10 + (ch - '0');
-				ch = static_cast<unsigned char>(s[9]);
-				if (ch == '\0') {
-					return { static_cast<int32_t>(value), true };
-				}
-			}
-		} else if (ch == '\0') {
-			return { static_cast<int32_t>(value), true };
-		}
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { 0, true };
-
-		case 'x':
-			goto state_hex_skip_first_zero;
-
-		default:
-			return { 0, false };
-		}
-	} else if (ch == '-') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch >= '1' && ch <= '9') {
-			value = ch - '0';
-
-			ch = static_cast<unsigned char>(s[0]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
-			} else {
-				return { 0, false };
-			}
-
+	ch = static_cast<unsigned char>(s[0]);
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value32 = digit;
+		if (digit > 0) {
 			ch = static_cast<unsigned char>(s[1]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[2]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[3]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[4]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[5]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[6]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[7]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (ch - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[8]);
-			if (ch >= '0' && ch <= '9') {
-				if (EJ_LIKELY(value < 214748364) || (value == 214748364 && ch <= '8')) {
-					value = value * 10 + (ch - '0');
-					ch = static_cast<unsigned char>(s[9]);
-					if (ch == '\0') {
-						return { -static_cast<int32_t>(value), true };
-					}
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[9]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				if (EJ_LIKELY(value32 < UINT32_C(214748364)) || (value32 == UINT32_C(214748364) && digit <= 7)) {
+					value32 = value32 * 10 + digit;
+					ch = static_cast<unsigned char>(s[10]);
+					return { static_cast<int32_t>(value32), ch == '\0' };
+				} else {
+					return { static_cast<int32_t>(value32), false };
 				}
-			} else if (ch == '\0') {
-				return { -static_cast<int32_t>(value), true };
+			} else {
+				return { static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
-		} else if (ch == '0') {
-			ch = static_cast<unsigned char>(*s);
-			s++;
-			switch (ch) {
-			case '\0':
-				return { 0, true };
+		} else {
+			ch = static_cast<unsigned char>(s[1]);
+			if (EJ_LIKELY(ch == 'x')) {
+				auto s_plus_1 = s + 1;
+				do {
+					ch = static_cast<unsigned char>(s[2]);
+					s++;
+				} while (ch == '0');
 
-			case 'x':
-				goto state_neg_hex_skip_first_zero;
+				digit = HexDigitValues[ch];
+				if (EJ_LIKELY(digit <= 15)) {
+					value32 = digit;
 
-			default:
-				return { 0, false };
+					ch = static_cast<unsigned>(s[2]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[3]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[4]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[5]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[6]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[7]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[8]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[9]);
+					return { static_cast<int32_t>(value32), ch == '\0' && value32 <= UINT32_C(2147483647) };
+				} else {
+					return { 0, digit == 0x7f && s > s_plus_1 };
+				}
+			} else {
+				return { 0, ch == '\0' };
 			}
 		}
-	}
-	return { 0, false };
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - static_cast<unsigned>('0')))) {
+		ch = static_cast<unsigned char>(s[1]);
+		digit = static_cast<unsigned>(ch) - '0';
+		if (EJ_LIKELY(digit <= 9)) {
+			value32 = digit;
+			if (digit > 0) {
+				ch = static_cast<unsigned char>(s[2]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-state_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
+				ch = static_cast<unsigned char>(s[3]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[4]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[5]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[6]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	default:
-		return { 0, false };
-	}
+				ch = static_cast<unsigned char>(s[7]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-state_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
+				ch = static_cast<unsigned char>(s[8]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '0':
-		goto state_hex_skip_zeros;
+				ch = static_cast<unsigned char>(s[9]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[10]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					if (EJ_LIKELY(value32 < UINT32_C(214748364)) || (value32 == UINT32_C(214748364) && digit <= 8)) {
+						value32 = value32 * 10 + digit;
+						ch = static_cast<unsigned char>(s[11]);
+						return { -static_cast<int32_t>(value32), ch == '\0' };
+					} else {
+						return { -static_cast<int32_t>(value32), false };
+					}
+				} else {
+					return { -static_cast<int32_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
+			} else {
+				ch = static_cast<unsigned char>(s[2]);
+				if (EJ_LIKELY(ch == 'x')) {
+					auto s_plus_1 = s + 1;
+					do {
+						ch = static_cast<unsigned char>(s[3]);
+						s++;
+					} while (ch == '0');
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = digit;
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
+						ch = static_cast<unsigned>(s[3]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-	default:
-		return { 0, false };
-	}
+						ch = static_cast<unsigned>(s[4]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-state_hex_digits:
-	for (unsigned i = 0; i < 7; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { static_cast<int32_t>(value), true };
+						ch = static_cast<unsigned>(s[5]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (ch - '0');
-			break;
+						ch = static_cast<unsigned>(s[6]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
-			break;
+						ch = static_cast<unsigned>(s[7]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
-			break;
+						ch = static_cast<unsigned>(s[8]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-		default:
-			return { 0, false };
-		}
-	}
+						ch = static_cast<unsigned>(s[9]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int32_t>(value32), digit == 0x7f };
+						}
 
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		if (value < (1u << 31)) {
-			return { static_cast<int32_t>(value), true };
-		}
-	}
-	return { 0, false };
-
-state_neg_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_neg_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_neg_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_neg_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_neg_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_neg_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
-
-	case '0':
-		goto state_neg_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_neg_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_neg_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_neg_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_neg_hex_digits:
-	for (unsigned i = 0; i < 7; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { -static_cast<int32_t>(value), true };
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (ch - '0');
-			break;
-
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
-			break;
-
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
-			break;
-
-		default:
-			return { 0, false };
-		}
-	}
-
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		if (value <= (1u << 31)) {
-			return { -static_cast<int32_t>(value), true };
+						ch = static_cast<unsigned>(s[10]);
+						return { -static_cast<int32_t>(value32), ch == '\0' && value32 <= UINT32_C(2147483648) };
+					} else {
+						return { 0, digit == 0x7f && s > s_plus_1 };
+					}
+				} else {
+					return { 0, ch == '\0' };
+				}
+			}
 		}
 	}
 	return { 0, false };
 }
 
 StringToReturnType<int64_t> c_string_to_int64(const char *s) noexcept {
-	uint64_t value;
+	uint32_t value32;
+	uint64_t value64;
+	unsigned digit;
 	unsigned char ch;
 
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	if (ch >= '1' && ch <= '9') {
-		value = static_cast<size_t>(ch) - '0';
-
-		ch = static_cast<unsigned char>(s[0]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[1]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[2]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[3]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[4]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[5]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[6]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[7]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[8]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[9]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[10]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[11]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[12]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[13]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[14]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[15]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[16]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[17]);
-		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || (value == UINT64_C(922337203685477580) && ch <= '7')) {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-				ch = static_cast<unsigned char>(s[18]);
-				if (ch == '\0') {
-					return { static_cast<int64_t>(value), true };
-				}
-			}
-		} else if (ch == '\0') {
-			return { static_cast<int64_t>(value), true };
-		}
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { 0, true };
-
-		case 'x':
-			goto state_hex_skip_first_zero;
-
-		default:
-			return { 0, false };
-		}
-	} else if (ch == '-') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch >= '1' && ch <= '9') {
-			value = static_cast<size_t>(ch) - '0';
-
-			ch = static_cast<unsigned char>(s[0]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
-			} else {
-				return { 0, false };
-			}
-
+	ch = static_cast<unsigned char>(s[0]);
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value32 = digit;
+		if (digit > 0) {
 			ch = static_cast<unsigned char>(s[1]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[2]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[3]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[4]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[5]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[6]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[7]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[8]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[9]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = static_cast<uint64_t>(value32) * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[10]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[11]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[12]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[13]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[14]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[15]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[16]);
-			if (ch >= '0' && ch <= '9') {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
 			} else {
-				return { 0, false };
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
 
 			ch = static_cast<unsigned char>(s[17]);
-			if (ch >= '0') {
-				if (ch <= '9') {
-					if (EJ_LIKELY(value < UINT64_C(922337203685477580)) || (value == UINT64_C(922337203685477580) && ch <= '8')) {
-						value = value * 10 + (static_cast<size_t>(ch) - '0');
-						ch = static_cast<unsigned char>(s[18]);
-						if (ch == '\0') {
-							return { -static_cast<int64_t>(value), true };
-						}
-					}
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[18]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				if (EJ_LIKELY(value64 < UINT64_C(922337203685477580)) || (value64 == UINT64_C(922337203685477580) && digit <= 7)) {
+					value64 = value64 * 10 + digit;
+					ch = static_cast<unsigned char>(s[19]);
+					return { static_cast<int64_t>(value64), ch == '\0' };
+				} else {
+					return { static_cast<int64_t>(value64), false };
 				}
-			} else if (ch == '\0') {
-				return { -static_cast<int64_t>(value), true };
+			} else {
+				return { static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
 			}
-		} else if (ch == '0') {
-			ch = static_cast<unsigned char>(*s);
-			s++;
-			switch (ch) {
-			case '\0':
-				return { 0, true };
+		} else {
+			ch = static_cast<unsigned char>(s[1]);
+			if (EJ_LIKELY(ch == 'x')) {
+				auto s_plus_1 = s + 1;
+				do {
+					ch = static_cast<unsigned char>(s[2]);
+					s++;
+				} while (ch == '0');
 
-			case 'x':
-				goto state_neg_hex_skip_first_zero;
+				digit = HexDigitValues[ch];
+				if (EJ_LIKELY(digit <= 15)) {
+					value32 = digit;
 
-			default:
-				return { 0, false };
+					ch = static_cast<unsigned>(s[2]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[3]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[4]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[5]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[6]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[7]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[8]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[9]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = static_cast<uint64_t>(value32) * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[10]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[11]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[12]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[13]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[14]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[15]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[16]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<int64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[17]);
+					return { static_cast<int64_t>(value64), ch == '\0' && value64 <= UINT64_C(9223372036854775807) };
+				} else {
+					return { 0, digit == 0x7f && s > s_plus_1 };
+				}
+			} else {
+				return { 0, ch == '\0' };
 			}
 		}
-	}
-	return { 0, false };
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - static_cast<unsigned>('0')))) {
+		ch = static_cast<unsigned char>(s[1]);
+		digit = static_cast<unsigned>(ch) - '0';
+		if (EJ_LIKELY(digit <= 9)) {
+			value32 = digit;
+			if (digit > 0) {
+				ch = static_cast<unsigned char>(s[2]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-state_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
+				ch = static_cast<unsigned char>(s[3]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[4]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[5]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[6]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	default:
-		return { 0, false };
-	}
+				ch = static_cast<unsigned char>(s[7]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-state_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
+				ch = static_cast<unsigned char>(s[8]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '0':
-		goto state_hex_skip_zeros;
+				ch = static_cast<unsigned char>(s[9]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value32 = value32 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[10]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = static_cast<uint64_t>(value32) * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value32), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[11]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
+				ch = static_cast<unsigned char>(s[12]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-	default:
-		return { 0, false };
-	}
+				ch = static_cast<unsigned char>(s[13]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-state_hex_digits:
-	for (unsigned i = 0; i < 15; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { static_cast<int64_t>(value), true };
+				ch = static_cast<unsigned char>(s[14]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (static_cast<size_t>(ch) - '0');
-			break;
+				ch = static_cast<unsigned char>(s[15]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
-			break;
+				ch = static_cast<unsigned char>(s[16]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
-			break;
+				ch = static_cast<unsigned char>(s[17]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-		default:
-			return { 0, false };
-		}
-	}
+				ch = static_cast<unsigned char>(s[18]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					value64 = value64 * 10 + digit;
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
 
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		if (value < (static_cast<uint64_t>(1) << 63)) {
-			return { static_cast<int64_t>(value), true };
-		}
-	}
-	return { 0, false };
+				ch = static_cast<unsigned char>(s[19]);
+				digit = static_cast<unsigned>(ch) - '0';
+				if (EJ_LIKELY(digit <= 9)) {
+					if (EJ_LIKELY(value64 < UINT64_C(922337203685477580)) || (value64 == UINT64_C(922337203685477580) && digit <= 8)) {
+						value64 = value64 * 10 + digit;
+						ch = static_cast<unsigned char>(s[20]);
+						return { -static_cast<int64_t>(value64), ch == '\0' };
+					} else {
+						return { -static_cast<int64_t>(value64), false };
+					}
+				} else {
+					return { -static_cast<int64_t>(value64), digit == -static_cast<unsigned>('0') };
+				}
+			} else {
+				ch = static_cast<unsigned char>(s[2]);
+				if (EJ_LIKELY(ch == 'x')) {
+					auto s_plus_1 = s + 1;
+					do {
+						ch = static_cast<unsigned char>(s[3]);
+						s++;
+					} while (ch == '0');
 
-state_neg_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_neg_hex_skip_zeros;
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = digit;
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[3]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[4]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[5]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	default:
-		return { 0, false };
-	}
+						ch = static_cast<unsigned>(s[6]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-state_neg_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
+						ch = static_cast<unsigned>(s[7]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case '0':
-		goto state_neg_hex_skip_zeros;
+						ch = static_cast<unsigned>(s[8]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[9]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value32 = value32 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[10]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = static_cast<uint64_t>(value32) * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value32), digit == 0x7f };
+						}
 
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_neg_hex_digits;
+						ch = static_cast<unsigned>(s[11]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-	default:
-		return { 0, false };
-	}
+						ch = static_cast<unsigned>(s[12]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-state_neg_hex_digits:
-	for (unsigned i = 0; i < 15; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { -static_cast<int64_t>(value), true };
+						ch = static_cast<unsigned>(s[13]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (static_cast<size_t>(ch) - '0');
-			break;
+						ch = static_cast<unsigned>(s[14]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
-			break;
+						ch = static_cast<unsigned>(s[15]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
-			break;
+						ch = static_cast<unsigned>(s[16]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-		default:
-			return { 0, false };
-		}
-	}
+						ch = static_cast<unsigned>(s[17]);
+						digit = HexDigitValues[ch];
+						if (EJ_LIKELY(digit <= 15)) {
+							value64 = value64 * 16 + digit;
+						} else {
+							return { -static_cast<int64_t>(value64), digit == 0x7f };
+						}
 
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		if (value <= (static_cast<uint64_t>(1) << 63)) {
-			return { -static_cast<int64_t>(value), true };
+						ch = static_cast<unsigned>(s[18]);
+						return { -static_cast<int64_t>(value64), ch == '\0' && value64 <= UINT64_C(9223372036854775808) };
+					} else {
+						return { 0, digit == 0x7f && s > s_plus_1 };
+					}
+				} else {
+					return { 0, ch == '\0' };
+				}
+			}
 		}
 	}
 	return { 0, false };
 }
 
 StringToReturnType<uint32_t> c_string_to_uint32(const char *s) noexcept {
-	uint32_t value;
+	uint32_t value32;
+	unsigned digit;
 	unsigned char ch;
 
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	if (ch >= '1' && ch <= '9') {
-		value = ch - '0';
-
-		ch = static_cast<unsigned char>(s[0]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[1]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[2]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[3]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[4]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[5]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[6]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[7]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (ch - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[8]);
-		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < 429496729) || (value == 429496729 && ch <= '5')) {
-				value = value * 10 + (ch - '0');
-				ch = static_cast<unsigned char>(s[9]);
-				if (ch == '\0') {
-					return { value, true };
-				}
+	ch = static_cast<unsigned char>(s[0]);
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value32 = digit;
+		if (digit > 0) {
+			ch = static_cast<unsigned char>(s[1]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
-		} else if (ch == '\0') {
-			return { value, true };
-		}
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { 0, true };
 
-		case 'x':
-			goto state_hex_skip_first_zero;
+			ch = static_cast<unsigned char>(s[2]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
 
-		default:
-			return { 0, false };
+			ch = static_cast<unsigned char>(s[3]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[4]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[5]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[6]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[7]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[8]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[9]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				if (EJ_LIKELY(value32 < UINT32_C(429496729)) || (value32 == UINT32_C(429496729) && digit <= 5)) {
+					value32 = value32 * 10 + digit;
+					ch = static_cast<unsigned char>(s[10]);
+					return { static_cast<uint32_t>(value32), ch == '\0' };
+				} else {
+					return { static_cast<uint32_t>(value32), false };
+				}
+			} else {
+				return { static_cast<uint32_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+		} else {
+			ch = static_cast<unsigned char>(s[1]);
+			if (EJ_LIKELY(ch == 'x')) {
+				auto s_plus_1 = s + 1;
+				do {
+					ch = static_cast<unsigned char>(s[2]);
+					s++;
+				} while (ch == '0');
+
+				digit = HexDigitValues[ch];
+				if (EJ_LIKELY(digit <= 15)) {
+					value32 = digit;
+
+					ch = static_cast<unsigned>(s[2]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[3]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[4]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[5]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[6]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[7]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[8]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint32_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[9]);
+					return { static_cast<uint32_t>(value32), ch == '\0' };
+				} else {
+					return { 0, digit == 0x7f && s > s_plus_1 };
+				}
+			} else {
+				return { 0, ch == '\0' };
+			}
 		}
 	}
 	return { 0, false };
-
-state_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
-
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_hex_digits:
-	for (unsigned i = 0; i < 7; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { value, true };
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (ch - '0');
-			break;
-
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
-			break;
-
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
-			break;
-
-		default:
-			return { 0, false };
-		}
-	}
-
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		return { value, true };
-	} else {
-		return { 0, false };
-	}
 }
 
 StringToReturnType<uint64_t> c_string_to_uint64(const char *s) noexcept {
-	uint64_t value;
+	uint32_t value32;
+	uint64_t value64;
+	unsigned digit;
 	unsigned char ch;
 
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	if (ch >= '1' && ch <= '9') {
-		value = static_cast<size_t>(ch) - '0';
-
-		ch = static_cast<unsigned char>(s[0]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[1]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[2]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[3]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[4]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[5]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[6]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[7]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[8]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[9]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[10]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[11]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[12]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[13]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[14]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[15]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[16]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[17]);
-		if (ch >= '0' && ch <= '9') {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
-		} else if (ch == '\0') {
-			return { value, true };
-		} else {
-			return { 0, false };
-		}
-
-		ch = static_cast<unsigned char>(s[18]);
-		if (ch >= '0' && ch <= '9') {
-			if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || (value == UINT64_C(1844674407370955161) && ch <= '5')) {
-				value = value * 10 + (static_cast<size_t>(ch) - '0');
-				ch = static_cast<unsigned char>(s[19]);
-				if (ch == '\0') {
-					return { value, true };
-				}
+	ch = static_cast<unsigned char>(s[0]);
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value32 = digit;
+		if (digit > 0) {
+			ch = static_cast<unsigned char>(s[1]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
 			}
-		} else if (ch == '\0') {
-			return { value, true };
-		}
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { 0, true };
 
-		case 'x':
-			goto state_hex_skip_first_zero;
+			ch = static_cast<unsigned char>(s[2]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
 
-		default:
-			return { 0, false };
+			ch = static_cast<unsigned char>(s[3]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[4]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[5]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[6]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[7]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[8]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value32 = value32 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[9]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = static_cast<uint64_t>(value32) * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value32), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[10]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[11]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[12]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[13]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[14]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[15]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[16]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[17]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[18]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				value64 = value64 * 10 + digit;
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+
+			ch = static_cast<unsigned char>(s[19]);
+			digit = static_cast<unsigned>(ch) - '0';
+			if (EJ_LIKELY(digit <= 9)) {
+				if (EJ_LIKELY(value64 < UINT64_C(1844674407370955161)) || (value64 == UINT64_C(1844674407370955161) && digit <= 5)) {
+					value64 = value64 * 10 + digit;
+					ch = static_cast<unsigned char>(s[20]);
+					return { static_cast<uint64_t>(value64), ch == '\0' };
+				} else {
+					return { static_cast<uint64_t>(value64), false };
+				}
+			} else {
+				return { static_cast<uint64_t>(value64), digit == -static_cast<unsigned>('0') };
+			}
+		} else {
+			ch = static_cast<unsigned char>(s[1]);
+			if (EJ_LIKELY(ch == 'x')) {
+				auto s_plus_1 = s + 1;
+				do {
+					ch = static_cast<unsigned char>(s[2]);
+					s++;
+				} while (ch == '0');
+
+				digit = HexDigitValues[ch];
+				if (EJ_LIKELY(digit <= 15)) {
+					value32 = digit;
+
+					ch = static_cast<unsigned>(s[2]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[3]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[4]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[5]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[6]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[7]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[8]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value32 = value32 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[9]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = static_cast<uint64_t>(value32) * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value32), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[10]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[11]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[12]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[13]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[14]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[15]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[16]);
+					digit = HexDigitValues[ch];
+					if (EJ_LIKELY(digit <= 15)) {
+						value64 = value64 * 16 + digit;
+					} else {
+						return { static_cast<uint64_t>(value64), digit == 0x7f };
+					}
+
+					ch = static_cast<unsigned>(s[17]);
+					return { static_cast<uint64_t>(value64), ch == '\0' };
+				} else {
+					return { 0, digit == 0x7f && s > s_plus_1 };
+				}
+			} else {
+				return { 0, ch == '\0' };
+			}
 		}
 	}
 	return { 0, false };
-
-state_hex_skip_first_zero:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_hex_skip_zeros:
-	ch = static_cast<unsigned char>(*s);
-	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
-
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
-
-	default:
-		return { 0, false };
-	}
-
-state_hex_digits:
-	for (unsigned i = 0; i < 15; i++) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			return { value, true };
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (static_cast<size_t>(ch) - '0');
-			break;
-
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
-			break;
-
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
-			break;
-
-		default:
-			return { 0, false };
-		}
-	}
-
-	ch = static_cast<unsigned char>(*s);
-	if (ch == '\0') {
-		return { value, true };
-	} else {
-		return { 0, false };
-	}
 }
 
 static const float FloatPowersOf10[] = {

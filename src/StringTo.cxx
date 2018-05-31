@@ -18,7 +18,7 @@ namespace ej {
 const uint8_t HexDigitValues[] = {
 	0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7e, 0xff,
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
 	0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -2816,6 +2816,7 @@ StringToReturnType<float> c_string_to_float(const char *s) noexcept {
 	const char *dot_next_ch_ptr = nullptr;
 	int fraction_exponent, exponent;
 	uint32_t value;
+	unsigned digit;
 	unsigned char ch;
 	bool negate, negate_exponent;
 
@@ -2830,55 +2831,36 @@ StringToReturnType<float> c_string_to_float(const char *s) noexcept {
 	ch = static_cast<unsigned char>(*s);
 	s++;
 action_skip_zero:
-	switch (ch) {
-	case '0':
-		goto state_leading_zero;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_optional_digit_2;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
+			goto state_leading_zero;
+		}
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('.') - '0'))) {
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_fraction_skip_zero;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<float>(0), false };
 		}
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<float>(0), false };
 	}
 
 state_fraction_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_optional_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_optional_digit_2;
-
-	default:
-		return { 0.0f, false };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
+			goto state_optional_skip_zeros;
+		}
+	} else {
+		return { static_cast<float>(0), false };
 	}
 
 state_leading_zero:
@@ -2886,15 +2868,15 @@ state_leading_zero:
 	s++;
 	switch (ch) {
 	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_optional_skip_zeros;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<float>(0), false };
 		}
 
-	case 'e':
 	case 'E':
+	case 'e':
 		value = 0;
 		fraction_exponent = 0;
 		goto state_exponent_optional_sign;
@@ -2903,450 +2885,375 @@ state_leading_zero:
 		goto state_hex_skip_first_zero;
 
 	case '\0':
-		return { 0.0f, true };
+		return { static_cast<float>(0), true };
 
 	default:
-		return { 0.0f, false };
+		return { static_cast<float>(0), false };
 	}
 
 state_optional_skip_zeros:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_optional_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_optional_digit_2;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
 			goto state_optional_skip_zeros;
-		} else {
-			return { 0.0f, false };
 		}
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_skip_zeros;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case 'e':
-	case 'E':
-		value = 0;
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			value = 0;
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			return { static_cast<float>(0), true };
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		return { 0.0f, true };
-
-	default:
-		return { 0.0f, false };
 	}
+
+state_optional_digit_2_set_value:
+	value = digit;
 
 state_optional_digit_2:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_3;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_2;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_2;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_3:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_4;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_3;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_3;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_4:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_5;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_4;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_4;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_5:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_6;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_5;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_5;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_6:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_7;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_6;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_6;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_7:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_8;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_7;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_7;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_8:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_9;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_8;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_8;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_9:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (ch - '0');
-		goto state_optional_digit_10;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_9;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_9;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_10:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		if (EJ_LIKELY(value < 429496729) || (value == 429496729 && ch <= '5')) {
-			value = value * 10 + (ch - '0');
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (EJ_LIKELY(value < UINT32_C(429496729)) || (value == UINT32_C(429496729) && digit <= 5)) {
+			value = value * 10 + digit;
+
 			ch = static_cast<unsigned char>(*s);
 			s++;
 			switch (ch) {
 			case '.':
-				if (dot_next_ch_ptr == nullptr) {
+				if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 					ch = static_cast<unsigned char>(*s);
 					s++;
 					switch (ch) {
-					case 'e':
 					case 'E':
+					case 'e':
 						fraction_exponent = 0;
 						goto state_exponent_optional_sign;
 
@@ -3354,14 +3261,14 @@ state_optional_digit_10:
 						return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
 
 					default:
-						return { 0.0f, false };
+						return { static_cast<float>(0), false };
 					}
 				} else {
-					return{ 0.0f, false };
+					return{ static_cast<float>(0), false };
 				}
 
-			case 'e':
 			case 'E':
+			case 'e':
 				if (dot_next_ch_ptr != nullptr) {
 					fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
 				} else {
@@ -3378,267 +3285,139 @@ state_optional_digit_10:
 				}
 
 			default:
-				return { 0.0f, false };
+				return { static_cast<float>(0), false };
 			}
 		} else {
-			return { 0.0f, false };
+			return { static_cast<float>(0), false };
 		}
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_10;
+			} else {
+				return { static_cast<float>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_10;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<float>(!negate ? static_cast<int32_t>(value) : -static_cast<int32_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_exponent_optional_sign:
 	negate_exponent = false;
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { decimal_to_float(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(0), false };
+			}
 		}
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		exponent = ch - '0';
-		goto state_exponent_optional_digits;
-
-	case '-':
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - '0'))) {
 		negate_exponent = true;
 		goto state_exponent_skip_zero;
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<float>(0), false };
 	}
 
 state_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '1' && ch <= '9') {
-		exponent = ch - '0';
-		goto state_exponent_optional_digits;
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { decimal_to_float(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { decimal_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(0), false };
+			}
 		}
 	} else {
-		return { 0.0f, false };
+		return { static_cast<float>(0), false };
 	}
 
 state_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '0' && ch <= '9') {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
 		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
-			exponent = exponent * 10 + (ch - '0');
+			exponent = exponent * 10 + digit;
 		}
 		goto state_exponent_optional_digits;
-	} else if (ch == '\0') {
+	} else if (EJ_LIKELY(digit == -static_cast<unsigned>('0'))) {
 		return { decimal_to_float(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
-		return { 0.0f, false };
+		return { static_cast<float>(0), false };
 	}
 
 state_hex_skip_first_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		if (digit > 0) {
+			goto state_hex_digit_2_set_value;
+		} else {
+			goto state_hex_skip_zeros;
+		}
+	} else if (EJ_LIKELY(digit == 0x7e)) {	//'.'
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_hex_skip_zeros;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<float>(0), false };
 		}
-
-	default:
-		return { 0, false };
+	} else {
+		return { static_cast<float>(0), false };
 	}
 
 state_hex_skip_zeros:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '\0':
-		return { 0, true };
-
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = ch - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = ch - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = ch - 'a' + 10;
-		goto state_hex_digits;
-
-	case 'P':
-	case 'p':
-		value = 0;
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		if (digit > 0) {
+			goto state_hex_digit_2_set_value;
 		} else {
-			fraction_exponent = 0;
-		}
-		goto state_binary_exponent_optional_sign;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
 			goto state_hex_skip_zeros;
-		} else {
-			return { 0.0f, false };
 		}
-
-	default:
-		return { 0, false };
-	}
-
-state_hex_digits:
-	for (unsigned i = 0; i < 7;) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			if (dot_next_ch_ptr != nullptr) {
-				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
-				return { binary_to_float(value, fraction_exponent, negate), true };
-			} else {
-				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
-			}
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (ch - '0');
-			i++;
-			break;
-
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (ch - 'A' + 10);
-			i++;
-			break;
-
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (ch - 'a' + 10);
-			i++;
-			break;
-
-		case 'P':
-		case 'p':
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			value = 0;
 			if (dot_next_ch_ptr != nullptr) {
 				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
 			} else {
@@ -3646,16 +3425,281 @@ state_hex_digits:
 			}
 			goto state_binary_exponent_optional_sign;
 
-		case '.':
-			if (dot_next_ch_ptr == nullptr) {
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 				dot_next_ch_ptr = s;
-				break;
+				goto state_hex_skip_zeros;
 			} else {
-				return { 0.0f, false };
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:
+			return { static_cast<float>(0), true };
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_2_set_value:
+	value = digit;
+
+state_hex_digit_2:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_2;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
 			}
 
 		default:
-			return { 0, false };
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_3:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_3;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_4:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_4;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_5:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_5;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_6:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_6;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_7:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_7;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
+		}
+	}
+
+state_hex_digit_8:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_8;
+			} else {
+				return { static_cast<float>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
+			}
+
+		default:
+			return { static_cast<float>(0), false };
 		}
 	}
 
@@ -3663,14 +3707,6 @@ state_hex_digits:
 	s++;
 	switch (ch)
 	{
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
-			return { binary_to_float(value, fraction_exponent, negate), true };
-		} else {
-			return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
-		}
-
 	case 'P':
 	case 'p':
 		if (dot_next_ch_ptr != nullptr) {
@@ -3695,80 +3731,83 @@ state_hex_digits:
 				goto state_binary_exponent_optional_sign;
 
 			default:
-				return { 0.0f, false };
+				return { static_cast<float>(0), false };
 			}
 		} else {
-			return { 0.0f, false };
+			return { static_cast<float>(0), false };
+		}
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			return { binary_to_float(value, fraction_exponent, negate), true };
+		} else {
+			return { !negate ? static_cast<float>(value) : -static_cast<float>(value), true };
 		}
 
 	default:
-		return { 0, false };
+		return { static_cast<float>(0), false };
 	}
 
 state_binary_exponent_optional_sign:
 	negate_exponent = false;
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { binary_to_float(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_binary_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(0), false };
+			}
 		}
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		exponent = ch - '0';
-		goto state_binary_exponent_optional_digits;
-
-	case '-':
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - '0'))) {
 		negate_exponent = true;
 		goto state_binary_exponent_skip_zero;
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<float>(0), false };
 	}
 
 state_binary_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '1' && ch <= '9') {
-		exponent = ch - '0';
-		goto state_binary_exponent_optional_digits;
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { binary_to_float(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_binary_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { binary_to_float(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<float>(0), false };
+			}
 		}
 	} else {
-		return { 0.0f, false };
+		return { static_cast<float>(0), false };
 	}
 
 state_binary_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '0' && ch <= '9') {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
 		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
-			exponent = exponent * 10 + (ch - '0');
+			exponent = exponent * 10 + digit;
 		}
 		goto state_binary_exponent_optional_digits;
-	} else if (ch == '\0') {
+	} else if (EJ_LIKELY(digit == -static_cast<unsigned>('0'))) {
 		return { binary_to_float(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
-		return { 0.0f, false };
+		return { static_cast<float>(0), false };
 	}
 }
 
@@ -4117,8 +4156,9 @@ double binary_to_double(uint64_t significand, int exponent, bool negative) noexc
 
 StringToReturnType<double> c_string_to_double(const char *s) noexcept {
 	const char *dot_next_ch_ptr = nullptr;
-	uint64_t value;
 	int fraction_exponent, exponent;
+	uint64_t value;
+	unsigned digit;
 	unsigned char ch;
 	bool negate, negate_exponent;
 
@@ -4133,55 +4173,36 @@ StringToReturnType<double> c_string_to_double(const char *s) noexcept {
 	ch = static_cast<unsigned char>(*s);
 	s++;
 action_skip_zero:
-	switch (ch) {
-	case '0':
-		goto state_leading_zero;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_optional_digit_2;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
+			goto state_leading_zero;
+		}
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('.') - '0'))) {
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_fraction_skip_zero;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
 		}
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<double>(0), false };
 	}
 
 state_fraction_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_optional_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_optional_digit_2;
-
-	default:
-		return { 0.0f, false };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
+			goto state_optional_skip_zeros;
+		}
+	} else {
+		return { static_cast<double>(0), false };
 	}
 
 state_leading_zero:
@@ -4189,15 +4210,15 @@ state_leading_zero:
 	s++;
 	switch (ch) {
 	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_optional_skip_zeros;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
 		}
 
-	case 'e':
 	case 'E':
+	case 'e':
 		value = 0;
 		fraction_exponent = 0;
 		goto state_exponent_optional_sign;
@@ -4206,910 +4227,755 @@ state_leading_zero:
 		goto state_hex_skip_first_zero;
 
 	case '\0':
-		return { 0.0f, true };
+		return { static_cast<double>(0), true };
 
 	default:
-		return { 0.0f, false };
+		return { static_cast<double>(0), false };
 	}
 
 state_optional_skip_zeros:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_optional_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_optional_digit_2;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			goto state_optional_digit_2_set_value;
+		} else {
 			goto state_optional_skip_zeros;
-		} else {
-			return { 0.0f, false };
 		}
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_skip_zeros;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case 'e':
-	case 'E':
-		value = 0;
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			value = 0;
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			return { static_cast<double>(0), true };
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		return { 0.0f, true };
-
-	default:
-		return { 0.0f, false };
 	}
+
+state_optional_digit_2_set_value:
+	value = digit;
 
 state_optional_digit_2:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_3;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_2;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_2;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_3:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_4;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_3;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_3;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_4:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_5;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_4;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_4;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_5:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_6;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_5;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_5;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_6:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_7;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_6;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_6;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_7:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_8;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_7;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_7;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_8:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_9;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_8;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_8;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_9:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_10;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_9;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_9;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_10:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_11;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_10;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_10;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_11:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_12;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_11;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_11;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_12:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_13;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_12;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_12;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_13:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_14;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_13;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_13;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_14:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_15;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_14;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_14;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_15:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_16;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_15;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_15;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_16:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_17;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_16;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_16;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_17:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_18;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_17;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_17;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_18:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_19;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_18;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_18;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_19:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = value * 10 + (static_cast<size_t>(ch) - '0');
-		goto state_optional_digit_20;
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		value = value * 10 + digit;
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_19;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_19;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { static_cast<double>(!negate ? static_cast<int64_t>(value) : -static_cast<int64_t>(value)), true };
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_optional_digit_20:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || (value == UINT64_C(1844674407370955161) && ch <= '5')) {
-			value = value * 10 + (static_cast<size_t>(ch) - '0');
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (EJ_LIKELY(value < UINT64_C(1844674407370955161)) || (value == UINT64_C(1844674407370955161) && digit <= 5)) {
+			value = value * 10 + digit;
+
 			ch = static_cast<unsigned char>(*s);
 			s++;
 			switch (ch) {
 			case '.':
-				if (dot_next_ch_ptr == nullptr) {
+				if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 					ch = static_cast<unsigned char>(*s);
 					s++;
 					switch (ch) {
-					case 'e':
 					case 'E':
+					case 'e':
 						fraction_exponent = 0;
 						goto state_exponent_optional_sign;
 
@@ -5117,14 +4983,14 @@ state_optional_digit_20:
 						return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
 
 					default:
-						return { 0.0f, false };
+						return { static_cast<double>(0), false };
 					}
 				} else {
-					return{ 0.0f, false };
+					return{ static_cast<double>(0), false };
 				}
 
-			case 'e':
 			case 'E':
+			case 'e':
 				if (dot_next_ch_ptr != nullptr) {
 					fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
 				} else {
@@ -5141,268 +5007,139 @@ state_optional_digit_20:
 				}
 
 			default:
-				return { 0.0f, false };
+				return { static_cast<double>(0), false };
 			}
 		} else {
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
 		}
+	} else {
+		switch (digit) {
+		case static_cast<unsigned>('.') - '0':
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_optional_digit_20;
+			} else {
+				return { static_cast<double>(0), false };
+			}
 
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
-			goto state_optional_digit_20;
-		} else {
-			return { 0.0f, false };
+		case static_cast<unsigned>('E') - '0':
+		case static_cast<unsigned>('e') - '0':
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_exponent_optional_sign;
+
+		case -static_cast<unsigned>('0'):
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
-
-	case 'e':
-	case 'E':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-		} else {
-			fraction_exponent = 0;
-		}
-		goto state_exponent_optional_sign;
-
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1);
-			return { decimal_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
-
-		}
-
-	default:
-		return { 0.0f, false };
 	}
 
 state_exponent_optional_sign:
 	negate_exponent = false;
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { decimal_to_double(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(0), false };
+			}
 		}
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		exponent = ch - '0';
-		goto state_exponent_optional_digits;
-
-	case '-':
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - '0'))) {
 		negate_exponent = true;
 		goto state_exponent_skip_zero;
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<double>(0), false };
 	}
 
 state_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '1' && ch <= '9') {
-		exponent = ch - '0';
-		goto state_exponent_optional_digits;
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { decimal_to_double(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { decimal_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(0), false };
+			}
 		}
 	} else {
-		return { 0.0f, false };
+		return { static_cast<double>(0), false };
 	}
 
 state_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '0' && ch <= '9') {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
 		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
-			exponent = exponent * 10 + (ch - '0');
+			exponent = exponent * 10 + digit;
 		}
 		goto state_exponent_optional_digits;
-	} else if (ch == '\0') {
+	} else if (EJ_LIKELY(digit == -static_cast<unsigned>('0'))) {
 		return { decimal_to_double(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
-		return { 0.0f, false };
+		return { static_cast<double>(0), false };
 	}
 
 state_hex_skip_first_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		if (digit > 0) {
+			goto state_hex_digit_2_set_value;
+		} else {
+			goto state_hex_skip_zeros;
+		}
+	} else if (EJ_LIKELY(digit == 0x7e)) {	//'.'
+		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 			dot_next_ch_ptr = s;
 			goto state_hex_skip_zeros;
 		} else {
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
 		}
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<double>(0), false };
 	}
 
 state_hex_skip_zeros:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '\0':
-		return { 0.0f, true };
-
-	case '0':
-		goto state_hex_skip_zeros;
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		value = static_cast<size_t>(ch) - '0';
-		goto state_hex_digits;
-
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-		value = static_cast<size_t>(ch) - 'A' + 10;
-		goto state_hex_digits;
-
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-		value = static_cast<size_t>(ch) - 'a' + 10;
-		goto state_hex_digits;
-
-	case 'P':
-	case 'p':
-		value = 0;
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		if (digit > 0) {
+			goto state_hex_digit_2_set_value;
 		} else {
-			fraction_exponent = 0;
-		}
-		goto state_binary_exponent_optional_sign;
-
-	case '.':
-		if (dot_next_ch_ptr == nullptr) {
-			dot_next_ch_ptr = s;
 			goto state_hex_skip_zeros;
-		} else {
-			return { 0.0f, false };
 		}
-
-	default:
-		return { 0.0f, false };
-	}
-
-state_hex_digits:
-	for (unsigned i = 0; i < 15;) {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		switch (ch) {
-		case '\0':
-			if (dot_next_ch_ptr != nullptr) {
-				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
-				return { binary_to_double(value, fraction_exponent, negate), true };
-			} else {
-				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
-			}
-
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			value = value * 16 + (static_cast<size_t>(ch) - '0');
-			i++;
-			break;
-
-		case 'A':
-		case 'B':
-		case 'C':
-		case 'D':
-		case 'E':
-		case 'F':
-			value = value * 16 + (static_cast<size_t>(ch) - 'A' + 10);
-			i++;
-			break;
-
-		case 'a':
-		case 'b':
-		case 'c':
-		case 'd':
-		case 'e':
-		case 'f':
-			value = value * 16 + (static_cast<size_t>(ch) - 'a' + 10);
-			i++;
-			break;
-
-		case 'P':
-		case 'p':
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			value = 0;
 			if (dot_next_ch_ptr != nullptr) {
 				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
 			} else {
@@ -5410,16 +5147,577 @@ state_hex_digits:
 			}
 			goto state_binary_exponent_optional_sign;
 
-		case '.':
-			if (dot_next_ch_ptr == nullptr) {
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
 				dot_next_ch_ptr = s;
-				break;
+				goto state_hex_skip_zeros;
 			} else {
-				return { 0.0f, false };
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:
+			return { static_cast<double>(0), true };
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_2_set_value:
+	value = digit;
+
+state_hex_digit_2:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_2;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
 			}
 
 		default:
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_3:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_3;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_4:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_4;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_5:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_5;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_6:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_6;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_7:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_7;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_8:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_8;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_9:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_9;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_10:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_10;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_11:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_11;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_12:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_12;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_13:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_13;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_14:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_14;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_15:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_15;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
+		}
+	}
+
+state_hex_digit_16:
+	ch = static_cast<unsigned char>(*s);
+	s++;
+	digit = HexDigitValues[ch];
+	if (EJ_LIKELY(digit <= 15)) {
+		value = value * 16 + digit;
+	} else {
+		switch (digit) {
+		case 0x19:	//'P' or 'p'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			} else {
+				fraction_exponent = 0;
+			}
+			goto state_binary_exponent_optional_sign;
+
+		case 0x7e:	//'.'
+			if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+				dot_next_ch_ptr = s;
+				goto state_hex_digit_16;
+			} else {
+				return { static_cast<double>(0), false };
+			}
+
+		case 0x7f:	//'\0'
+			if (dot_next_ch_ptr != nullptr) {
+				fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
+			}
+
+		default:
+			return { static_cast<double>(0), false };
 		}
 	}
 
@@ -5427,14 +5725,6 @@ state_hex_digits:
 	s++;
 	switch (ch)
 	{
-	case '\0':
-		if (dot_next_ch_ptr != nullptr) {
-			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
-			return { binary_to_double(value, fraction_exponent, negate), true };
-		} else {
-			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
-		}
-
 	case 'P':
 	case 'p':
 		if (dot_next_ch_ptr != nullptr) {
@@ -5446,6 +5736,7 @@ state_hex_digits:
 
 	case '.':
 		if (EJ_LIKELY(dot_next_ch_ptr == nullptr)) {
+			dot_next_ch_ptr = s;
 			ch = static_cast<unsigned char>(*s);
 			switch (ch) {
 			case '\0':
@@ -5458,80 +5749,83 @@ state_hex_digits:
 				goto state_binary_exponent_optional_sign;
 
 			default:
-				return { 0.0f, false };
+				return { static_cast<double>(0), false };
 			}
 		} else {
-			return { 0.0f, false };
+			return { static_cast<double>(0), false };
+		}
+
+	case '\0':
+		if (dot_next_ch_ptr != nullptr) {
+			fraction_exponent = static_cast<int>(dot_next_ch_ptr - s + 1) * 4;
+			return { binary_to_double(value, fraction_exponent, negate), true };
+		} else {
+			return { !negate ? static_cast<double>(value) : -static_cast<double>(value), true };
 		}
 
 	default:
-		return { 0, false };
+		return { static_cast<double>(0), false };
 	}
 
 state_binary_exponent_optional_sign:
 	negate_exponent = false;
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	switch (ch) {
-	case '0':
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { binary_to_double(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_binary_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(0), false };
+			}
 		}
-
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		exponent = ch - '0';
-		goto state_binary_exponent_optional_digits;
-
-	case '-':
+	} else if (EJ_LIKELY(digit == (static_cast<unsigned>('-') - '0'))) {
 		negate_exponent = true;
 		goto state_binary_exponent_skip_zero;
-
-	default:
-		return { 0.0f, false };
+	} else {
+		return { static_cast<double>(0), false };
 	}
 
 state_binary_exponent_skip_zero:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '1' && ch <= '9') {
-		exponent = ch - '0';
-		goto state_binary_exponent_optional_digits;
-	} else if (ch == '0') {
-		ch = static_cast<unsigned char>(*s);
-		s++;
-		if (ch == '\0') {
-			return { binary_to_double(value, fraction_exponent, negate), true };
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
+		if (digit > 0) {
+			exponent = digit;
+			goto state_binary_exponent_optional_digits;
 		} else {
-			return { 0.0f, false };
+			ch = static_cast<unsigned char>(*s);
+			s++;
+			if (ch == '\0') {
+				return { binary_to_double(value, fraction_exponent, negate), true };
+			} else {
+				return { static_cast<double>(0), false };
+			}
 		}
 	} else {
-		return { 0.0f, false };
+		return { static_cast<double>(0), false };
 	}
 
 state_binary_exponent_optional_digits:
 	ch = static_cast<unsigned char>(*s);
 	s++;
-	if (ch >= '0' && ch <= '9') {
+	digit = static_cast<unsigned>(ch) - '0';
+	if (EJ_LIKELY(digit <= 9)) {
 		if (EJ_LIKELY(exponent <= (INT_MAX / 10 - 1))) {
-			exponent = exponent * 10 + (ch - '0');
+			exponent = exponent * 10 + digit;
 		}
 		goto state_binary_exponent_optional_digits;
-	} else if (ch == '\0') {
+	} else if (EJ_LIKELY(digit == -static_cast<unsigned>('0'))) {
 		return { binary_to_double(value, (!negate_exponent ? exponent : -exponent) + fraction_exponent, negate), true };
 	} else {
-		return { 0.0f, false };
+		return { static_cast<double>(0), false };
 	}
 }
 

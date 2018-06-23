@@ -72,6 +72,14 @@ public:
 	constexpr const value_type *data() const noexcept {
 		return First;
 	}
+
+	constexpr void remove_prefix(size_type n) noexcept {
+		First += n;
+		Size -= n;
+	}
+	constexpr void remove_suffix(size_type n) noexcept {
+		Size -= n;
+	}
 };
 
 template <typename T>
@@ -136,6 +144,13 @@ public:
 	}
 	constexpr const value_type *data() const noexcept {
 		return First;
+	}
+
+	constexpr void remove_prefix(size_type n) noexcept {
+		First += n;
+	}
+	constexpr void remove_suffix(size_type n) noexcept {
+		Last -= n;
 	}
 };
 

@@ -8,7 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define EJ_ALWAYS_INLINE	inline __attribute__((always_inline))
+#define EJ_ALWAYS_INLINE_ATTRIBUTE	__attribute__((always_inline))
+#define EJ_ALWAYS_INLINE	inline EJ_ALWAYS_INLINE_ATTRIBUTE
 #define EJ_LIKELY(cond)		__builtin_expect(static_cast<bool>(cond), true)
 #define EJ_UNLIKELY(cond)	__builtin_expect(static_cast<bool>(cond), false)
 

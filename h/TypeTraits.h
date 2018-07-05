@@ -5,6 +5,9 @@
 #ifndef EJ_TYPE_TRAITS_H
 #define EJ_TYPE_TRAITS_H
 
+#include <stdint.h>
+
+#include <limits>
 #include <type_traits>
 
 namespace ej {
@@ -49,6 +52,38 @@ struct is_any_char<unsigned char> final {
 	enum : bool {
 		value = true
 	};
+};
+
+template <uint64_t M>
+struct unsigned_value_t {
+	typedef typename std::conditional<
+		M <= UINT8_MAX,
+		uint8_t,
+		typename std::conditional<
+			M <= UINT16_MAX,
+			uint16_t,
+			typename std::conditional<
+				M <= UINT32_MAX,
+				uint32_t,
+				uint64_t>::type>::type>::type type;
+
+	static_assert(M <= std::numeric_limits<type>::max());
+};
+
+template <int64_t L, uint64_t R>
+struct signed_range_t {
+	typedef typename std::conditional<
+		L >= INT8_MIN && R <= INT8_MAX,
+		int8_t,
+		typename std::conditional<
+			L >= INT16_MIN && R <= INT16_MAX,
+			int16_t,
+			typename std::conditional<
+				L >= INT32_MIN && R <= INT32_MAX,
+				int32_t,
+				int64_t>::type>::type>::type type;
+
+	static_assert(L >= std::numeric_limits<type>::min() && R <= std::numeric_limits<type>::max());
 };
 
 }

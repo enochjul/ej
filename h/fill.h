@@ -5,6 +5,7 @@
 #ifndef EJ_FILL_H
 #define EJ_FILL_H
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>

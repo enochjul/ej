@@ -1811,415 +1811,323 @@ const uint64_t NormalizedReciprocalsOfFiveUint64[] = {
 	UINT64_C(0xeef453d6923bd65a),
 };
 
-const uint16_t NormalizedReciprocalExponentsOfFiveUint64[] = {
-	66,
-	68,
-	70,
-	73,
-	75,
-	77,
-	80,
-	82,
-	84,
-	87,
-	89,
-	91,
-	94,
-	96,
-	98,
-	101,
-	103,
-	105,
-	108,
-	110,
-	112,
-	115,
-	117,
-	119,
-	122,
-	124,
-	126,
-	129,
-	131,
-	133,
-	135,
-	138,
-	140,
-	142,
-	145,
-	147,
-	149,
-	152,
-	154,
-	156,
-	159,
-	161,
-	163,
-	166,
-	168,
-	170,
-	173,
-	175,
-	177,
-	180,
-	182,
-	184,
-	187,
-	189,
-	191,
-	194,
-	196,
-	198,
-	200,
-	203,
-	205,
-	207,
-	210,
-	212,
-	214,
-	217,
-	219,
-	221,
-	224,
-	226,
-	228,
-	231,
-	233,
-	235,
-	238,
-	240,
-	242,
-	245,
-	247,
-	249,
-	252,
-	254,
-	256,
-	259,
-	261,
-	263,
-	266,
-	268,
-	270,
-	272,
-	275,
-	277,
-	279,
-	282,
-	284,
-	286,
-	289,
-	291,
-	293,
-	296,
-	298,
-	300,
-	303,
-	305,
-	307,
-	310,
-	312,
-	314,
-	317,
-	319,
-	321,
-	324,
-	326,
-	328,
-	331,
-	333,
-	335,
-	337,
-	340,
-	342,
-	344,
-	347,
-	349,
-	351,
-	354,
-	356,
-	358,
-	361,
-	363,
-	365,
-	368,
-	370,
-	372,
-	375,
-	377,
-	379,
-	382,
-	384,
-	386,
-	389,
-	391,
-	393,
-	396,
-	398,
-	400,
-	403,
-	405,
-	407,
-	409,
-	412,
-	414,
-	416,
-	419,
-	421,
-	423,
-	426,
-	428,
-	430,
-	433,
-	435,
-	437,
-	440,
-	442,
-	444,
-	447,
-	449,
-	451,
-	454,
-	456,
-	458,
-	461,
-	463,
-	465,
-	468,
-	470,
-	472,
-	474,
-	477,
-	479,
-	481,
-	484,
-	486,
-	488,
-	491,
-	493,
-	495,
-	498,
-	500,
-	502,
-	505,
-	507,
-	509,
-	512,
-	514,
-	516,
-	519,
-	521,
-	523,
-	526,
-	528,
-	530,
-	533,
-	535,
-	537,
-	539,
-	542,
-	544,
-	546,
-	549,
-	551,
-	553,
-	556,
-	558,
-	560,
-	563,
-	565,
-	567,
-	570,
-	572,
-	574,
-	577,
-	579,
-	581,
-	584,
-	586,
-	588,
-	591,
-	593,
-	595,
-	598,
-	600,
-	602,
-	605,
-	607,
-	609,
-	611,
-	614,
-	616,
-	618,
-	621,
-	623,
-	625,
-	628,
-	630,
-	632,
-	635,
-	637,
-	639,
-	642,
-	644,
-	646,
-	649,
-	651,
-	653,
-	656,
-	658,
-	660,
-	663,
-	665,
-	667,
-	670,
-	672,
-	674,
-	676,
-	679,
-	681,
-	683,
-	686,
-	688,
-	690,
-	693,
-	695,
-	697,
-	700,
-	702,
-	704,
-	707,
-	709,
-	711,
-	714,
-	716,
-	718,
-	721,
-	723,
-	725,
-	728,
-	730,
-	732,
-	735,
-	737,
-	739,
-	742,
-	744,
-	746,
-	748,
-	751,
-	753,
-	755,
-	758,
-	760,
-	762,
-	765,
-	767,
-	769,
-	772,
-	774,
-	776,
-	779,
-	781,
-	783,
-	786,
-	788,
-	790,
-	793,
-	795,
-	797,
-	800,
-	802,
-	804,
-	807,
-	809,
-	811,
-	813,
-	816,
-	818,
-	820,
-	823,
-	825,
-	827,
-	830,
-	832,
-	834,
-	837,
-	839,
-	841,
-	844,
-	846,
-	848,
-	851,
-	853,
-	855,
-	858,
-};
-
 #define EJ_MAX_SMALL_POWER_OF_FIVE_BITS 4
 #define EJ_MAX_SMALL_POWER_OF_FIVE_MASK ((1u << (EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1)
 
-static const uint64_t SmallPowersOfFive[] = {
-	UINT64_C(1),	//5e0 at: 0
-	UINT64_C(5),	//5e1 at: 1
-	UINT64_C(25),	//5e2 at: 2
-	UINT64_C(125),	//5e3 at: 3
-	UINT64_C(625),	//5e4 at: 4
-	UINT64_C(3125),	//5e5 at: 5
-	UINT64_C(15625),	//5e6 at: 6
-	UINT64_C(78125),	//5e7 at: 7
-	UINT64_C(390625),	//5e8 at: 8
-	UINT64_C(1953125),	//5e9 at: 9
-	UINT64_C(9765625),	//5e10 at: 10
-	UINT64_C(48828125),	//5e11 at: 11
-	UINT64_C(244140625),	//5e12 at: 12
-	UINT64_C(1220703125),	//5e13 at: 13
-	UINT64_C(6103515625),	//5e14 at: 14
-	UINT64_C(30517578125),	//5e15 at: 15
-	UINT64_C(152587890625),	//5e16 at: 16
-	UINT64_C(762939453125),	//5e17 at: 17
-	UINT64_C(3814697265625),	//5e18 at: 18
-	UINT64_C(19073486328125),	//5e19 at: 19
-	UINT64_C(95367431640625),	//5e20 at: 20
-	UINT64_C(476837158203125),	//5e21 at: 21
-	UINT64_C(2384185791015625),	//5e22 at: 22
-	UINT64_C(11920928955078125),	//5e23 at: 23
-	UINT64_C(59604644775390625),	//5e24 at: 24
-	UINT64_C(298023223876953125),	//5e25 at: 25
-	UINT64_C(1490116119384765625),	//5e26 at: 26
-	UINT64_C(7450580596923828125),	//5e27 at: 27
-};
+#define EJ_FIRST_ESTIMATED_POWER_OF_FIVE_UINT64 28
 
-static const uint8_t SmallPowersOfFiveOffsets[] = {
-	0,
-	1,
-	2,
-	3,
-	4,
-	5,
-	6,
-	7,
-	8,
-	9,
-	10,
-	11,
-	12,
-	13,
-	14,
-	15,
-	16,
-	17,
-	18,
-	19,
-	20,
-	21,
-	22,
-	23,
-	24,
-	25,
-	26,
-	27,
-	28,
+static const uint64_t NormalizedEstimatedPowersOfFiveUint64[] = {
+	//Powers of 5 that are represented exactly, up to 5^27
+	UINT64_C(1),
+	UINT64_C(5),
+	UINT64_C(25),
+	UINT64_C(125),
+	UINT64_C(625),
+	UINT64_C(3125),
+	UINT64_C(15625),
+	UINT64_C(78125),
+	UINT64_C(390625),
+	UINT64_C(1953125),
+	UINT64_C(9765625),
+	UINT64_C(48828125),
+	UINT64_C(244140625),
+	UINT64_C(1220703125),
+	UINT64_C(6103515625),
+	UINT64_C(30517578125),
+	UINT64_C(152587890625),
+	UINT64_C(762939453125),
+	UINT64_C(3814697265625),
+	UINT64_C(19073486328125),
+	UINT64_C(95367431640625),
+	UINT64_C(476837158203125),
+	UINT64_C(2384185791015625),
+	UINT64_C(11920928955078125),
+	UINT64_C(59604644775390625),
+	UINT64_C(298023223876953125),
+	UINT64_C(1490116119384765625),
+	UINT64_C(7450580596923828125),
+	//Powers of 5 that are estimated using the first 64 bits, from 5^28 to 5^308
+	UINT64_C(9313225746154785156),
+	UINT64_C(11641532182693481445),
+	UINT64_C(14551915228366851806),
+	UINT64_C(18189894035458564758),
+	UINT64_C(11368683772161602973),
+	UINT64_C(14210854715202003717),
+	UINT64_C(17763568394002504646),
+	UINT64_C(11102230246251565404),
+	UINT64_C(13877787807814456755),
+	UINT64_C(17347234759768070944),
+	UINT64_C(10842021724855044340),
+	UINT64_C(13552527156068805425),
+	UINT64_C(16940658945086006781),
+	UINT64_C(10587911840678754238),
+	UINT64_C(13234889800848442797),
+	UINT64_C(16543612251060553497),
+	UINT64_C(10339757656912845935),
+	UINT64_C(12924697071141057419),
+	UINT64_C(16155871338926321774),
+	UINT64_C(10097419586828951109),
+	UINT64_C(12621774483536188886),
+	UINT64_C(15777218104420236108),
+	UINT64_C(9860761315262647567),
+	UINT64_C(12325951644078309459),
+	UINT64_C(15407439555097886824),
+	UINT64_C(9629649721936179265),
+	UINT64_C(12037062152420224081),
+	UINT64_C(15046327690525280101),
+	UINT64_C(9403954806578300063),
+	UINT64_C(11754943508222875079),
+	UINT64_C(14693679385278593849),
+	UINT64_C(18367099231598242312),
+	UINT64_C(11479437019748901445),
+	UINT64_C(14349296274686126806),
+	UINT64_C(17936620343357658507),
+	UINT64_C(11210387714598536567),
+	UINT64_C(14012984643248170709),
+	UINT64_C(17516230804060213386),
+	UINT64_C(10947644252537633366),
+	UINT64_C(13684555315672041708),
+	UINT64_C(17105694144590052135),
+	UINT64_C(10691058840368782584),
+	UINT64_C(13363823550460978230),
+	UINT64_C(16704779438076222788),
+	UINT64_C(10440487148797639242),
+	UINT64_C(13050608935997049053),
+	UINT64_C(16313261169996311316),
+	UINT64_C(10195788231247694572),
+	UINT64_C(12744735289059618216),
+	UINT64_C(15930919111324522770),
+	UINT64_C(9956824444577826731),
+	UINT64_C(12446030555722283414),
+	UINT64_C(15557538194652854267),
+	UINT64_C(9723461371658033917),
+	UINT64_C(12154326714572542396),
+	UINT64_C(15192908393215677995),
+	UINT64_C(9495567745759798747),
+	UINT64_C(11869459682199748434),
+	UINT64_C(14836824602749685542),
+	UINT64_C(9273015376718553464),
+	UINT64_C(11591269220898191830),
+	UINT64_C(14489086526122739788),
+	UINT64_C(18111358157653424735),
+	UINT64_C(11319598848533390459),
+	UINT64_C(14149498560666738074),
+	UINT64_C(17686873200833422592),
+	UINT64_C(11054295750520889120),
+	UINT64_C(13817869688151111400),
+	UINT64_C(17272337110188889250),
+	UINT64_C(10795210693868055781),
+	UINT64_C(13494013367335069727),
+	UINT64_C(16867516709168837158),
+	UINT64_C(10542197943230523224),
+	UINT64_C(13177747429038154030),
+	UINT64_C(16472184286297692538),
+	UINT64_C(10295115178936057836),
+	UINT64_C(12868893973670072295),
+	UINT64_C(16086117467087590369),
+	UINT64_C(10053823416929743980),
+	UINT64_C(12567279271162179975),
+	UINT64_C(15709099088952724969),
+	UINT64_C(9818186930595453106),
+	UINT64_C(12272733663244316382),
+	UINT64_C(15340917079055395478),
+	UINT64_C(9588073174409622174),
+	UINT64_C(11985091468012027717),
+	UINT64_C(14981364335015034646),
+	UINT64_C(9363352709384396654),
+	UINT64_C(11704190886730495817),
+	UINT64_C(14630238608413119772),
+	UINT64_C(18287798260516399715),
+	UINT64_C(11429873912822749822),
+	UINT64_C(14287342391028437277),
+	UINT64_C(17859177988785546597),
+	UINT64_C(11161986242990966623),
+	UINT64_C(13952482803738708279),
+	UINT64_C(17440603504673385348),
+	UINT64_C(10900377190420865842),
+	UINT64_C(13625471488026082303),
+	UINT64_C(17031839360032602879),
+	UINT64_C(10644899600020376799),
+	UINT64_C(13306124500025470999),
+	UINT64_C(16632655625031838749),
+	UINT64_C(10395409765644899218),
+	UINT64_C(12994262207056124023),
+	UINT64_C(16242827758820155028),
+	UINT64_C(10151767349262596893),
+	UINT64_C(12689709186578246116),
+	UINT64_C(15862136483222807645),
+	UINT64_C(9913835302014254778),
+	UINT64_C(12392294127517818473),
+	UINT64_C(15490367659397273091),
+	UINT64_C(9681479787123295682),
+	UINT64_C(12101849733904119602),
+	UINT64_C(15127312167380149503),
+	UINT64_C(9454570104612593439),
+	UINT64_C(11818212630765741799),
+	UINT64_C(14772765788457177249),
+	UINT64_C(9232978617785735780),
+	UINT64_C(11541223272232169725),
+	UINT64_C(14426529090290212157),
+	UINT64_C(18033161362862765196),
+	UINT64_C(11270725851789228247),
+	UINT64_C(14088407314736535309),
+	UINT64_C(17610509143420669137),
+	UINT64_C(11006568214637918210),
+	UINT64_C(13758210268297397763),
+	UINT64_C(17197762835371747204),
+	UINT64_C(10748601772107342002),
+	UINT64_C(13435752215134177503),
+	UINT64_C(16794690268917721879),
+	UINT64_C(10496681418073576174),
+	UINT64_C(13120851772591970218),
+	UINT64_C(16401064715739962772),
+	UINT64_C(10250665447337476733),
+	UINT64_C(12813331809171845916),
+	UINT64_C(16016664761464807395),
+	UINT64_C(10010415475915504622),
+	UINT64_C(12513019344894380777),
+	UINT64_C(15641274181117975972),
+	UINT64_C(9775796363198734982),
+	UINT64_C(12219745453998418728),
+	UINT64_C(15274681817498023410),
+	UINT64_C(9546676135936264631),
+	UINT64_C(11933345169920330789),
+	UINT64_C(14916681462400413486),
+	UINT64_C(9322925914000258429),
+	UINT64_C(11653657392500323036),
+	UINT64_C(14567071740625403795),
+	UINT64_C(18208839675781754744),
+	UINT64_C(11380524797363596715),
+	UINT64_C(14225655996704495894),
+	UINT64_C(17782069995880619867),
+	UINT64_C(11113793747425387417),
+	UINT64_C(13892242184281734271),
+	UINT64_C(17365302730352167839),
+	UINT64_C(10853314206470104899),
+	UINT64_C(13566642758087631124),
+	UINT64_C(16958303447609538905),
+	UINT64_C(10598939654755961816),
+	UINT64_C(13248674568444952270),
+	UINT64_C(16560843210556190337),
+	UINT64_C(10350527006597618960),
+	UINT64_C(12938158758247023701),
+	UINT64_C(16172698447808779626),
+	UINT64_C(10107936529880487266),
+	UINT64_C(12634920662350609083),
+	UINT64_C(15793650827938261354),
+	UINT64_C(9871031767461413346),
+	UINT64_C(12338789709326766682),
+	UINT64_C(15423487136658458353),
+	UINT64_C(9639679460411536470),
+	UINT64_C(12049599325514420588),
+	UINT64_C(15061999156893025735),
+	UINT64_C(9413749473058141084),
+	UINT64_C(11767186841322676356),
+	UINT64_C(14708983551653345445),
+	UINT64_C(18386229439566681806),
+	UINT64_C(11491393399729176129),
+	UINT64_C(14364241749661470161),
+	UINT64_C(17955302187076837701),
+	UINT64_C(11222063866923023563),
+	UINT64_C(14027579833653779454),
+	UINT64_C(17534474792067224318),
+	UINT64_C(10959046745042015198),
+	UINT64_C(13698808431302518998),
+	UINT64_C(17123510539128148748),
+	UINT64_C(10702194086955092967),
+	UINT64_C(13377742608693866209),
+	UINT64_C(16722178260867332761),
+	UINT64_C(10451361413042082976),
+	UINT64_C(13064201766302603720),
+	UINT64_C(16330252207878254650),
+	UINT64_C(10206407629923909156),
+	UINT64_C(12758009537404886445),
+	UINT64_C(15947511921756108056),
+	UINT64_C(9967194951097567535),
+	UINT64_C(12458993688871959419),
+	UINT64_C(15573742111089949274),
+	UINT64_C(9733588819431218296),
+	UINT64_C(12166986024289022870),
+	UINT64_C(15208732530361278588),
+	UINT64_C(9505457831475799117),
+	UINT64_C(11881822289344748896),
+	UINT64_C(14852277861680936121),
+	UINT64_C(9282673663550585075),
+	UINT64_C(11603342079438231344),
+	UINT64_C(14504177599297789180),
+	UINT64_C(18130221999122236476),
+	UINT64_C(11331388749451397797),
+	UINT64_C(14164235936814247246),
+	UINT64_C(17705294921017809058),
+	UINT64_C(11065809325636130661),
+	UINT64_C(13832261657045163327),
+	UINT64_C(17290327071306454158),
+	UINT64_C(10806454419566533849),
+	UINT64_C(13508068024458167311),
+	UINT64_C(16885085030572709139),
+	UINT64_C(10553178144107943212),
+	UINT64_C(13191472680134929015),
+	UINT64_C(16489340850168661269),
+	UINT64_C(10305838031355413293),
+	UINT64_C(12882297539194266616),
+	UINT64_C(16102871923992833270),
+	UINT64_C(10064294952495520794),
+	UINT64_C(12580368690619400992),
+	UINT64_C(15725460863274251240),
+	UINT64_C(9828413039546407025),
+	UINT64_C(12285516299433008781),
+	UINT64_C(15356895374291260977),
+	UINT64_C(9598059608932038110),
+	UINT64_C(11997574511165047638),
+	UINT64_C(14996968138956309548),
+	UINT64_C(9373105086847693467),
+	UINT64_C(11716381358559616834),
+	UINT64_C(14645476698199521043),
+	UINT64_C(18306845872749401303),
+	UINT64_C(11441778670468375814),
+	UINT64_C(14302223338085469768),
+	UINT64_C(17877779172606837210),
+	UINT64_C(11173611982879273256),
+	UINT64_C(13967014978599091570),
+	UINT64_C(17458768723248864463),
+	UINT64_C(10911730452030540289),
+	UINT64_C(13639663065038175362),
+	UINT64_C(17049578831297719202),
+	UINT64_C(10655986769561074501),
+	UINT64_C(13319983461951343127),
+	UINT64_C(16649979327439178909),
+	UINT64_C(10406237079649486818),
+	UINT64_C(13007796349561858522),
+	UINT64_C(16259745436952323153),
+	UINT64_C(10162340898095201970),
+	UINT64_C(12702926122619002463),
+	UINT64_C(15878657653273753079),
+	UINT64_C(9924161033296095674),
+	UINT64_C(12405201291620119593),
+	UINT64_C(15506501614525149491),
+	UINT64_C(9691563509078218432),
+	UINT64_C(12114454386347773040),
+	UINT64_C(15143067982934716300),
+	UINT64_C(9464417489334197687),
+	UINT64_C(11830521861667747109),
+	UINT64_C(14788152327084683887),
+	UINT64_C(9242595204427927429),
+	UINT64_C(11553244005534909286),
+	UINT64_C(14441555006918636608),
+	UINT64_C(18051943758648295760),
+	UINT64_C(11282464849155184850),
+	UINT64_C(14103081061443981063),
+	UINT64_C(17628851326804976328),
+	UINT64_C(11018032079253110205),
+	UINT64_C(13772540099066387756),
+	UINT64_C(17215675123832984696),
+	UINT64_C(10759796952395615435),
+	UINT64_C(13449746190494519293),
+	UINT64_C(16812182738118149117),
+	UINT64_C(10507614211323843198),
+	UINT64_C(13134517764154803997),
+	UINT64_C(16418147205193504997),
+	UINT64_C(10261342003245940623),
 };
 
 static const uint64_t LargePowersOfFive[] = {
@@ -2576,11 +2484,21 @@ EJ_ALWAYS_INLINE bool tuint64_sub_assign(uint64_t *a_0, uint64_t *a_1, uint64_t 
 	return static_cast<bool>(borrow);
 }
 
+EJ_ALWAYS_INLINE int small_ceil_log2_5_e(int exponent) noexcept {
+	assert(exponent >= 0 && exponent <= 788);
+	return exponent * 304339 / 131072 + 1;
+}
+
+EJ_ALWAYS_INLINE int small_floor_log2_5_e(int exponent) noexcept {
+	assert(exponent >= 0 && exponent <= 788);
+	return exponent * 304339 / 131072;
+}
+
 float decimal_to_float(uint32_t significand, int exponent, bool negative) noexcept {
 	constexpr unsigned max_exponent_of_five = 38;
 	constexpr unsigned max_reciprocal_exponent_of_five = 54;
-	duint64 product128;
-	uint64_t remainder64, mantissa64, difference64;
+	duint64 product128, product128_ub;
+	uint64_t remainder64, mantissa64, difference64, remainder64_ub, mantissa64_ub;
 	uint32_t mantissa32;
 	int mantissa_bits_less_1, remainder_bits;
 	int final_exponent, reciprocal_exponent;
@@ -2597,8 +2515,8 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 			}
 #endif
 
-			if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
-				product128 = duint64_mul(static_cast<uint64_t>(significand), SmallPowersOfFive[abs_exponent]);
+			if (EJ_LIKELY(abs_exponent < EJ_FIRST_ESTIMATED_POWER_OF_FIVE_UINT64)) {
+				product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
 				remainder64 = duint64_get_low(product128);
 				mantissa64 = duint64_get_high(product128);
 				auto bsr_rv = bsr64(mantissa64);
@@ -2631,25 +2549,58 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 				float_round_to_nearest_even(&mantissa32, &final_exponent, remainder64);
 				return make_float(mantissa32, final_exponent, negative);
 			} else if (abs_exponent <= max_exponent_of_five) {
-				auto power_of_five_of_low_bits = SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
-				if (abs_exponent < 32) {
-					product128 = duint64_mul(152587890625u, power_of_five_of_low_bits);
+				if (significand != 1) {
+					product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
+					remainder64 = duint64_get_low(product128);
+					mantissa64 = duint64_get_high(product128);
+					mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
+					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
+					product128_ub = product128 + significand;
+					remainder64_ub = duint64_get_low(product128_ub);
+					mantissa64_ub = duint64_get_high(product128_ub);
+					if (remainder_bits > 0) {
+						remainder64 |= mantissa64 << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+						mantissa64 >>= remainder_bits;
+						mantissa64_ub >>= remainder_bits;
+					} else if (remainder_bits < 0) {
+						remainder_bits = -remainder_bits;
+						mantissa64 = (mantissa64 << remainder_bits) | (remainder64 >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+						mantissa64_ub = (mantissa64_ub << remainder_bits) | (remainder64_ub >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+					}
+					assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
+					assert(mantissa64_ub >= (1 << (FLT_MANT_DIG + 1)) && mantissa64_ub <= (1 << (FLT_MANT_DIG + 2)));
+
+					if (EJ_LIKELY(mantissa64 == mantissa64_ub)) {
+						final_exponent = exponent + small_ceil_log2_5_e(exponent) + mantissa_bits_less_1;
+						remainder64 = 1;
+					} else {
+						auto power_of_five_of_low_bits = NormalizedEstimatedPowersOfFiveUint64[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
+						if (abs_exponent < 32) {
+							product128 = duint64_mul(152587890625u, power_of_five_of_low_bits);
+						} else {
+							product128 = make_duint64(UINT64_C(3273344365508751233), UINT64_C(1262)) * power_of_five_of_low_bits;
+						}
+						product128 *= significand;
+						remainder64 = duint64_get_low(product128);
+						mantissa64 = duint64_get_high(product128);
+						assert(mantissa64 > 0);
+						mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
+						final_exponent = exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
+						remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
+						if (remainder_bits > 0) {
+							remainder64 |= mantissa64 << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+							mantissa64 >>= remainder_bits;
+						} else if (remainder_bits < 0) {
+							duint64_small_shl_assign(&remainder64, &mantissa64, -remainder_bits);
+						}
+					}
 				} else {
-					product128 = make_duint64(UINT64_C(3273344365508751233), UINT64_C(1262)) * power_of_five_of_low_bits;
+					mantissa64 = NormalizedEstimatedPowersOfFiveUint64[abs_exponent] >> (sizeof(uint64_t) * CHAR_BIT - (FLT_MANT_DIG + 2));
+					assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
+					remainder64 = 1;
+					final_exponent = exponent + small_floor_log2_5_e(abs_exponent);
 				}
-				product128 *= significand;
-				remainder64 = duint64_get_low(product128);
-				mantissa64 = duint64_get_high(product128);
-				assert(mantissa64 > 0);
-				mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
-				final_exponent = exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
-				remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
-				if (remainder_bits > 0) {
-					remainder64 |= mantissa64 << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
-					mantissa64 >>= remainder_bits;
-				} else if (remainder_bits < 0) {
-					duint64_small_shl_assign(&remainder64, &mantissa64, -remainder_bits);
-				}
+
 				mantissa32 = static_cast<uint32_t>(mantissa64);
 				float_round_to_nearest_even(&mantissa32, &final_exponent, remainder64);
 				if (final_exponent < FLT_MAX_EXP) {
@@ -2678,19 +2629,21 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					mantissa64 = duint64_get_high(product128);
 					mantissa_bits_less_1 = bsr64(mantissa64).Count;
 					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
-					reciprocal_exponent = NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1];
-					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1 + sizeof(remainder64) * CHAR_BIT;
-					if (remainder_bits < 0) {
-						remainder_bits = -remainder_bits;
-						mantissa64 = (mantissa64 << remainder_bits) | (remainder64 >> (sizeof(remainder64) * CHAR_BIT - remainder_bits));
-						remainder_bits = sizeof(remainder64) * CHAR_BIT - remainder_bits;
-					} else {
-						mantissa64 >>= remainder_bits;
-						remainder_bits += sizeof(remainder64) * CHAR_BIT;
-					}
-					assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
-					if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
-						auto denominator = SmallPowersOfFive[abs_exponent];
+					reciprocal_exponent = small_floor_log2_5_e(abs_exponent);
+					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1;
+					reciprocal_exponent += sizeof(uint64_t) * CHAR_BIT;
+					if (EJ_LIKELY(abs_exponent < EJ_FIRST_ESTIMATED_POWER_OF_FIVE_UINT64)) {
+						if (remainder_bits < 0) {
+							remainder_bits = -remainder_bits;
+							mantissa64 = (mantissa64 << remainder_bits) | (remainder64 >> (sizeof(remainder64) * CHAR_BIT - remainder_bits));
+							remainder_bits = sizeof(remainder64) * CHAR_BIT - remainder_bits;
+						} else {
+							mantissa64 >>= remainder_bits;
+							remainder_bits += sizeof(remainder64) * CHAR_BIT;
+						}
+						assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
+
+						auto denominator = NormalizedEstimatedPowersOfFiveUint64[abs_exponent];
 						remainder_bits = reciprocal_exponent - remainder_bits;
 						if (remainder_bits > 0) {
 							auto numerator = duint64_shl(static_cast<uint64_t>(significand), remainder_bits);
@@ -2727,39 +2680,60 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						float_round_to_nearest_even(&mantissa32, &final_exponent, remainder64);
 						return make_float(mantissa32, final_exponent, negative);
 					} else {
-						duint64 denominator;
-						uint64_t qd_0, qd_1, qd_2;
-						uint64_t difference_0, difference_1, difference_2;
-
-						auto power_of_five_of_low_bits = SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
-						if (abs_exponent < 32) {
-							denominator = duint64_mul(152587890625u, power_of_five_of_low_bits);
+						product128_ub = product128 + significand;
+						remainder64_ub = duint64_get_low(product128_ub);
+						mantissa64_ub = duint64_get_high(product128_ub);
+						if (remainder_bits < 0) {
+							remainder_bits = -remainder_bits;
+							mantissa64 = (mantissa64 << remainder_bits) | (remainder64 >> (sizeof(remainder64) * CHAR_BIT - remainder_bits));
+							mantissa64_ub = (mantissa64_ub << remainder_bits) | (remainder64_ub >> (sizeof(remainder64) * CHAR_BIT - remainder_bits));
+							remainder_bits = sizeof(remainder64) * CHAR_BIT - remainder_bits;
 						} else {
-							auto *denominator_start = LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1];
-							denominator = make_duint64(denominator_start[0], denominator_start[1]) * power_of_five_of_low_bits;
+							mantissa64 >>= remainder_bits;
+							mantissa64_ub >>= remainder_bits;
+							remainder_bits += sizeof(remainder64) * CHAR_BIT;
 						}
-						tuint64_mul(&qd_0, &qd_1, &qd_2, denominator, mantissa64);
+						assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
+						assert(mantissa64_ub >= (1 << (FLT_MANT_DIG + 1)) && mantissa64_ub <= (1 << (FLT_MANT_DIG + 2)));
 
-						tuint64_shl(&difference_0, &difference_1, &difference_2, significand, reciprocal_exponent - remainder_bits);
-						tuint64_sub_assign(&difference_0, &difference_1, &difference_2, qd_0, qd_1, qd_2);
-						mantissa32 = static_cast<uint32_t>(mantissa64);
-						if (!tuint64_sub_assign(&difference_0, &difference_1, &difference_2, duint64_get_low(denominator), duint64_get_high(denominator), 0)) {
-							++mantissa32;
-							if (mantissa32 >= (1 << (FLT_MANT_DIG + 2))) {
-								assert((mantissa32 % 2) == 0);
-								mantissa32 >>= 1;
-								++final_exponent;
+						if (EJ_LIKELY(mantissa64 == mantissa64_ub)) {
+							mantissa32 = static_cast<uint32_t>(mantissa64);
+							remainder64 = 1;
+						} else {
+							duint64 denominator;
+							uint64_t qd_0, qd_1, qd_2;
+							uint64_t difference_0, difference_1, difference_2;
+
+							auto power_of_five_of_low_bits = NormalizedEstimatedPowersOfFiveUint64[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK];
+							if (abs_exponent < 32) {
+								denominator = duint64_mul(152587890625u, power_of_five_of_low_bits);
+							} else {
+								auto *denominator_start = LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1];
+								denominator = make_duint64(denominator_start[0], denominator_start[1]) * power_of_five_of_low_bits;
 							}
+							tuint64_mul(&qd_0, &qd_1, &qd_2, denominator, mantissa64);
+
+							tuint64_shl(&difference_0, &difference_1, &difference_2, significand, reciprocal_exponent - remainder_bits);
+							tuint64_sub_assign(&difference_0, &difference_1, &difference_2, qd_0, qd_1, qd_2);
+							mantissa32 = static_cast<uint32_t>(mantissa64);
+							if (!tuint64_sub_assign(&difference_0, &difference_1, &difference_2, duint64_get_low(denominator), duint64_get_high(denominator), 0)) {
+								++mantissa32;
+								if (mantissa32 >= (1 << (FLT_MANT_DIG + 2))) {
+									assert((mantissa32 % 2) == 0);
+									mantissa32 >>= 1;
+									++final_exponent;
+								}
+							}
+							assert(mantissa32 >= (1 << (FLT_MANT_DIG + 1)) && mantissa32 < (1 << (FLT_MANT_DIG + 2)));
+							remainder64 |= difference_0 | difference_1 | difference_2;
 						}
-						assert(mantissa32 >= (1 << (FLT_MANT_DIG + 1)) && mantissa32 < (1 << (FLT_MANT_DIG + 2)));
-						remainder64 |= difference_0 | difference_1 | difference_2;
 					}
 				} else {
 					mantissa64 = NormalizedReciprocalsOfFiveUint64[abs_exponent - 1] >> (sizeof(uint64_t) * CHAR_BIT - (FLT_MANT_DIG + 2));
 					assert(mantissa64 >= (1 << (FLT_MANT_DIG + 1)) && mantissa64 < (1 << (FLT_MANT_DIG + 2)));
 					mantissa32 = static_cast<uint32_t>(mantissa64);
 					remainder64 = 1;
-					final_exponent = exponent - NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1] + sizeof(uint64_t) * CHAR_BIT - 1;
+					final_exponent = exponent - small_floor_log2_5_e(abs_exponent) - 1;
 				}
 
 				if (final_exponent >= (FLT_MIN_EXP - 1)) {
@@ -3876,11 +3850,13 @@ inline bool decimal_to_double_mp_uint64_is_zero(const uint64_t *a, const uint64_
 }
 
 double decimal_to_double(uint64_t significand, int exponent, bool negative) noexcept {
-	constexpr unsigned max_exponent_of_five = 308;
+	constexpr unsigned max_exponent_of_five = get_size(NormalizedEstimatedPowersOfFiveUint64) - 1;
+	static_assert(max_exponent_of_five == 308);
 	constexpr unsigned max_reciprocal_exponent_of_five = get_size(NormalizedReciprocalsOfFiveUint64);
+	static_assert(max_reciprocal_exponent_of_five == 342);
 	constexpr unsigned max_mp_uints = 1024 / (sizeof(uint64_t) * CHAR_BIT);
-	duint64 product;
-	uint64_t remainder, mantissa, difference;
+	duint64 product, product_ub;
+	uint64_t remainder, mantissa, difference, remainder_ub, mantissa_ub;
 	int mantissa_bits_less_1, remainder_bits;
 	int final_exponent, reciprocal_exponent;
 
@@ -3893,8 +3869,8 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 				return static_cast<double>(signed_significand) * DoublePowersOf10[abs_exponent];
 			}
 
-			if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
-				product = duint64_mul(static_cast<uint64_t>(significand), SmallPowersOfFive[abs_exponent]);
+			if (EJ_LIKELY(abs_exponent < EJ_FIRST_ESTIMATED_POWER_OF_FIVE_UINT64)) {
+				product = duint64_mul(significand, NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
 				remainder = duint64_get_low(product);
 				mantissa = duint64_get_high(product);
 				auto bsr_rv = bsr64(mantissa);
@@ -3927,35 +3903,66 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 				double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
 				return make_double(mantissa, final_exponent, negative);
 			} else if (abs_exponent <= max_exponent_of_five) {
-				uint64_t full_product[max_mp_uints];
-				uint64_t *full_product_end;
+				if (significand != 1) {
+					product = duint64_mul(significand, NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
+					remainder = duint64_get_low(product);
+					mantissa = duint64_get_high(product);
+					mantissa_bits_less_1 = bsr64(mantissa).Count;
+					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+					product_ub = product + significand;
+					remainder_ub = duint64_get_low(product_ub);
+					mantissa_ub = duint64_get_high(product_ub);
+					if (remainder_bits < 0) {
+						remainder_bits = -remainder_bits;
+						mantissa = (mantissa << remainder_bits) | (remainder >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+						mantissa_ub = (mantissa_ub << remainder_bits) | (remainder_ub >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+					} else {
+						mantissa >>= remainder_bits;
+						mantissa_ub >>= remainder_bits;
+					}
+					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+					assert(mantissa_ub >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa_ub <= (UINT64_C(1) << (DBL_MANT_DIG + 2)));
 
-				full_product_end = decimal_to_double_mp_uint64_mul(
-					full_product,
-					LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
-					SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
-					LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
-				full_product_end = decimal_to_double_mp_uint64_mul(full_product, full_product, significand, full_product_end);
+					if (EJ_LIKELY(mantissa == mantissa_ub)) {
+						final_exponent = exponent + small_ceil_log2_5_e(exponent) + mantissa_bits_less_1;
+						remainder = 1;
+					} else {
+						uint64_t full_product[max_mp_uints];
+						uint64_t *full_product_end;
 
-				remainder = *(full_product_end - 2);
-				mantissa = *(full_product_end - 1);
-				mantissa_bits_less_1 = bsr64(mantissa).Count;
-				//Compute the exponent
-				final_exponent = exponent + mantissa_bits_less_1 + ((full_product_end - full_product) - 1) * sizeof(uint64_t) * CHAR_BIT;
-				//Normalize the mantissa and remainder
-				remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
-				if (remainder_bits > 0) {
-					//Parts of the mantissa belongs to the remainder
-					remainder |= mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
-					mantissa >>= remainder_bits;
-				} else if (remainder_bits < 0) {
-					//Parts of the remainders belongs to the mantissa
-					duint64_small_shl_assign(&remainder, &mantissa, -remainder_bits);
-				}
-				assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
-				//Combine the rest of the remainder
-				for (auto full_product_i = full_product; full_product_i < (full_product_end - 2); ++full_product_i) {
-					remainder |= *full_product_i;
+						full_product_end = decimal_to_double_mp_uint64_mul(
+							full_product,
+							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
+							NormalizedEstimatedPowersOfFiveUint64[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
+							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
+						full_product_end = decimal_to_double_mp_uint64_mul(full_product, full_product, significand, full_product_end);
+
+						remainder = *(full_product_end - 2);
+						mantissa = *(full_product_end - 1);
+						mantissa_bits_less_1 = bsr64(mantissa).Count;
+						//Compute the exponent
+						final_exponent = exponent + mantissa_bits_less_1 + ((full_product_end - full_product) - 1) * sizeof(uint64_t) * CHAR_BIT;
+						//Normalize the mantissa and remainder
+						remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
+						if (remainder_bits > 0) {
+							//Parts of the mantissa belongs to the remainder
+							remainder |= mantissa << (sizeof(uint64_t) * CHAR_BIT - remainder_bits);
+							mantissa >>= remainder_bits;
+						} else if (remainder_bits < 0) {
+							//Parts of the remainders belongs to the mantissa
+							duint64_small_shl_assign(&remainder, &mantissa, -remainder_bits);
+						}
+						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+						//Combine the rest of the remainder
+						for (auto full_product_i = full_product; full_product_i < (full_product_end - 2); ++full_product_i) {
+							remainder |= *full_product_i;
+						}
+					}
+				} else {
+					mantissa = NormalizedEstimatedPowersOfFiveUint64[abs_exponent] >> (sizeof(uint64_t) * CHAR_BIT - (DBL_MANT_DIG + 2));
+					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+					remainder = 1;
+					final_exponent = exponent + small_ceil_log2_5_e(exponent);
 				}
 
 				//Round and return the result
@@ -3983,19 +3990,21 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 					mantissa = duint64_get_high(product);
 					mantissa_bits_less_1 = bsr64(mantissa).Count;
 					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
-					reciprocal_exponent = NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1];
-					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
-					if (remainder_bits < 0) {
-						remainder_bits = -remainder_bits;
-						mantissa = (mantissa << remainder_bits) | (remainder >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
-						remainder_bits = sizeof(uint64_t) * CHAR_BIT - remainder_bits;
-					} else {
-						mantissa >>= remainder_bits;
-						remainder_bits += sizeof(uint64_t) * CHAR_BIT;
-					}
-					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
-					if (EJ_LIKELY(abs_exponent < get_size(SmallPowersOfFive))) {
-						auto denominator = SmallPowersOfFive[abs_exponent];
+					reciprocal_exponent = small_floor_log2_5_e(abs_exponent);
+					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1;
+					reciprocal_exponent += sizeof(uint64_t) * CHAR_BIT;
+					if (EJ_LIKELY(abs_exponent < EJ_FIRST_ESTIMATED_POWER_OF_FIVE_UINT64)) {
+						if (remainder_bits < 0) {
+							remainder_bits = -remainder_bits;
+							mantissa = (mantissa << remainder_bits) | (remainder >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+							remainder_bits = sizeof(uint64_t) * CHAR_BIT - remainder_bits;
+						} else {
+							mantissa >>= remainder_bits;
+							remainder_bits += sizeof(uint64_t) * CHAR_BIT;
+						}
+						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+
+						auto denominator = NormalizedEstimatedPowersOfFiveUint64[abs_exponent];
 						remainder_bits = reciprocal_exponent - remainder_bits;
 						if (remainder_bits > 0) {
 							auto numerator = duint64_shl(significand, remainder_bits);
@@ -4031,77 +4040,97 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 						double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
 						return make_double(mantissa, final_exponent, negative);
 					} else {
-						uint64_t full_estimate[max_mp_uints];
-						uint64_t *full_estimate_end;
-						uint64_t *estimate_integer;
-						uint64_t estimate, estimate_fraction_mask;
-						unsigned estimate_bits;
-						unsigned estimate_fraction_bits;
-						unsigned estimate_integer_bits;
-						unsigned estimate_shr_bits;
+						product_ub = product + significand;
+						remainder_ub = duint64_get_low(product_ub);
+						mantissa_ub = duint64_get_high(product_ub);
+						if (remainder_bits < 0) {
+							remainder_bits = -remainder_bits;
+							mantissa = (mantissa << remainder_bits) | (remainder >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+							mantissa_ub = (mantissa_ub << remainder_bits) | (remainder_ub >> (sizeof(uint64_t) * CHAR_BIT - remainder_bits));
+							remainder_bits = sizeof(uint64_t) * CHAR_BIT - remainder_bits;
+						} else {
+							mantissa >>= remainder_bits;
+							mantissa_ub >>= remainder_bits;
+							remainder_bits += sizeof(uint64_t) * CHAR_BIT;
+						}
+						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
+						assert(mantissa_ub >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa_ub <= (UINT64_C(1) << (DBL_MANT_DIG + 2)));
 
-						full_estimate_end = decimal_to_double_mp_uint64_mul(
-							full_estimate,
-							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
-							SmallPowersOfFive[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
-							LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
-						full_estimate_end = decimal_to_double_mp_uint64_mul(full_estimate, full_estimate, mantissa + 1, full_estimate_end);
+						if (EJ_LIKELY(mantissa == mantissa_ub)) {
+							remainder = 1;
+						} else {
+							uint64_t full_estimate[max_mp_uints];
+							uint64_t *full_estimate_end;
+							uint64_t *estimate_integer;
+							uint64_t estimate, estimate_fraction_mask;
+							unsigned estimate_bits;
+							unsigned estimate_fraction_bits;
+							unsigned estimate_integer_bits;
+							unsigned estimate_shr_bits;
 
-						assert(*(full_estimate_end - 1) != 0);
+							full_estimate_end = decimal_to_double_mp_uint64_mul(
+								full_estimate,
+								LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1],
+								NormalizedEstimatedPowersOfFiveUint64[abs_exponent & EJ_MAX_SMALL_POWER_OF_FIVE_MASK],
+								LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS))]);
+							full_estimate_end = decimal_to_double_mp_uint64_mul(full_estimate, full_estimate, mantissa + 1, full_estimate_end);
 
-						estimate_bits = static_cast<unsigned>(bsr64(*(full_estimate_end - 1)).Count) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
-						estimate_fraction_bits = reciprocal_exponent - remainder_bits;
-						estimate_integer_bits = estimate_bits - estimate_fraction_bits;
-						if (EJ_LIKELY(estimate_integer_bits <= (sizeof(estimate) * CHAR_BIT))) {
-							estimate_integer = full_estimate + estimate_fraction_bits / (sizeof(estimate) * CHAR_BIT);
-							estimate = *estimate_integer;
-							auto *estimate_fraction_end = estimate_integer + 1;
-							estimate_shr_bits = estimate_fraction_bits % (sizeof(estimate) * CHAR_BIT);
-							if (estimate_shr_bits > 0) {
-								estimate_fraction_mask = (UINT64_C(1) << estimate_shr_bits) - 1;
-								*estimate_integer = estimate & estimate_fraction_mask;
-								estimate >>= estimate_shr_bits;
-								if (estimate_fraction_end < full_estimate_end) {
-									estimate |= *(full_estimate_end - 1) << (sizeof(estimate) * CHAR_BIT - estimate_shr_bits);
-								}
-								full_estimate_end = estimate_fraction_end + 1;
-							} else {
-								full_estimate_end = estimate_integer;
-							}
+							assert(*(full_estimate_end - 1) != 0);
 
-							if (significand > estimate) {
-								++mantissa;
-								if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
-									assert((mantissa % 2) == 0);
-									mantissa >>= 1;
-									++final_exponent;
-								}
-								remainder = 1;
-							} else if (significand == estimate) {
-								if (EJ_LIKELY(!decimal_to_double_mp_uint64_is_zero(full_estimate, full_estimate_end))) {
-									remainder = 1;
+							estimate_bits = static_cast<unsigned>(bsr64(*(full_estimate_end - 1)).Count) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
+							estimate_fraction_bits = reciprocal_exponent - remainder_bits;
+							estimate_integer_bits = estimate_bits - estimate_fraction_bits;
+							if (EJ_LIKELY(estimate_integer_bits <= (sizeof(estimate) * CHAR_BIT))) {
+								estimate_integer = full_estimate + estimate_fraction_bits / (sizeof(estimate) * CHAR_BIT);
+								estimate = *estimate_integer;
+								auto *estimate_fraction_end = estimate_integer + 1;
+								estimate_shr_bits = estimate_fraction_bits % (sizeof(estimate) * CHAR_BIT);
+								if (estimate_shr_bits > 0) {
+									estimate_fraction_mask = (UINT64_C(1) << estimate_shr_bits) - 1;
+									*estimate_integer = estimate & estimate_fraction_mask;
+									estimate >>= estimate_shr_bits;
+									if (estimate_fraction_end < full_estimate_end) {
+										estimate |= *(full_estimate_end - 1) << (sizeof(estimate) * CHAR_BIT - estimate_shr_bits);
+									}
+									full_estimate_end = estimate_fraction_end + 1;
 								} else {
+									full_estimate_end = estimate_integer;
+								}
+
+								if (significand > estimate) {
 									++mantissa;
 									if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
 										assert((mantissa % 2) == 0);
 										mantissa >>= 1;
 										++final_exponent;
 									}
-									remainder = 0;
+									remainder = 1;
+								} else if (significand == estimate) {
+									if (EJ_LIKELY(!decimal_to_double_mp_uint64_is_zero(full_estimate, full_estimate_end))) {
+										remainder = 1;
+									} else {
+										++mantissa;
+										if (mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 2))) {
+											assert((mantissa % 2) == 0);
+											mantissa >>= 1;
+											++final_exponent;
+										}
+										remainder = 0;
+									}
+								} else {
+									remainder = 1;
 								}
 							} else {
 								remainder = 1;
 							}
-						} else {
-							remainder = 1;
+							assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
 						}
-						assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
 					}
 				} else {
 					mantissa = NormalizedReciprocalsOfFiveUint64[abs_exponent - 1] >> (sizeof(uint64_t) * CHAR_BIT - (DBL_MANT_DIG + 2));
 					assert(mantissa >= (UINT64_C(1) << (DBL_MANT_DIG + 1)) && mantissa < (UINT64_C(1) << (DBL_MANT_DIG + 2)));
 					remainder = 1;
-					final_exponent = exponent - NormalizedReciprocalExponentsOfFiveUint64[abs_exponent - 1] + sizeof(uint64_t) * CHAR_BIT - 1;
+					final_exponent = exponent - small_floor_log2_5_e(abs_exponent) - 1;
 				}
 
 				if (final_exponent >= (DBL_MIN_EXP - 1)) {

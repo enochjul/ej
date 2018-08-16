@@ -45,11 +45,6 @@ public:
 	static value_type eval(const void *s, size_t n, value_type seed = 0) noexcept {
 		return murmur3_32(s, n, seed);
 	}
-
-	template <typename K>
-	static value_type eval(const K &k, value_type seed = 0) noexcept {
-		return eval(&k, sizeof(k), seed);
-	}
 };
 
 template <>
@@ -63,11 +58,6 @@ public:
 
 	static value_type eval(uint32_t value, value_type seed = 0) noexcept {
 		return duint64_get_low(murmur3_128(value, seed));
-	}
-
-	template <typename K>
-	static value_type eval(const K &k, value_type seed = 0) noexcept {
-		return eval(&k, sizeof(k), seed);
 	}
 };
 

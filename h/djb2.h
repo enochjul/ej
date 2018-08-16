@@ -63,11 +63,6 @@ public:
 	static value_type eval(const void *s, size_t n) noexcept {
 		return djb2_32(s, n);
 	}
-
-	template <typename K>
-	static value_type eval(const K &k) noexcept {
-		return eval(&k, sizeof(k));
-	}
 };
 
 template <>
@@ -81,11 +76,6 @@ public:
 
 	static value_type eval(const void *s, size_t n) noexcept {
 		return djb2_64(s, n);
-	}
-
-	template <typename K>
-	static value_type eval(const K &k) noexcept {
-		return eval(&k, sizeof(k));
 	}
 };
 

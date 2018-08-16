@@ -133,11 +133,6 @@ public:
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1_64(s, n);
 	}
-
-	template <typename K>
-	static value_type eval(const K &k) noexcept {
-		return eval(&k, sizeof(k));
-	}
 };
 
 //! Helper class for computing the FNV1 hash of a string
@@ -156,11 +151,6 @@ public:
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1a_32(s, n);
 	}
-
-	template <typename K>
-	static value_type eval(const K &k) noexcept {
-		return eval(&k, sizeof(k));
-	}
 };
 
 template <>
@@ -174,11 +164,6 @@ public:
 
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1a_64(s, n);
-	}
-
-	template <typename K>
-	static value_type eval(const K &k) noexcept {
-		return eval(&k, sizeof(k));
 	}
 };
 

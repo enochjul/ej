@@ -60,11 +60,6 @@ public:
 	static value_type eval(int64_t value, value_type seed = 0) noexcept {
 		return xxhash_32(value, seed);
 	}
-
-	template <typename K>
-	static value_type eval(const K &k, value_type seed = 0) noexcept {
-		return eval(&k, sizeof(K), seed);
-	}
 };
 
 template <>
@@ -90,11 +85,6 @@ public:
 
 	static value_type eval(int64_t value, value_type seed = 0) noexcept {
 		return xxhash_64(value, seed);
-	}
-
-	template <typename K>
-	static value_type eval(const K &k, value_type seed = 0) noexcept {
-		return eval(&k, sizeof(K), seed);
 	}
 };
 

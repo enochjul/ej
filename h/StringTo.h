@@ -72,6 +72,38 @@ inline char *int64_to_c_string(char *s, int64_t value) {
 	return e;
 }
 
+char *uint32_to_hex_string_no_nul(char *s, uint32_t value) noexcept;
+inline char *uint32_to_hex_c_string(char *s, uint32_t value) {
+	auto *e = uint32_to_hex_string_no_nul(s, value);
+	e[0] = '\0';
+	e++;
+	return e;
+}
+
+char *uint64_to_hex_string_no_nul(char *s, uint64_t value) noexcept;
+inline char *uint64_to_hex_c_string(char *s, uint64_t value) {
+	auto *e = uint64_to_hex_string_no_nul(s, value);
+	e[0] = '\0';
+	e++;
+	return e;
+}
+
+char *uint32_to_uhex_string_no_nul(char *s, uint32_t value) noexcept;
+inline char *uint32_to_uhex_c_string(char *s, uint32_t value) {
+	auto *e = uint32_to_uhex_string_no_nul(s, value);
+	e[0] = '\0';
+	e++;
+	return e;
+}
+
+char *uint64_to_uhex_string_no_nul(char *s, uint64_t value) noexcept;
+inline char *uint64_to_uhex_c_string(char *s, uint64_t value) {
+	auto *e = uint64_to_uhex_string_no_nul(s, value);
+	e[0] = '\0';
+	e++;
+	return e;
+}
+
 }
 
 #endif

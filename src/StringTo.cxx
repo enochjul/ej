@@ -6170,4 +6170,306 @@ char *uint64_to_string_no_nul(char *s, uint64_t value) noexcept {
 	}
 }
 
+static const char HexDigits_0_f[] = {
+	 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+
+static const char HexDigits_00_ff[] alignas(2) = {
+	 '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', '0', 'a', '0', 'b', '0', 'c', '0', 'd', '0', 'e', '0', 'f',
+	 '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', '1', 'a', '1', 'b', '1', 'c', '1', 'd', '1', 'e', '1', 'f',
+	 '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', '2', 'a', '2', 'b', '2', 'c', '2', 'd', '2', 'e', '2', 'f',
+	 '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', '3', 'a', '3', 'b', '3', 'c', '3', 'd', '3', 'e', '3', 'f',
+	 '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', '4', 'a', '4', 'b', '4', 'c', '4', 'd', '4', 'e', '4', 'f',
+	 '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', '5', 'a', '5', 'b', '5', 'c', '5', 'd', '5', 'e', '5', 'f',
+	 '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', '6', 'a', '6', 'b', '6', 'c', '6', 'd', '6', 'e', '6', 'f',
+	 '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', '7', 'a', '7', 'b', '7', 'c', '7', 'd', '7', 'e', '7', 'f',
+	 '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', '8', 'a', '8', 'b', '8', 'c', '8', 'd', '8', 'e', '8', 'f',
+	 '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9', '7', '9', '8', '9', '9', '9', 'a', '9', 'b', '9', 'c', '9', 'd', '9', 'e', '9', 'f',
+	 'a', '0', 'a', '1', 'a', '2', 'a', '3', 'a', '4', 'a', '5', 'a', '6', 'a', '7', 'a', '8', 'a', '9', 'a', 'a', 'a', 'b', 'a', 'c', 'a', 'd', 'a', 'e', 'a', 'f',
+	 'b', '0', 'b', '1', 'b', '2', 'b', '3', 'b', '4', 'b', '5', 'b', '6', 'b', '7', 'b', '8', 'b', '9', 'b', 'a', 'b', 'b', 'b', 'c', 'b', 'd', 'b', 'e', 'b', 'f',
+	 'c', '0', 'c', '1', 'c', '2', 'c', '3', 'c', '4', 'c', '5', 'c', '6', 'c', '7', 'c', '8', 'c', '9', 'c', 'a', 'c', 'b', 'c', 'c', 'c', 'd', 'c', 'e', 'c', 'f',
+	 'd', '0', 'd', '1', 'd', '2', 'd', '3', 'd', '4', 'd', '5', 'd', '6', 'd', '7', 'd', '8', 'd', '9', 'd', 'a', 'd', 'b', 'd', 'c', 'd', 'd', 'd', 'e', 'd', 'f',
+	 'e', '0', 'e', '1', 'e', '2', 'e', '3', 'e', '4', 'e', '5', 'e', '6', 'e', '7', 'e', '8', 'e', '9', 'e', 'a', 'e', 'b', 'e', 'c', 'e', 'd', 'e', 'e', 'e', 'f',
+	 'f', '0', 'f', '1', 'f', '2', 'f', '3', 'f', '4', 'f', '5', 'f', '6', 'f', '7', 'f', '8', 'f', '9', 'f', 'a', 'f', 'b', 'f', 'c', 'f', 'd', 'f', 'e', 'f', 'f',
+};
+static_assert(alignof(HexDigits_00_ff) == 2);
+
+char *uint32_to_hex_string_no_nul(char *s, uint32_t value) noexcept {
+	//Calculate the number of hex digits
+	auto n = bsr32(value | 1u).Count / 4u + 1u;
+	auto *e = s + n;
+	uint32_t digits;
+
+	//Write 2 digits at a time to the string
+	switch (n) {
+	case 8:
+		digits = value >> 24;
+		memcpy(e - 8, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFFFFFFu;
+	case 6:
+		digits = value >> 16;
+		memcpy(e - 6, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFFFFu;
+	case 4:
+		digits = value >> 8;
+		memcpy(e - 4, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFFu;
+	case 2:
+		memcpy(e - 2, HexDigits_00_ff + value * 2, 2);
+	default:
+		return e;
+
+	case 7:
+		digits = value >> 20;
+		memcpy(e - 7, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFFFFFu;
+	case 5:
+		digits = value >> 12;
+		memcpy(e - 5, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFFFu;
+	case 3:
+		digits = value >> 4;
+		memcpy(e - 3, HexDigits_00_ff + digits * 2, 2);
+		value &= 0xFu;
+	case 1:
+		e[-1] = HexDigits_0_f[value];
+		return e;
+
+	case 0:
+		s[0] = '0';
+		return s + 1;
+	}
+}
+
+char *uint64_to_hex_string_no_nul(char *s, uint64_t value) noexcept {
+	//Calculate the number of hex digits
+	auto n = static_cast<uint32_t>(bsr64(value | 1u).Count) / 4u + 1u;
+	auto *e = s + n;
+	uint32_t digits, value32;
+
+	//Write 2 digits at a time to the string
+	value32 = static_cast<uint32_t>(value);
+	switch (n) {
+	case 16:
+		digits = value >> 56;
+		memcpy(e - 16, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFFFF);
+	case 14:
+		digits = value >> 48;
+		memcpy(e - 14, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFF);
+	case 12:
+		digits = value >> 40;
+		memcpy(e - 12, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFF);
+	case 10:
+		digits = value >> 32;
+		memcpy(e - 10, HexDigits_00_ff + digits * 2, 2);
+		value32 = static_cast<uint32_t>(value);
+	case 8:
+		digits = value32 >> 24;
+		memcpy(e - 8, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFFFFFFu;
+	case 6:
+		digits = value32 >> 16;
+		memcpy(e - 6, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFFFFu;
+	case 4:
+		digits = value32 >> 8;
+		memcpy(e - 4, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFFu;
+	case 2:
+		memcpy(e - 2, HexDigits_00_ff + value32 * 2, 2);
+	default:
+		return e;
+
+	case 15:
+		digits = value >> 52;
+		memcpy(e - 15, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFFF);
+	case 13:
+		digits = value >> 44;
+		memcpy(e - 13, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFF);
+	case 11:
+		digits = value >> 36;
+		memcpy(e - 11, HexDigits_00_ff + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFF);
+	case 9:
+		digits = value >> 28;
+		memcpy(e - 9, HexDigits_00_ff + digits * 2, 2);
+		value32 = static_cast<uint32_t>(value) & 0xFFFFFFFu;
+	case 7:
+		digits = value32 >> 20;
+		memcpy(e - 7, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFFFFFu;
+	case 5:
+		digits = value32 >> 12;
+		memcpy(e - 5, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFFFu;
+	case 3:
+		digits = value32 >> 4;
+		memcpy(e - 3, HexDigits_00_ff + digits * 2, 2);
+		value32 &= 0xFu;
+	case 1:
+		e[-1] = HexDigits_0_f[value32];
+		return e;
+
+	case 0:
+		s[0] = '0';
+		return s + 1;
+	}
+}
+
+static const char HexDigits_0_F[] = {
+	 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
+};
+
+static const char HexDigits_00_FF[] alignas(2) = {
+	 '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0', '5', '0', '6', '0', '7', '0', '8', '0', '9', '0', 'A', '0', 'B', '0', 'C', '0', 'D', '0', 'E', '0', 'F',
+	 '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', '1', 'A', '1', 'B', '1', 'C', '1', 'D', '1', 'E', '1', 'F',
+	 '2', '0', '2', '1', '2', '2', '2', '3', '2', '4', '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', '2', 'A', '2', 'B', '2', 'C', '2', 'D', '2', 'E', '2', 'F',
+	 '3', '0', '3', '1', '3', '2', '3', '3', '3', '4', '3', '5', '3', '6', '3', '7', '3', '8', '3', '9', '3', 'A', '3', 'B', '3', 'C', '3', 'D', '3', 'E', '3', 'F',
+	 '4', '0', '4', '1', '4', '2', '4', '3', '4', '4', '4', '5', '4', '6', '4', '7', '4', '8', '4', '9', '4', 'A', '4', 'B', '4', 'C', '4', 'D', '4', 'E', '4', 'F',
+	 '5', '0', '5', '1', '5', '2', '5', '3', '5', '4', '5', '5', '5', '6', '5', '7', '5', '8', '5', '9', '5', 'A', '5', 'B', '5', 'C', '5', 'D', '5', 'E', '5', 'F',
+	 '6', '0', '6', '1', '6', '2', '6', '3', '6', '4', '6', '5', '6', '6', '6', '7', '6', '8', '6', '9', '6', 'A', '6', 'B', '6', 'C', '6', 'D', '6', 'E', '6', 'F',
+	 '7', '0', '7', '1', '7', '2', '7', '3', '7', '4', '7', '5', '7', '6', '7', '7', '7', '8', '7', '9', '7', 'A', '7', 'B', '7', 'C', '7', 'D', '7', 'E', '7', 'F',
+	 '8', '0', '8', '1', '8', '2', '8', '3', '8', '4', '8', '5', '8', '6', '8', '7', '8', '8', '8', '9', '8', 'A', '8', 'B', '8', 'C', '8', 'D', '8', 'E', '8', 'F',
+	 '9', '0', '9', '1', '9', '2', '9', '3', '9', '4', '9', '5', '9', '6', '9', '7', '9', '8', '9', '9', '9', 'A', '9', 'B', '9', 'C', '9', 'D', '9', 'E', '9', 'F',
+	 'A', '0', 'A', '1', 'A', '2', 'A', '3', 'A', '4', 'A', '5', 'A', '6', 'A', '7', 'A', '8', 'A', '9', 'A', 'A', 'A', 'B', 'A', 'C', 'A', 'D', 'A', 'E', 'A', 'F',
+	 'B', '0', 'B', '1', 'B', '2', 'B', '3', 'B', '4', 'B', '5', 'B', '6', 'B', '7', 'B', '8', 'B', '9', 'B', 'A', 'B', 'B', 'B', 'C', 'B', 'D', 'B', 'E', 'B', 'F',
+	 'C', '0', 'C', '1', 'C', '2', 'C', '3', 'C', '4', 'C', '5', 'C', '6', 'C', '7', 'C', '8', 'C', '9', 'C', 'A', 'C', 'B', 'C', 'C', 'C', 'D', 'C', 'E', 'C', 'F',
+	 'D', '0', 'D', '1', 'D', '2', 'D', '3', 'D', '4', 'D', '5', 'D', '6', 'D', '7', 'D', '8', 'D', '9', 'D', 'A', 'D', 'B', 'D', 'C', 'D', 'D', 'D', 'E', 'D', 'F',
+	 'E', '0', 'E', '1', 'E', '2', 'E', '3', 'E', '4', 'E', '5', 'E', '6', 'E', '7', 'E', '8', 'E', '9', 'E', 'A', 'E', 'B', 'E', 'C', 'E', 'D', 'E', 'E', 'E', 'F',
+	 'F', '0', 'F', '1', 'F', '2', 'F', '3', 'F', '4', 'F', '5', 'F', '6', 'F', '7', 'F', '8', 'F', '9', 'F', 'A', 'F', 'B', 'F', 'C', 'F', 'D', 'F', 'E', 'F', 'F',
+};
+static_assert(alignof(HexDigits_00_FF) == 2);
+
+char *uint32_to_uhex_string_no_nul(char *s, uint32_t value) noexcept {
+	//Calculate the number of hex digits
+	auto n = bsr32(value | 1u).Count / 4u + 1u;
+	auto *e = s + n;
+	uint32_t digits;
+
+	//Write 2 digits at a time to the string
+	switch (n) {
+	case 8:
+		digits = value >> 24;
+		memcpy(e - 8, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFFFFFFu;
+	case 6:
+		digits = value >> 16;
+		memcpy(e - 6, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFFFFu;
+	case 4:
+		digits = value >> 8;
+		memcpy(e - 4, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFFu;
+	case 2:
+		memcpy(e - 2, HexDigits_00_FF + value * 2, 2);
+	default:
+		return e;
+
+	case 7:
+		digits = value >> 20;
+		memcpy(e - 7, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFFFFFu;
+	case 5:
+		digits = value >> 12;
+		memcpy(e - 5, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFFFu;
+	case 3:
+		digits = value >> 4;
+		memcpy(e - 3, HexDigits_00_FF + digits * 2, 2);
+		value &= 0xFu;
+	case 1:
+		e[-1] = HexDigits_0_F[value];
+		return e;
+
+	case 0:
+		s[0] = '0';
+		return s + 1;
+	}
+}
+
+char *uint64_to_uhex_string_no_nul(char *s, uint64_t value) noexcept {
+	//Calculate the number of hex digits
+	auto n = static_cast<uint32_t>(bsr64(value | 1u).Count) / 4u + 1u;
+	auto *e = s + n;
+	uint32_t digits, value32;
+
+	//Write 2 digits at a time to the string
+	value32 = static_cast<uint32_t>(value);
+	switch (n) {
+	case 16:
+		digits = value >> 56;
+		memcpy(e - 16, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFFFF);
+	case 14:
+		digits = value >> 48;
+		memcpy(e - 14, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFF);
+	case 12:
+		digits = value >> 40;
+		memcpy(e - 12, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFF);
+	case 10:
+		digits = value >> 32;
+		memcpy(e - 10, HexDigits_00_FF + digits * 2, 2);
+		value32 = static_cast<uint32_t>(value);
+	case 8:
+		digits = value32 >> 24;
+		memcpy(e - 8, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFFFFFFu;
+	case 6:
+		digits = value32 >> 16;
+		memcpy(e - 6, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFFFFu;
+	case 4:
+		digits = value32 >> 8;
+		memcpy(e - 4, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFFu;
+	case 2:
+		memcpy(e - 2, HexDigits_00_FF + value32 * 2, 2);
+	default:
+		return e;
+
+	case 15:
+		digits = value >> 52;
+		memcpy(e - 15, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFFFF);
+	case 13:
+		digits = value >> 44;
+		memcpy(e - 13, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFFFF);
+	case 11:
+		digits = value >> 36;
+		memcpy(e - 11, HexDigits_00_FF + digits * 2, 2);
+		value &= UINT64_C(0xFFFFFFFFF);
+	case 9:
+		digits = value >> 28;
+		memcpy(e - 9, HexDigits_00_FF + digits * 2, 2);
+		value32 = static_cast<uint32_t>(value) & 0xFFFFFFFu;
+	case 7:
+		digits = value32 >> 20;
+		memcpy(e - 7, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFFFFFu;
+	case 5:
+		digits = value32 >> 12;
+		memcpy(e - 5, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFFFu;
+	case 3:
+		digits = value32 >> 4;
+		memcpy(e - 3, HexDigits_00_FF + digits * 2, 2);
+		value32 &= 0xFu;
+	case 1:
+		e[-1] = HexDigits_0_F[value32];
+		return e;
+
+	case 0:
+		s[0] = '0';
+		return s + 1;
+	}
+}
+
 }

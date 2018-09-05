@@ -56,6 +56,46 @@ uint64_t fnv1a_64(const char *s) noexcept {
 	return hash;
 }
 
+uint32_t fnv1_add_32(const char *s) noexcept {
+	uint32_t hash;
+	unsigned char ch;
+
+	for (hash = FNV_32_OFFSET_BASIS; (ch = static_cast<unsigned char>(*s)) != '\0'; ++s) {
+		hash = hash * FNV_32_MULTIPLIER + ch;
+	}
+	return hash;
+}
+
+uint64_t fnv1_add_64(const char *s) noexcept {
+	uint64_t hash;
+	unsigned char ch;
+
+	for (hash = FNV_64_OFFSET_BASIS; (ch = static_cast<unsigned char>(*s)) != '\0'; ++s) {
+		hash = hash * FNV_64_MULTIPLIER + ch;
+	}
+	return hash;
+}
+
+uint32_t fnv1a_add_32(const char *s) noexcept {
+	uint32_t hash;
+	unsigned char ch;
+
+	for (hash = FNV_32_OFFSET_BASIS; (ch = static_cast<unsigned char>(*s)) != '\0'; ++s) {
+		hash = (hash + ch) * FNV_32_MULTIPLIER;
+	}
+	return hash;
+}
+
+uint64_t fnv1a_add_64(const char *s) noexcept {
+	uint64_t hash;
+	unsigned char ch;
+
+	for (hash = FNV_64_OFFSET_BASIS; (ch = static_cast<unsigned char>(*s)) != '\0'; ++s) {
+		hash = (hash + ch) * FNV_64_MULTIPLIER;
+	}
+	return hash;
+}
+
 uint32_t fnv1_32(const void *s, size_t n) noexcept {
 	const uint8_t *start;
 	const uint8_t *end;

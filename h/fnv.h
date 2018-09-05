@@ -18,6 +18,12 @@ uint64_t fnv1_64(const char *s) noexcept;
 uint32_t fnv1a_32(const char *s) noexcept;
 uint64_t fnv1a_64(const char *s) noexcept;
 
+uint32_t fnv1_add_32(const char *s) noexcept;
+uint64_t fnv1_add_64(const char *s) noexcept;
+
+uint32_t fnv1a_add_32(const char *s) noexcept;
+uint64_t fnv1a_add_64(const char *s) noexcept;
+
 uint32_t fnv1_32(const void *s, size_t n) noexcept;
 uint32_t fnv1_32(uint32_t value) noexcept;
 uint32_t fnv1_32(uint64_t value) noexcept;
@@ -176,6 +182,10 @@ class FNV1AddHash<uint32_t> {
 public:
 	typedef uint32_t value_type;
 
+	static value_type eval(const char *s) noexcept {
+		return fnv1_add_32(s);
+	}
+
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1_add_32(s, n);
 	}
@@ -190,6 +200,10 @@ template <>
 class FNV1AddHash<uint64_t> {
 public:
 	typedef uint64_t value_type;
+
+	static value_type eval(const char *s) noexcept {
+		return fnv1_add_64(s);
+	}
 
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1_add_64(s, n);
@@ -210,6 +224,10 @@ class FNV1aAddHash<uint32_t> {
 public:
 	typedef uint32_t value_type;
 
+	static value_type eval(const char *s) noexcept {
+		return fnv1a_add_32(s);
+	}
+
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1a_add_32(s, n);
 	}
@@ -224,6 +242,10 @@ template <>
 class FNV1aAddHash<uint64_t> {
 public:
 	typedef uint64_t value_type;
+
+	static value_type eval(const char *s) noexcept {
+		return fnv1a_add_64(s);
+	}
 
 	static value_type eval(const void *s, size_t n) noexcept {
 		return fnv1a_add_64(s, n);

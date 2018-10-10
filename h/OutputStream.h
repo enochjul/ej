@@ -124,6 +124,17 @@ class OutputStream : public MutexType {
 			return flush_on_full(n);
 		}
 	}
+	StatusCode write(float value) noexcept {
+		auto *buffer = Buffer;
+		auto n = Size;
+		n = static_cast<unsigned>(float_to_string_no_nul(buffer + n, value) - buffer);
+		if (EJ_LIKELY(n < N)) {
+			Size = n;
+			return StatusCode();
+		} else {
+			return flush_on_full(n);
+		}
+	}
 	StatusCode write(Hex<uint32_t> value) noexcept {
 		auto *buffer = Buffer;
 		auto n = Size;

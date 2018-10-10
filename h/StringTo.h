@@ -104,6 +104,14 @@ inline char *uint64_to_uhex_c_string(char *s, uint64_t value) {
 	return e;
 }
 
+char *float_to_string_no_nul(char *s, float value) noexcept;
+inline char *float_to_c_string(char *s, float value) noexcept {
+	auto *e = float_to_string_no_nul(s, value);
+	e[0] = '\0';
+	e++;
+	return e;
+}
+
 }
 
 #endif

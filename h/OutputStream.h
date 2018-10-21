@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <utility>
+
 #include "CAlloc.h"
 #include "Common.h"
 #include "Construct.h"
@@ -191,19 +193,29 @@ class OutputStream : public MutexType {
 public:
 	StatusCode flush() noexcept;
 
-	template <typename ... A>
+	template <bool flush_after = false, typename ... A>
 	EJ_ALWAYS_INLINE StatusCode print(A &&... args) noexcept {
 		MutexType::lock();
 		auto r = print_nl(std::forward<A>(args) ...);
+		if constexpr (flush_after) {
+			if (EJ_LIKELY(r.success())) {
+				r = flush();
+			}
+		}
 		MutexType::unlock();
 		return r;
+	}
+
+	template <bool flush_after = true, typename ... A>
+	EJ_ALWAYS_INLINE StatusCode println(A &&... args) noexcept {
+		return print<flush_after>(std::forward<A>(args) ..., '\n');
 	}
 
 	template <typename F>
 	EJ_ALWAYS_INLINE static StatusCode with(File::native_type handle, F func) noexcept {
 		auto *out = Alloc::template try_alloc<this_type>();
 		if (out != nullptr) {
-			new(out) this_type(handle);
+			new(out, 0) this_type(handle);
 
 			auto status_code = func(*out);
 			if (EJ_LIKELY(status_code.success())) {
@@ -215,6 +227,35 @@ public:
 			}
 
 			Alloc::dealloc(out);
+			return status_code;
+		} else {
+			return StatusCode(ENOMEM);
+		}
+	}
+
+	template <typename F>
+	EJ_ALWAYS_INLINE static StatusCode with(File::native_type handle_out, File::native_type handle_err, F func) noexcept {
+		auto *out = Alloc::template try_alloc_array<this_type>(2);
+		if (out != nullptr) {
+			new(out, 0) this_type(handle_out);
+			auto *err = out + 1;
+			new(err, 0) this_type(handle_err);
+
+			auto status_code = func(*out, *err);
+			if (EJ_LIKELY(status_code.success())) {
+				auto n = out->Size;
+				if (n > 0) {
+					out->Size = 0;
+					status_code = File::write(handle_out, out->Buffer, n);
+				}
+				n = err->Size;
+				if (n > 0) {
+					err->Size = 0;
+					status_code = File::write(handle_err, err->Buffer, n);
+				}
+			}
+
+			Alloc::dealloc_array(out, 2);
 			return status_code;
 		} else {
 			return StatusCode(ENOMEM);

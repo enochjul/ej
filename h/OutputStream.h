@@ -35,7 +35,7 @@ template <
 	class MutexType = NoMutex,
 	//! Allocator to use
 	class Alloc = CAlloc>
-class OutputStream : public MutexType {
+class OutputStream final : public MutexType {
 	typedef OutputStream<N, MutexType, Alloc> this_type;
 
 	//Allocate a bit more than the requested buffer size so that the number conversion functions can assume that there is always enough space in the buffer for the conversion
@@ -47,9 +47,6 @@ class OutputStream : public MutexType {
 	File::native_type Handle;
 	unsigned Size;
 	char Buffer[BUFFER_ALLOC_SIZE];
-
-	constexpr explicit OutputStream(File::native_type handle) noexcept : Handle(handle), Size(0) {
-	}
 
 	//! Flush a full buffer
 	StatusCode flush_on_full() noexcept;
@@ -191,6 +188,9 @@ class OutputStream : public MutexType {
 	}
 
 public:
+	constexpr explicit OutputStream(File::native_type handle) noexcept : Handle(handle), Size(0) {
+	}
+
 	StatusCode flush() noexcept;
 
 	template <bool flush_after = false, typename ... A>
@@ -215,7 +215,7 @@ public:
 	EJ_ALWAYS_INLINE static StatusCode with(File::native_type handle, F func) noexcept {
 		auto *out = Alloc::template try_alloc<this_type>();
 		if (out != nullptr) {
-			new(out, 0) this_type(handle);
+			forward_construct<this_type>(out, handle);
 
 			auto status_code = func(*out);
 			if (EJ_LIKELY(status_code.success())) {
@@ -237,9 +237,9 @@ public:
 	EJ_ALWAYS_INLINE static StatusCode with(File::native_type handle_out, File::native_type handle_err, F func) noexcept {
 		auto *out = Alloc::template try_alloc_array<this_type>(2);
 		if (out != nullptr) {
-			new(out, 0) this_type(handle_out);
+			forward_construct<this_type>(out, handle_out);
 			auto *err = out + 1;
-			new(err, 0) this_type(handle_err);
+			forward_construct<this_type>(err, handle_err);
 
 			auto status_code = func(*out, *err);
 			if (EJ_LIKELY(status_code.success())) {

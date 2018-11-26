@@ -21,6 +21,10 @@ public:
 		return Value;
 	}
 
+	constexpr void set(int value) noexcept {
+		Value = value;
+	}
+
 	constexpr void clear() noexcept {
 		Value = 0;
 	}

@@ -23,7 +23,18 @@ public:
 
 	struct OpenOutcome {
 		native_type Value;
-		StatusCode Error;
+
+		constexpr bool success() const noexcept {
+			return Value >= 0;
+		}
+
+		constexpr bool failure() const noexcept {
+			return Value < 0;
+		}
+
+		constexpr int error() const noexcept {
+			return -Value;
+		}
 	};
 
 	static OpenOutcome open(const char *path, int flags) noexcept {
@@ -31,13 +42,22 @@ public:
 
 		native_type fd = ::open(path, flags);
 		if (fd >= 0) {
-			return OpenOutcome{ fd, StatusCode() };
+			return OpenOutcome{ fd };
 		} else {
-			return OpenOutcome{ fd, StatusCode(errno) };
+			return OpenOutcome{ -errno };
 		}
 	}
 
-	StatusCode close(native_type fd) noexcept {
+	static OpenOutcome open(const char *path, int flags, mode_t mode) noexcept {
+		native_type fd = ::open(path, flags, mode);
+		if (fd >= 0) {
+			return OpenOutcome{ fd };
+		} else {
+			return OpenOutcome{ -errno };
+		}
+	}
+
+	static StatusCode close(native_type fd) noexcept {
 		auto status = ::close(fd);
 		if (EJ_LIKELY(status == 0)) {
 			return StatusCode();

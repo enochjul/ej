@@ -20,6 +20,7 @@
 #include "NoMutex.h"
 #include "StatusCode.h"
 #include "StringTo.h"
+#include "StringView.h"
 
 namespace ej {
 
@@ -173,6 +174,10 @@ class OutputStream final : public MutexType {
 	StatusCode write(const char *s) noexcept {
 		return write(s, strlen(s));
 	}
+	template <typename T, typename S = size_t>
+	StatusCode write(const StringView<T, S> &s) noexcept {
+		return write(s.data(), s.size());
+	}
 
 	template <typename T, typename ... A>
 	EJ_ALWAYS_INLINE StatusCode print_nl(const T &v, A &&... args) noexcept {
@@ -256,6 +261,68 @@ public:
 			}
 
 			Alloc::dealloc_array(out, 2);
+			return status_code;
+		} else {
+			return StatusCode(ENOMEM);
+		}
+	}
+
+	template <typename F>
+	EJ_ALWAYS_INLINE static StatusCode with(const char *path, int flags, F func) noexcept {
+		StatusCode status_code;
+
+		auto *out = Alloc::template try_alloc<this_type>();
+		if (out != nullptr) {
+			auto r = File::open(path, flags);
+			if (r.success()) {
+				forward_construct<this_type>(out, r.Value);
+
+				status_code = func(*out);
+				if (EJ_LIKELY(status_code.success())) {
+					auto n = out->Size;
+					if (n > 0) {
+						out->Size = 0;
+						status_code = File::write(r.Value, out->Buffer, n);
+					}
+				}
+
+				File::close(r.Value);
+			} else {
+				status_code.set(r.error());
+			}
+
+			Alloc::dealloc(out);
+			return status_code;
+		} else {
+			return StatusCode(ENOMEM);
+		}
+	}
+
+	template <typename F>
+	EJ_ALWAYS_INLINE static StatusCode with(const char *path, int flags, mode_t mode, F func) noexcept {
+		StatusCode status_code;
+
+		auto *out = Alloc::template try_alloc<this_type>();
+		if (out != nullptr) {
+			auto r = File::open(path, flags, mode);
+			if (r.success()) {
+				forward_construct<this_type>(out, r.Value);
+
+				status_code = func(*out);
+				if (EJ_LIKELY(status_code.success())) {
+					auto n = out->Size;
+					if (n > 0) {
+						out->Size = 0;
+						status_code = File::write(r.Value, out->Buffer, n);
+					}
+				}
+
+				File::close(r.Value);
+			} else {
+				status_code.set(r.code());
+			}
+
+			Alloc::dealloc(out);
 			return status_code;
 		} else {
 			return StatusCode(ENOMEM);

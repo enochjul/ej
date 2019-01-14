@@ -147,9 +147,9 @@ public:
 
 	template <typename Function>
 	void for_each(Function f) noexcept {
-		static_assert(noexcept(f(key_type(), value_type())));
 		for (auto nodes_i = Nodes, nodes_e = nodes_i + Mask + 1; nodes_i != nodes_e; ++nodes_i) {
 			for (auto node = *nodes_i; node != nullptr; node = node->Next) {
+				static_assert(noexcept(f(node->KeyValue.Key, node->KeyValue.Value)));
 				f(node->KeyValue.Key, node->KeyValue.Value);
 			}
 		}
@@ -157,9 +157,9 @@ public:
 
 	template <typename Function>
 	void for_each(Function f) const noexcept {
-		static_assert(noexcept(f(key_type(), value_type())));
 		for (auto nodes_i = Nodes, nodes_e = nodes_i + Mask + 1; nodes_i != nodes_e; ++nodes_i) {
 			for (const auto *node = *nodes_i; node != nullptr; node = node->Next) {
+				static_assert(noexcept(f(node->KeyValue.Key, node->KeyValue.Value)));
 				f(node->KeyValue.Key, node->KeyValue.Value);
 			}
 		}

@@ -6,6 +6,7 @@
 #define EJ_STRING_VIEW_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 namespace ej {
 
@@ -110,7 +111,7 @@ public:
 		return Last == First;
 	}
 	constexpr size_type size() const noexcept {
-		return Last - First;
+		return (reinterpret_cast<uintptr_t>(Last) - reinterpret_cast<uintptr_t>(First)) / sizeof(value_type);
 	}
 
 	iterator begin() noexcept {

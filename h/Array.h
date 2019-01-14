@@ -221,8 +221,8 @@ public:
 	//! Applies the given function to each object
 	template <typename Function>
 	void for_each(Function f) noexcept {
-		static_assert(noexcept(f(value_type())));
 		for (auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}
@@ -230,8 +230,8 @@ public:
 	//! Applies the given function to each object
 	template <typename Function>
 	void cfor_each(Function f) const noexcept {
-		static_assert(noexcept(f(value_type())));
 		for (const auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}

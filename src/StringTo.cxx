@@ -6006,6 +6006,21 @@ EJ_ALWAYS_INLINE unsigned small_floor_log10_2_e(unsigned exponent) noexcept {
 	return exponent * 1233u / 4096u;
 }
 
+unsigned uint32_find_number_of_digits(uint32_t value) noexcept {
+	if (value > 0) {
+		//Calculate the number of decimal digits by the floor of log10 of the closest power of 2
+#ifdef __LZCNT__
+		auto n = small_floor_log10_2_e(32u - _lzcnt_u32(value));
+#else
+		auto n = small_floor_log10_2_e(bsr32(value | 1u).Count + 1u);
+#endif
+		n += (value >= static_cast<uint32_t>(Uint64PowersOf10[n]) ? 1u : 0u);
+		return n;
+	} else {
+		return 1;
+	}
+}
+
 char *uint32_to_string_no_nul(char *s, uint32_t value) noexcept {
 	//Calculate the number of decimal digits by the floor of log10 of the closest power of 2
 #ifdef __LZCNT__
@@ -6066,6 +6081,21 @@ char *uint32_to_string_no_nul(char *s, uint32_t value) noexcept {
 	}
 }
 
+unsigned uint64_find_number_of_digits(uint64_t value) noexcept {
+	if (value > 0) {
+		//Calculate the number of decimal digits by the floor of log10 of the closest power of 2
+#ifdef __LZCNT__
+		auto n = small_floor_log10_2_e(64u - static_cast<uint32_t>(_lzcnt_u64(value)));
+#else
+		auto n = small_floor_log10_2_e(static_cast<uint32_t>(bsr64(value | 1u).Count) + 1u);
+#endif
+		n += (value >= Uint64PowersOf10[n] ? 1u : 0u);
+		return n;
+	} else {
+		return 1;
+	}
+}
+
 char *uint64_to_string_no_nul(char *s, uint64_t value) noexcept {
 	//Calculate the number of decimal digits by the floor of log10 of the closest power of 2
 #ifdef __LZCNT__
@@ -6073,7 +6103,7 @@ char *uint64_to_string_no_nul(char *s, uint64_t value) noexcept {
 #else
 	auto n = small_floor_log10_2_e(static_cast<uint32_t>(bsr64(value | 1u).Count) + 1u);
 #endif
-	n += (value >= Uint64PowersOf10[n] ? 1 : 0);
+	n += (value >= Uint64PowersOf10[n] ? 1u : 0u);
 	auto *e = s + n;
 	uint32_t digits, value32;
 

@@ -79,10 +79,13 @@ inline CeilLog2ReturnType<uint64_t> ceil_log2(uint64_t value) noexcept {
 //! Computes the ceiling of the log base 2 of the specified value, suitable for use in a constant expression but may be slower
 template <typename T>
 constexpr inline CeilLog2ReturnType<T> ce_ceil_log2(T value) noexcept {
-	T count = 0;
+	T count = 0, v = value;
 	bool valid = value != 0;
 
-	while ((value >>= 1) != 0) {
+	while ((v >>= 1) != 0) {
+		count++;
+	}
+	if ((value & (value - 1)) != 0) {
 		count++;
 	}
 	return { count, valid };

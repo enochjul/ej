@@ -17,17 +17,13 @@
 #include "Common.h"
 #include "Construct.h"
 #include "File.h"
+#include "Hex.h"
 #include "NoMutex.h"
 #include "StatusCode.h"
 #include "StringTo.h"
 #include "StringView.h"
 
 namespace ej {
-
-template <typename T>
-struct Hex {
-	T Value;
-};
 
 template <
 	//! Size of the buffer
@@ -319,7 +315,7 @@ public:
 
 				File::close(r.Value);
 			} else {
-				status_code.set(r.code());
+				status_code.set(r.error());
 			}
 
 			Alloc::dealloc(out);
@@ -395,42 +391,6 @@ StatusCode OutputStream<N, MutexType, Alloc>::flush() noexcept {
 
 	MutexType::unlock();
 	return status_code;
-}
-
-EJ_ALWAYS_INLINE auto hex(char value) noexcept {
-	return Hex<uint32_t>{static_cast<unsigned char>(value)};
-}
-
-EJ_ALWAYS_INLINE auto hex(signed char value) noexcept {
-	return Hex<uint32_t>{static_cast<unsigned char>(value)};
-}
-
-EJ_ALWAYS_INLINE auto hex(unsigned char value) noexcept {
-	return Hex<uint32_t>{value};
-}
-
-EJ_ALWAYS_INLINE auto hex(int16_t value) noexcept {
-	return Hex<uint32_t>{static_cast<uint16_t>(value)};
-}
-
-EJ_ALWAYS_INLINE auto hex(uint16_t value) noexcept {
-	return Hex<uint32_t>{value};
-}
-
-EJ_ALWAYS_INLINE auto hex(int32_t value) noexcept {
-	return Hex<uint32_t>{static_cast<uint32_t>(value)};
-}
-
-EJ_ALWAYS_INLINE auto hex(uint32_t value) noexcept {
-	return Hex<uint32_t>{value};
-}
-
-EJ_ALWAYS_INLINE auto hex(int64_t value) noexcept {
-	return Hex<uint64_t>{static_cast<uint64_t>(value)};
-}
-
-EJ_ALWAYS_INLINE auto hex(uint64_t value) noexcept {
-	return Hex<uint64_t>{value};
 }
 
 }

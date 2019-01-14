@@ -169,7 +169,7 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) {
+	void for_each(Function f) noexcept {
 		value_type *const *page_begin;
 		value_type *const *page_iter;
 		value_type *const *page_end;
@@ -180,6 +180,7 @@ public:
 		for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
 			auto page = *page_iter;
 			for (auto obj_iter = page, obj_end = page + M; obj_iter != obj_end; ++obj_iter) {
+				static_assert(noexcept(f(*obj_iter)));
 				f(*obj_iter);
 			}
 		}
@@ -189,6 +190,7 @@ public:
 		if (last_page_size > 0) {
 			auto page = *page_iter;
 			for (auto obj_iter = page, obj_end = page + last_page_size; obj_iter != obj_end; ++obj_iter) {
+				static_assert(noexcept(f(*obj_iter)));
 				f(*obj_iter);
 			}
 		}
@@ -196,7 +198,7 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void cfor_each(Function f) const {
+	void cfor_each(Function f) const noexcept {
 		const value_type *const *page_begin;
 		const value_type *const *page_iter;
 		const value_type *const *page_end;
@@ -207,6 +209,7 @@ public:
 		for (page_iter = page_begin, page_end = page_begin + (n / M); page_iter != page_end; ++page_iter) {
 			auto page = *page_iter;
 			for (auto obj_iter = page, obj_end = page + M; obj_iter != obj_end; ++obj_iter) {
+				static_assert(noexcept(f(*obj_iter)));
 				f(*obj_iter);
 			}
 		}
@@ -216,6 +219,7 @@ public:
 		if (last_page_size > 0) {
 			auto page = *page_iter;
 			for (auto obj_iter = page, obj_end = page + last_page_size; obj_iter != obj_end; ++obj_iter) {
+				static_assert(noexcept(f(*obj_iter)));
 				f(*obj_iter);
 			}
 		}
@@ -223,13 +227,13 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) const {
+	void for_each(Function f) const noexcept {
 		cfor_each(f);
 	}
 
 	//! Applies the given function to each object, starting from the last object
 	template <typename Function>
-	void rfor_each(Function f) {
+	void rfor_each(Function f) noexcept {
 		auto n = this->Size;
 		auto page_begin = this->PagesFirst;
 		auto full_page_end = page_begin + (n / M);
@@ -239,6 +243,7 @@ public:
 		if (last_page_size > 0) {
 			auto page = *full_page_end;
 			for (auto obj_riter = page + last_page_size, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				static_assert(noexcept(f(*(obj_riter - 1))));
 				f(*(obj_riter - 1));
 			}
 		}
@@ -247,6 +252,7 @@ public:
 		for (auto page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
 			auto page = *(page_riter - 1);
 			for (auto obj_riter = page + M, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				static_assert(noexcept(f(*(obj_riter - 1))));
 				f(*(obj_riter - 1));
 			}
 		}
@@ -254,7 +260,7 @@ public:
 
 	//! Applies the given function to each object, starting from the last object
 	template <typename Function>
-	void crfor_each(Function f) const {
+	void crfor_each(Function f) const noexcept {
 		auto n = this->Size;
 		const auto *const *page_begin = this->PagesFirst;
 		auto full_page_end = page_begin + (n / M);
@@ -264,6 +270,7 @@ public:
 		if (last_page_size > 0) {
 			auto page = *full_page_end;
 			for (auto obj_riter = page + last_page_size, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				static_assert(noexcept(f(*(obj_riter - 1))));
 				f(*(obj_riter - 1));
 			}
 		}
@@ -272,6 +279,7 @@ public:
 		for (auto page_riter = full_page_end, page_rend = page_begin; page_riter != page_rend; --page_riter) {
 			auto page = *(page_riter - 1);
 			for (auto obj_riter = page + M, obj_rend = page; obj_riter != obj_rend; --obj_riter) {
+				static_assert(noexcept(f(*(obj_riter - 1))));
 				f(*(obj_riter - 1));
 			}
 		}
@@ -279,7 +287,7 @@ public:
 
 	//! Applies the given function to each object, starting from the last object
 	template <typename Function>
-	void rfor_each(Function f) const {
+	void rfor_each(Function f) const noexcept {
 		crfor_each(f);
 	}
 };

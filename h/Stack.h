@@ -112,7 +112,6 @@ template <typename T, size_t N, class Alloc>
 template <typename Function>
 inline void Stack<T, N, Alloc>::pop(Function f) noexcept {
 	static_assert(std::is_nothrow_destructible<T>::value);
-	static_assert(noexcept(f(First->Data)));
 
 	assert(!empty());
 
@@ -120,6 +119,7 @@ inline void Stack<T, N, Alloc>::pop(Function f) noexcept {
 
 	top = static_cast<value_type *>(top) - 1;
 	auto back = static_cast<value_type *>(lea(top, offsetof(node_type, Data)));
+	static_assert(noexcept(f(back)));
 	f(back);
 	if constexpr (!std::is_trivially_destructible<value_type>::value) {
 		destruct(back);

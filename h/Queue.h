@@ -46,9 +46,6 @@ public:
 	Queue &operator =(const Queue &) = delete;
 
 	bool empty() noexcept {
-/*
-		return First == Last && FirstOffset == LastOffset;
-*/
 		return Head == Tail;
 	}
 
@@ -133,12 +130,12 @@ template <typename T, size_t N, class Alloc>
 template <typename Function>
 inline void Queue<T, N, Alloc>::pop(Function f) noexcept {
 	static_assert(std::is_nothrow_destructible<T>::value);
-	static_assert(noexcept(f(First->Data)));
 
 	assert(!empty());
 
 	auto head = Head;
 	auto front = static_cast<value_type *>(lea(head, offsetof(node_type, Data)));
+	static_assert(noexcept(f(front)));
 	f(front);
 	if constexpr (!std::is_trivially_destructible<value_type>::value) {
 		destruct(front);

@@ -6,6 +6,7 @@
 #define EJ_ARRAY_VIEW_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 namespace ej {
 
@@ -73,16 +74,18 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) const {
+	void for_each(Function f) const noexcept {
 		for (auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void cfor_each(Function f) const {
+	void cfor_each(Function f) const noexcept {
 		for (auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}
@@ -118,7 +121,7 @@ public:
 	}
 
 	constexpr size_type size() const noexcept {
-		return Last - First;
+		return (reinterpret_cast<uintptr_t>(Last) - reinterpret_cast<uintptr_t>(First)) / sizeof(value_type);
 	}
 
 	constexpr T &operator [](size_type pos) const noexcept {
@@ -151,16 +154,18 @@ public:
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void for_each(Function f) const {
+	void for_each(Function f) const noexcept {
 		for (auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}
 
 	//! Applies the given function to each object
 	template <typename Function>
-	void cfor_each(Function f) const {
-		for (auto &obj : *this) {
+	void cfor_each(Function f) const noexcept {
+		for (const auto &obj : *this) {
+			static_assert(noexcept(f(obj)));
 			f(obj);
 		}
 	}

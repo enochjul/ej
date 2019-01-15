@@ -5,7 +5,10 @@
 #ifndef EJ_BIT_SCAN_H
 #define EJ_BIT_SCAN_H
 
+#include <assert.h>
 #include <stdint.h>
+
+#include <x86intrin.h>
 
 #ifdef __GCC_ASM_FLAG_OUTPUTS__
 
@@ -53,7 +56,7 @@ inline BitScanReturnType<uint64_t> bsf64(uint64_t value) noexcept {
 	return { count, zero_value };
 }
 
-//! x86 bit scan forward instruction
+//! x86 bit scan reverse instruction
 inline BitScanReturnType<uint16_t> bsr16(uint16_t value) noexcept {
 	uint16_t count;
 	bool zero_value;
@@ -65,7 +68,7 @@ inline BitScanReturnType<uint16_t> bsr16(uint16_t value) noexcept {
 	return { count, zero_value };
 }
 
-//! x86 bit scan forward instruction
+//! x86 bit scan reverse instruction
 inline BitScanReturnType<uint32_t> bsr32(uint32_t value) noexcept {
 	uint32_t count;
 	bool zero_value;
@@ -77,7 +80,7 @@ inline BitScanReturnType<uint32_t> bsr32(uint32_t value) noexcept {
 	return { count, zero_value };
 }
 
-//! x86 bit scan forward instruction
+//! x86 bit scan reverse instruction
 inline BitScanReturnType<uint64_t> bsr64(uint64_t value) noexcept {
 	uint64_t count;
 	bool zero_value;
@@ -94,5 +97,29 @@ inline BitScanReturnType<uint64_t> bsr64(uint64_t value) noexcept {
 #else
 #error Needs GCC with support for flag outputs in inline assembly
 #endif
+
+//! x86 bit scan forward instruction, value must not be zero
+inline unsigned bsf32_nz(uint32_t value) noexcept {
+	assert(value != 0);
+	return _bit_scan_forward(value);
+}
+
+//! x86 bit scan forward instruction, value must not be zero
+inline unsigned bsf64_nz(uint64_t value) noexcept {
+	assert(value != 0);
+	return __bsfq(value);
+}
+
+//! x86 bit scan reverse instruction, value must not be zero
+inline unsigned bsr32_nz(uint32_t value) noexcept {
+	assert(value != 0);
+	return _bit_scan_reverse(value);
+}
+
+//! x86 bit scan reverse instruction, value must not be zero
+inline unsigned bsr64_nz(uint64_t value) noexcept {
+	assert(value != 0);
+	return __bsrq(value);
+}
 
 #endif

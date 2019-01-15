@@ -2479,7 +2479,7 @@ EJ_ALWAYS_INLINE void tuint64_shl(uint64_t *r_0, uint64_t *r_1, uint64_t *r_2, u
 EJ_ALWAYS_INLINE bool tuint64_sub_assign(uint64_t *a_0, uint64_t *a_1, uint64_t *a_2, uint64_t b_0, uint64_t b_1, uint64_t b_2) noexcept {
 	unsigned long long t_0, t_1, t_2;
 
-	auto borrow = _subborrow_u64(_subborrow_u64(_subborrow_u64(0, *a_0, b_0, &t_0), *a_1, b_1, &t_1), *a_2, b_2, &t_2);
+	auto borrow = _subborrow_u64(_subborrow_u64(__builtin_sub_overflow(*a_0, b_0, &t_0), *a_1, b_1, &t_1), *a_2, b_2, &t_2);
 	*a_0 = t_0;
 	*a_1 = t_1;
 	*a_2 = t_2;
@@ -2537,7 +2537,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					mantissa64 = remainder64;
 					remainder64 = 0;
 
-					mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa64));
 					final_exponent = exponent + mantissa_bits_less_1;
 					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
 					if (remainder_bits > 0) {
@@ -2555,7 +2555,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
 					remainder64 = duint64_get_low(product128);
 					mantissa64 = duint64_get_high(product128);
-					mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa64));
 					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
 					product128_ub = product128 + significand;
 					remainder64_ub = duint64_get_low(product128_ub);
@@ -2586,7 +2586,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						remainder64 = duint64_get_low(product128);
 						mantissa64 = duint64_get_high(product128);
 						assert(mantissa64 > 0);
-						mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa64).Count);
+						mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa64));
 						final_exponent = exponent + mantissa_bits_less_1 + sizeof(uint64_t) * CHAR_BIT;
 						remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
 						if (remainder_bits > 0) {
@@ -2629,7 +2629,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					product128 = duint64_mul(static_cast<uint64_t>(significand), NormalizedReciprocalsOfFiveUint64[abs_exponent - 1]);
 					remainder64 = duint64_get_low(product128);
 					mantissa64 = duint64_get_high(product128);
-					mantissa_bits_less_1 = bsr64(mantissa64).Count;
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa64));
 					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
 					reciprocal_exponent = small_floor_log2_5_e(abs_exponent);
 					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1;
@@ -3891,7 +3891,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 					mantissa = remainder;
 					remainder = 0;
 
-					mantissa_bits_less_1 = static_cast<int>(bsr64(mantissa).Count);
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa));
 					final_exponent = exponent + mantissa_bits_less_1;
 					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
 					if (remainder_bits > 0) {
@@ -3909,7 +3909,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 					product = duint64_mul(significand, NormalizedEstimatedPowersOfFiveUint64[abs_exponent]);
 					remainder = duint64_get_low(product);
 					mantissa = duint64_get_high(product);
-					mantissa_bits_less_1 = bsr64(mantissa).Count;
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa));
 					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
 					product_ub = product + significand;
 					remainder_ub = duint64_get_low(product_ub);
@@ -3941,7 +3941,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 
 						remainder = *(full_product_end - 2);
 						mantissa = *(full_product_end - 1);
-						mantissa_bits_less_1 = bsr64(mantissa).Count;
+						mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa));
 						//Compute the exponent
 						final_exponent = exponent + mantissa_bits_less_1 + ((full_product_end - full_product) - 1) * sizeof(uint64_t) * CHAR_BIT;
 						//Normalize the mantissa and remainder
@@ -3990,7 +3990,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 					product = duint64_mul(significand, NormalizedReciprocalsOfFiveUint64[abs_exponent - 1]);
 					remainder = duint64_get_low(product);
 					mantissa = duint64_get_high(product);
-					mantissa_bits_less_1 = bsr64(mantissa).Count;
+					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa));
 					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
 					reciprocal_exponent = small_floor_log2_5_e(abs_exponent);
 					final_exponent = exponent - reciprocal_exponent + mantissa_bits_less_1;
@@ -4079,7 +4079,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 
 							assert(*(full_estimate_end - 1) != 0);
 
-							estimate_bits = static_cast<unsigned>(bsr64(*(full_estimate_end - 1)).Count) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
+							estimate_bits = static_cast<unsigned>(bsr64_nz(*(full_estimate_end - 1))) + static_cast<unsigned>(full_estimate_end - full_estimate) * sizeof(estimate) * CHAR_BIT - sizeof(estimate) * CHAR_BIT + 1;
 							estimate_fraction_bits = reciprocal_exponent - remainder_bits;
 							estimate_integer_bits = estimate_bits - estimate_fraction_bits;
 							if (EJ_LIKELY(estimate_integer_bits <= (sizeof(estimate) * CHAR_BIT))) {
@@ -6012,7 +6012,7 @@ unsigned uint32_find_number_of_digits(uint32_t value) noexcept {
 #ifdef __LZCNT__
 		auto n = small_floor_log10_2_e(32u - _lzcnt_u32(value));
 #else
-		auto n = small_floor_log10_2_e(bsr32(value | 1u).Count + 1u);
+		auto n = small_floor_log10_2_e(bsr32_nz(value | 1u) + 1u);
 #endif
 		n += (value >= static_cast<uint32_t>(Uint64PowersOf10[n]) ? 1u : 0u);
 		return n;
@@ -6026,7 +6026,7 @@ char *uint32_to_string_no_nul(char *s, uint32_t value) noexcept {
 #ifdef __LZCNT__
 	auto n = small_floor_log10_2_e(32u - _lzcnt_u32(value));
 #else
-	auto n = small_floor_log10_2_e(bsr32(value | 1u).Count + 1u);
+	auto n = small_floor_log10_2_e(bsr32_nz(value | 1u) + 1u);
 #endif
 	n += (value >= static_cast<uint32_t>(Uint64PowersOf10[n]) ? 1u : 0u);
 	auto *e = s + n;
@@ -6085,9 +6085,9 @@ unsigned uint64_find_number_of_digits(uint64_t value) noexcept {
 	if (value > 0) {
 		//Calculate the number of decimal digits by the floor of log10 of the closest power of 2
 #ifdef __LZCNT__
-		auto n = small_floor_log10_2_e(64u - static_cast<uint32_t>(_lzcnt_u64(value)));
+		auto n = small_floor_log10_2_e(64u - static_cast<unsigned>(_lzcnt_u64(value)));
 #else
-		auto n = small_floor_log10_2_e(static_cast<uint32_t>(bsr64(value | 1u).Count) + 1u);
+		auto n = small_floor_log10_2_e(static_cast<unsigned>(bsr64_nz(value | 1u)) + 1u);
 #endif
 		n += (value >= Uint64PowersOf10[n] ? 1u : 0u);
 		return n;
@@ -6101,7 +6101,7 @@ char *uint64_to_string_no_nul(char *s, uint64_t value) noexcept {
 #ifdef __LZCNT__
 	auto n = small_floor_log10_2_e(64u - static_cast<uint32_t>(_lzcnt_u64(value)));
 #else
-	auto n = small_floor_log10_2_e(static_cast<uint32_t>(bsr64(value | 1u).Count) + 1u);
+	auto n = small_floor_log10_2_e(static_cast<uint32_t>(bsr64_nz(value | 1u)) + 1u);
 #endif
 	n += (value >= Uint64PowersOf10[n] ? 1u : 0u);
 	auto *e = s + n;
@@ -6226,7 +6226,7 @@ static_assert(alignof(HexDigits_00_ff) == 2);
 
 char *uint32_to_hex_string_no_nul(char *s, uint32_t value) noexcept {
 	//Calculate the number of hex digits
-	auto n = bsr32(value | 1u).Count / 4u + 1u;
+	auto n = bsr32_nz(value | 1u) / 4u + 1u;
 	auto *e = s + n;
 	uint32_t digits;
 
@@ -6273,7 +6273,7 @@ char *uint32_to_hex_string_no_nul(char *s, uint32_t value) noexcept {
 
 char *uint64_to_hex_string_no_nul(char *s, uint64_t value) noexcept {
 	//Calculate the number of hex digits
-	auto n = static_cast<uint32_t>(bsr64(value | 1u).Count) / 4u + 1u;
+	auto n = static_cast<unsigned>(bsr64_nz(value | 1u)) / 4u + 1u;
 	auto *e = s + n;
 	uint32_t digits, value32;
 
@@ -6377,7 +6377,7 @@ static_assert(alignof(HexDigits_00_FF) == 2);
 
 char *uint32_to_uhex_string_no_nul(char *s, uint32_t value) noexcept {
 	//Calculate the number of hex digits
-	auto n = bsr32(value | 1u).Count / 4u + 1u;
+	auto n = bsr32_nz(value | 1u) / 4u + 1u;
 	auto *e = s + n;
 	uint32_t digits;
 
@@ -6424,7 +6424,7 @@ char *uint32_to_uhex_string_no_nul(char *s, uint32_t value) noexcept {
 
 char *uint64_to_uhex_string_no_nul(char *s, uint64_t value) noexcept {
 	//Calculate the number of hex digits
-	auto n = static_cast<uint32_t>(bsr64(value | 1u).Count) / 4u + 1u;
+	auto n = static_cast<unsigned>(bsr64_nz(value | 1u)) / 4u + 1u;
 	auto *e = s + n;
 	uint32_t digits, value32;
 

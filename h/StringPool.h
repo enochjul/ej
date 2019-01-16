@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_STRING_POOL_H
-#define EJ_STRING_POOL_H
+#pragma once
 
 #include <string.h>
 
@@ -399,5 +398,3 @@ auto StringPool<NumberOfRegionBits, MutexType, StringType, SizeType, PoolSize, f
 }
 
 }
-
-#endif

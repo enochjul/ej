@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_DUINT_H
-#define EJ_DUINT_H
+#pragma once
 
 #include <assert.h>
 #include <limits.h>
@@ -195,4 +194,3 @@ EJ_ALWAYS_INLINE void duint64_small_shl_assign(uint64_t *low, uint64_t *high, in
 }
 
 }
-#endif

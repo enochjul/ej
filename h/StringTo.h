@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_STRING_TO_H
-#define EJ_STRING_TO_H
+#pragma once
 
 #include <stdint.h>
 
@@ -135,5 +134,3 @@ inline char *float_to_c_string(char *s, float value) noexcept {
 }
 
 }
-
-#endif

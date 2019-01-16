@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_STACK_H
-#define EJ_STACK_H
+#pragma once
 
 #include <assert.h>
 #include <limits.h>
@@ -141,5 +140,3 @@ inline void Stack<T, N, Alloc>::pop(Function f) noexcept {
 }
 
 }
-
-#endif

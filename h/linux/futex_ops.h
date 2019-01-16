@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_FUTEX_H
-#define EJ_FUTEX_H
+#pragma once
 
 #include <stdint.h>
 
@@ -108,5 +107,3 @@ inline long futex_requeue(uint32_t *addr, int32_t wake_count, uint32_t requeue_c
 }
 
 }
-
-#endif

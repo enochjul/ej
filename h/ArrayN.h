@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_ARRAY_N_H
-#define EJ_ARRAY_N_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -367,5 +366,3 @@ inline bool operator ==(const ArrayN<T1, N1, ALIGNMENT1> &a, const ArrayN<T2, N2
 }
 
 }
-
-#endif

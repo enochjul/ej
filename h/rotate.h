@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_ROTATE_H
-#define EJ_ROTATE_H
+#pragma once
 
 #include <assert.h>
 #include <stdint.h>
@@ -97,5 +96,3 @@ inline uint64_t rotate_right(uint64_t value, unsigned n) noexcept {
 }
 
 }
-
-#endif

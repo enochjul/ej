@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_FIXED_WORK_QUEUE_H
-#define EJ_FIXED_WORK_QUEUE_H
+#pragma once
 
 #include <assert.h>
 #include <stdint.h>
@@ -120,5 +119,3 @@ T FixedWorkQueue<T, N>::remove() noexcept {
 }
 
 }
-
-#endif

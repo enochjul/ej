@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_KEY_TO_VALUE_H
-#define EJ_KEY_TO_VALUE_H
+#pragma once
 
 #include <stdint.h>
 #include <string.h>
@@ -160,5 +159,3 @@ const ValueType *perfect_hash_c_string_to_value(const char data[], const OffsetT
 }
 
 }
-
-#endif

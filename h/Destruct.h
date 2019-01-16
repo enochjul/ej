@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_DESTRUCT_H
-#define EJ_DESTRUCT_H
+#pragma once
 
 #include <stddef.h>
 
@@ -106,5 +105,3 @@ inline void reverse_destruct_array_n(T *first, size_t n) noexcept(std::is_nothro
 }
 
 }
-
-#endif

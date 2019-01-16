@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_DOUBLE_WIDE_MULTIPLY_H
-#define EJ_DOUBLE_WIDE_MULTIPLY_H
+#pragma once
 
 #include <stdint.h>
 
@@ -22,5 +21,3 @@ inline uint64_t multiply_high(uint64_t a, uint64_t b) noexcept {
 #endif
 
 }
-
-#endif

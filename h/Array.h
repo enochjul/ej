@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_ARRAY_H
-#define EJ_ARRAY_H
+#pragma once
 
 #include <stddef.h>
 
@@ -351,5 +350,3 @@ void Array<T, reverse_destruct, always_default_construct, Alloc>::clear() noexce
 }
 
 }
-
-#endif

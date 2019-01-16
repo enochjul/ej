@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_STRING_VIEW_H
-#define EJ_STRING_VIEW_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -206,5 +205,3 @@ inline constexpr StringView<const T> make_const_string_view_n(StringView<T, S> a
 }
 
 }
-
-#endif

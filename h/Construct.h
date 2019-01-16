@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_CONSTRUCT_H
-#define EJ_CONSTRUCT_H
+#pragma once
 
 #include <stddef.h>
 #include <string.h>
@@ -192,5 +191,3 @@ inline void forward_construct_array_n(T *first, size_t n, Args && ... a) noexcep
 }
 
 }
-
-#endif

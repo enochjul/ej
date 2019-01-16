@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_MEMORY_POOLS_H
-#define EJ_MEMORY_POOLS_H
+#pragma once
 
 #include <assert.h>
 #include <stddef.h>
@@ -216,5 +215,3 @@ void *MemoryPools<PoolSize, Alignment, SizeMax>::allocate(size_t n) noexcept {
 }
 
 }
-
-#endif

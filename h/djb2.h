@@ -2,8 +2,7 @@
 //License, v. 2.0. If a copy of the MPL was not distributed with this
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EJ_DJB2_H
-#define EJ_DJB2_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -80,5 +79,3 @@ public:
 };
 
 }
-
-#endif

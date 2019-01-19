@@ -29,6 +29,8 @@ public:
 	}
 	constexpr CStringsView(value_type *start, value_type *finish) noexcept : Start(start), Finish(finish) {
 	}
+	constexpr CStringsView(value_type *start, size_type n) noexcept : Start(start), Finish(start + n) {
+	}
 	template <size_t N>
 	constexpr CStringsView(value_type (&a)[N]) noexcept : Start(a), Finish(a + N) {
 	}
@@ -37,20 +39,23 @@ public:
 		Start = start;
 		Finish = finish;
 	}
-
+	constexpr void assign(value_type *start, size_t n) noexcept {
+		Start = start;
+		Finish = start + n;
+	}
 	template <size_t N>
 	constexpr void assign(value_type (&a)[N]) noexcept {
-		assign(a, a + N);
+		assign(a, N);
 	}
 
 	constexpr size_type size() const noexcept {
 		size_type n = 0;
-		for (auto iter = Start, end = Finish; iter < end;) {
+		for (const value_type *iter = Start, *end = Finish; iter < end;) {
 			auto length = strlen(iter);
 
 			iter += length + 1;
 			if constexpr (ALIGNMENT != alignof(value_type)) {
-				iter = reinterpret_cast<value_type *>(((reinterpret_cast<uintptr_t>(iter) + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT);
+				iter = reinterpret_cast<const value_type *>(((reinterpret_cast<uintptr_t>(iter) + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT);
 			}
 			n++;
 		}
@@ -65,11 +70,28 @@ public:
 	EJ_ALWAYS_INLINE void for_each(Function f) const noexcept {
 		for (auto iter = Start, end = Finish; iter < end;) {
 			auto n = strlen(iter);
+
+			static_assert(noexcept(f(iter, n)));
 			f(iter, n);
 
 			iter += n + 1;
 			if constexpr (ALIGNMENT != alignof(value_type)) {
 				iter = reinterpret_cast<value_type *>(((reinterpret_cast<uintptr_t>(iter) + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT);
+			}
+		}
+	}
+
+	template <typename Function>
+	EJ_ALWAYS_INLINE void cfor_each(Function f) const noexcept {
+		for (const value_type *iter = Start, *end = Finish; iter < end;) {
+			auto n = strlen(iter);
+
+			static_assert(noexcept(f(iter, n)));
+			f(iter, n);
+
+			iter += n + 1;
+			if constexpr (ALIGNMENT != alignof(value_type)) {
+				iter = reinterpret_cast<const value_type *>(((reinterpret_cast<uintptr_t>(iter) + ALIGNMENT - 1) / ALIGNMENT) * ALIGNMENT);
 			}
 		}
 	}

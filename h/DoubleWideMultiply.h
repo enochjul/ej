@@ -6,18 +6,16 @@
 
 #include <stdint.h>
 
+#include "duint.h"
+
 namespace ej {
 
 inline uint32_t multiply_high(uint32_t a, uint32_t b) noexcept {
-	return static_cast<uint32_t>((static_cast<uint64_t>(a) * b) >> 32);
+	return duint32_get_high(duint32_mul(a, b));
 }
-
-#ifdef __LP64__
 
 inline uint64_t multiply_high(uint64_t a, uint64_t b) noexcept {
-	return static_cast<uint64_t>((static_cast<unsigned __int128>(a) * b) >> 64);
+	return duint64_get_high(duint64_mul(a, b));
 }
-
-#endif
 
 }

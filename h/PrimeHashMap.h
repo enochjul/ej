@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "Common.h"
 #include "CAlloc.h"
 #include "CallType.h"
 #include "Construct.h"
@@ -15,7 +16,7 @@
 
 namespace ej {
 
-#ifdef __LP64__
+#if EJ_POINTER_SIZE == 64
 extern const uint64_t PrimeHashMapPrimes1_5x[];
 extern const uint64_t PrimeHashMapPrimes2x[];
 #else

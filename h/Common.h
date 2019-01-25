@@ -52,4 +52,14 @@ inline T compare_and_exchange_value_relaxed(T *ptr, T expected, T desired) noexc
 #endif
 }
 
+#ifndef EJ_WORD_SIZE
+#ifdef __LP64__
+#define EJ_WORD_SIZE 64
+#define EJ_POINTER_SIZE 64
+#else
+#define EJ_WORD_SIZE 32
+#define EJ_POINTER_SIZE 32
+#endif
+#endif
+
 }

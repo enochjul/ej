@@ -8,7 +8,7 @@
 
 namespace ej {
 
-#ifdef __LP64__
+#if EJ_POINTER_SIZE == 64
 
 const uint64_t PrimeHashMapPrimes1_5x[] = {
 	UINT64_C(3), UINT64_C(6148914691236517205),

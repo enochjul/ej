@@ -2446,7 +2446,7 @@ EJ_ALWAYS_INLINE void tuint64_mul(uint64_t *r_0, uint64_t *r_1, uint64_t *r_2, d
 	duint64 low_product, high_product;
 
 	low_product = duint64_mul(duint64_get_low(a), b);
-	high_product = duint64_mul(duint64_get_high(a), b) + duint64_get_high(low_product);
+	high_product = duint64_add(duint64_mul(duint64_get_high(a), b), duint64_get_high(low_product));
 
 	*r_0 = duint64_get_low(low_product);
 	*r_1 = duint64_get_low(high_product);
@@ -2557,7 +2557,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 					mantissa64 = duint64_get_high(product128);
 					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa64));
 					remainder_bits = mantissa_bits_less_1 - (FLT_MANT_DIG + 1);
-					product128_ub = product128 + significand;
+					product128_ub = duint64_add(product128, significand);
 					remainder64_ub = duint64_get_low(product128_ub);
 					mantissa64_ub = duint64_get_high(product128_ub);
 					if (remainder_bits > 0) {
@@ -2580,9 +2580,9 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						if (abs_exponent < 32) {
 							product128 = duint64_mul(152587890625u, power_of_five_of_low_bits);
 						} else {
-							product128 = make_duint64(UINT64_C(3273344365508751233), UINT64_C(1262)) * power_of_five_of_low_bits;
+							product128 = duint64_mul(make_duint64(UINT64_C(3273344365508751233), UINT64_C(1262)), power_of_five_of_low_bits);
 						}
-						product128 *= significand;
+						duint64_mul_assign(&product128, significand);
 						remainder64 = duint64_get_low(product128);
 						mantissa64 = duint64_get_high(product128);
 						assert(mantissa64 > 0);
@@ -2651,7 +2651,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 							auto numerator = duint64_shl(static_cast<uint64_t>(significand), remainder_bits);
 							remainder64 = 0;
 							auto qd = duint64_mul(mantissa64, denominator);
-							auto full_difference = numerator - qd;
+							auto full_difference = duint64_sub(numerator, qd);
 							difference64 = duint64_get_low(full_difference);
 							assert(duint64_get_high(full_difference) == 0);
 						} else if (remainder_bits < 0) {
@@ -2682,7 +2682,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 						float_round_to_nearest_even(&mantissa32, &final_exponent, remainder64);
 						return make_float(mantissa32, final_exponent, negative);
 					} else {
-						product128_ub = product128 + significand;
+						product128_ub = duint64_add(product128, significand);
 						remainder64_ub = duint64_get_low(product128_ub);
 						mantissa64_ub = duint64_get_high(product128_ub);
 						if (remainder_bits < 0) {
@@ -2711,7 +2711,7 @@ float decimal_to_float(uint32_t significand, int exponent, bool negative) noexce
 								denominator = duint64_mul(152587890625u, power_of_five_of_low_bits);
 							} else {
 								auto *denominator_start = LargePowersOfFive + LargePowersOfFiveOffsets[(abs_exponent / (1u << EJ_MAX_SMALL_POWER_OF_FIVE_BITS)) - 1];
-								denominator = make_duint64(denominator_start[0], denominator_start[1]) * power_of_five_of_low_bits;
+								denominator = duint64_mul(make_duint64(denominator_start[0], denominator_start[1]), power_of_five_of_low_bits);
 							}
 							tuint64_mul(&qd_0, &qd_1, &qd_2, denominator, mantissa64);
 
@@ -3828,7 +3828,7 @@ uint64_t *decimal_to_double_mp_uint64_mul(uint64_t *d, const uint64_t *a, uint64
 	max_offset = reinterpret_cast<uintptr_t>(a_end) - reinterpret_cast<uintptr_t>(a);
 
 	for (; offset < max_offset; offset += sizeof(*a)) {
-		p = duint64_mul(*lea(a, offset), b) + carry;
+		p = duint64_add(duint64_mul(*lea(a, offset), b), carry);
 		*lea(d, offset) = duint64_get_low(p);
 		carry = duint64_get_high(p);
 	}
@@ -3911,7 +3911,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 					mantissa = duint64_get_high(product);
 					mantissa_bits_less_1 = static_cast<int>(bsr64_nz(mantissa));
 					remainder_bits = mantissa_bits_less_1 - (DBL_MANT_DIG + 1);
-					product_ub = product + significand;
+					product_ub = duint64_add(product, significand);
 					remainder_ub = duint64_get_low(product_ub);
 					mantissa_ub = duint64_get_high(product_ub);
 					if (remainder_bits < 0) {
@@ -4012,7 +4012,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 							auto numerator = duint64_shl(significand, remainder_bits);
 							remainder = 0;
 							auto qd = duint64_mul(mantissa, denominator);
-							auto full_difference = numerator - qd;
+							auto full_difference = duint64_sub(numerator, qd);
 							difference = duint64_get_low(full_difference);
 							assert(duint64_get_high(full_difference) == 0);
 						} else if (remainder_bits < 0) {
@@ -4042,7 +4042,7 @@ double decimal_to_double(uint64_t significand, int exponent, bool negative) noex
 						double_round_to_nearest_even(&mantissa, &final_exponent, remainder);
 						return make_double(mantissa, final_exponent, negative);
 					} else {
-						product_ub = product + significand;
+						product_ub = duint64_add(product, significand);
 						remainder_ub = duint64_get_low(product_ub);
 						mantissa_ub = duint64_get_high(product_ub);
 						if (remainder_bits < 0) {

@@ -15,6 +15,10 @@ namespace ej {
 
 //! Helper functions to access the C memory allocation functions such as malloc and realloc
 class CAllocBase {
+public:
+	constexpr static bool HasDeallocate = true;
+	constexpr static bool AlwaysZero = false;
+
 protected:
 	template <size_t Alignment, bool may_fail>
 	__attribute__((malloc, assume_aligned(Alignment <= alignof(max_align_t) ? alignof(max_align_t) : Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
@@ -54,10 +58,6 @@ protected:
 public:
 	CAllocBase(const CAllocBase &) = delete;
 	CAllocBase &operator =(const CAllocBase &) = delete;
-
-	static constexpr bool always_zero() noexcept {
-		return false;
-	}
 
 	static constexpr size_t min_size() noexcept {
 		return alignof(max_align_t);

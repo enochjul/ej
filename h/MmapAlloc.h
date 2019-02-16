@@ -15,9 +15,13 @@ namespace ej {
 
 //! Allocates memory using mmap, which is useful for large allocations such as dynamic array
 class MmapAllocBase {
+public:
+	constexpr static bool HasDeallocate = true;
+	constexpr static bool AlwaysZero = true;
+
 protected:
 	template <size_t Alignment, bool may_fail>
-	static void *allocate(size_t n) noexcept {
+	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
 		static_assert((Alignment & (Alignment - 1)) == 0 && Alignment <= PAGE_SIZE);
 		auto addr = mmap(nullptr, n, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 		if (addr != MAP_FAILED) {
@@ -53,10 +57,6 @@ protected:
 public:
 	MmapAllocBase(const MmapAllocBase &) = delete;
 	MmapAllocBase &operator =(const MmapAllocBase &) = delete;
-
-	static constexpr bool always_zero() noexcept {
-		return true;
-	}
 
 	static constexpr size_t min_size() noexcept {
 		return PAGE_SIZE;

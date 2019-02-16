@@ -36,6 +36,10 @@ class MmapLinearAllocBase {
 	template <bool may_fail>
 	__attribute__((malloc, alloc_align(1), alloc_size(2), warn_unused_result)) static void *commit_and_allocate(size_t alignment, size_t n) noexcept;
 
+public:
+	constexpr static bool HasDeallocate = false;
+	constexpr static bool AlwaysZero = false;
+
 protected:
 	template <size_t Alignment, bool may_fail>
 	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
@@ -98,10 +102,6 @@ protected:
 public:
 	MmapLinearAllocBase(const MmapLinearAllocBase &) = delete;
 	MmapLinearAllocBase &operator =(const MmapLinearAllocBase &) = delete;
-
-	static constexpr bool always_zero() noexcept {
-		return false;
-	}
 
 	static constexpr size_t min_size() noexcept {
 		return 1;

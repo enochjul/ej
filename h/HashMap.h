@@ -178,7 +178,7 @@ HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::HashMap() noexcept {
 	Nodes = ArrayAlloc::template alloc_array<node_type *>(initial_n);
 	Mask = initial_n - 1;
 	Size = 0;
-	if constexpr (!ArrayAlloc::always_zero()) {
+	if constexpr (!ArrayAlloc::AlwaysZero) {
 		fill_zero_n(Nodes, initial_n);
 	}
 }
@@ -225,7 +225,7 @@ void HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::reserve(size_type 
 
 		auto new_nodes = ArrayAlloc::template try_alloc_array<node_type *>(new_mask + 1);
 		if (new_nodes != nullptr) {
-			if constexpr (!ArrayAlloc::always_zero()) {
+			if constexpr (!ArrayAlloc::AlwaysZero) {
 				fill_zero_n(new_nodes, new_mask + 1);
 			}
 			auto nodes = Nodes;
@@ -281,7 +281,7 @@ auto HashMap<K, T, HasherType, CacheHash, Alloc, ArrayAlloc>::emplace(key_param_
 		if (new_nodes != nullptr) {
 			for (auto nodes_i = nodes, new_nodes_i = new_nodes, nodes_e = nodes_i + mask + 1; nodes_i != nodes_e; ++nodes_i, ++new_nodes_i) {
 				auto node = *nodes_i;
-				if constexpr (!ArrayAlloc::always_zero()) {
+				if constexpr (!ArrayAlloc::AlwaysZero) {
 					*new_nodes_i = nullptr;
 					*(new_nodes_i + mask + 1) = nullptr;
 				}

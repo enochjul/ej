@@ -26,6 +26,10 @@ class CLinearAllocBase {
 		return ptr;
 	}
 
+public:
+	constexpr static bool HasDeallocate = false;
+	constexpr static bool AlwaysZero = false;
+
 protected:
 	template <size_t Alignment, bool may_fail>
 	__attribute__((malloc, assume_aligned(Alignment), alloc_size(1), warn_unused_result)) static void *allocate(size_t n) noexcept {
@@ -86,10 +90,6 @@ protected:
 public:
 	CLinearAllocBase(const CLinearAllocBase &) = delete;
 	CLinearAllocBase &operator =(const CLinearAllocBase &) = delete;
-
-	static constexpr bool always_zero() noexcept {
-		return false;
-	}
 
 	static constexpr size_t min_size() noexcept {
 		return 1;

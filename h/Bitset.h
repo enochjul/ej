@@ -100,7 +100,7 @@ Bitset<T, Alloc>::Bitset(size_type n, bool value) noexcept {
 			Start = new_start;
 			Size = n;
 
-			if (Alloc::always_zero()) {
+			if constexpr (Alloc::AlwaysZero) {
 				if (value) {
 					fill(new_start, new_start + number_of_blocks, ~static_cast<block_type>(0));
 				}

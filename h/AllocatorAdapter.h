@@ -16,6 +16,10 @@ class AllocatorAdapter : public Base {
 public:
 	using Base::max_size;
 
+	constexpr static bool Global = false;
+	constexpr static bool HasDealloc = Base::HasDeallocate;
+	constexpr static bool AlwaysZero = Base::AlwaysZero;
+
 	//! Allocates memory for an object of the specified type
 	template <typename T, bool may_fail = false>
 	__attribute__((malloc, warn_unused_result)) T *alloc() noexcept {

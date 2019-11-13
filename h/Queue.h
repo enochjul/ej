@@ -52,10 +52,10 @@ public:
 	template <typename Function>
 	inline void pop(Function f) noexcept;
 	void pop() noexcept {
-		pop([](value_type *) EJ_ALWAYS_INLINE_ATTRIBUTE noexcept {});
+		pop([](value_type *) noexcept EJ_ALWAYS_INLINE_ATTRIBUTE {});
 	}
 	void pop(value_type *value) noexcept {
-		pop([value](value_type *front) EJ_ALWAYS_INLINE_ATTRIBUTE noexcept { *value = *front; });
+		pop([value](value_type *front) noexcept EJ_ALWAYS_INLINE_ATTRIBUTE { *value = *front; });
 	}
 };
 

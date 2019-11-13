@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wshadow -Wsuggest-override -Wtram
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fuse-ld=gold -Wl,--gc-sections -Wl,-z,relro,-z,now")
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS_DEBUG "-march=native ${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -flto -march=native -fno-asynchronous-unwind-tables -fomit-frame-pointer -fno-math-errno -DNDEBUG -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn")
 
 set(CMAKE_AR "gcc-ar")

@@ -14,6 +14,12 @@
 
 namespace ej {
 
+template <typename T>
+struct duint_s;
+
+template <typename T>
+using duint = typename duint_s<T>::result_type;
+
 typedef uint64_t duint32;
 
 union duint32_u {
@@ -24,75 +30,70 @@ union duint32_u {
 	};
 };
 
-EJ_ALWAYS_INLINE duint32 make_duint32(uint32_t low, uint32_t high) noexcept {
-	duint32_u u;
-	u.Low = low;
-	u.High = high;
-	return u.Value;
+EJ_ALWAYS_INLINE constexpr duint32 make_duint32(uint32_t low, uint32_t high) noexcept {
+	return (static_cast<duint32>(high) << 32) | low;
 }
 
-EJ_ALWAYS_INLINE uint32_t duint32_get_low(duint32 value) noexcept {
-	duint32_u u;
-	u.Value = value;
+EJ_ALWAYS_INLINE constexpr uint32_t duint32_get_low(duint32 value) noexcept {
+	duint32_u u = { .Value = value };
 	return u.Low;
 }
 
-EJ_ALWAYS_INLINE uint32_t duint32_get_high(duint32 value) noexcept {
-	duint32_u u;
-	u.Value = value;
+EJ_ALWAYS_INLINE constexpr uint32_t duint32_get_high(duint32 value) noexcept {
+	duint32_u u = { .Value = value };
 	return u.High;
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_add(uint32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_add(uint32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(a) + b;
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_add(int32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_add(int32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) + b);
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_add(uint32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_add(uint32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(a + static_cast<int64_t>(b));
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_add(int32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_add(int32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) + b);
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_sub(uint32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_sub(uint32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(a) - b;
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_sub(int32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_sub(int32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) - b);
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_sub(uint32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_sub(uint32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(a - static_cast<int64_t>(b));
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_sub(int32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_sub(int32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) - b);
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_mul(uint32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_mul(uint32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(a) * b;
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_mul(int32_t a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_mul(int32_t a, uint32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) * b);
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_mul(uint32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_mul(uint32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(a * static_cast<int64_t>(b));
 }
 
-EJ_ALWAYS_INLINE duint32 duint32_mul(int32_t a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint32 duint32_mul(int32_t a, int32_t b) noexcept {
 	return static_cast<duint32>(static_cast<int64_t>(a) * b);
 }
 
 template <typename T>
-EJ_ALWAYS_INLINE void duint_small_shl(T *result_low, T *result_high, T value_low, T value_high, int n) noexcept {
+EJ_ALWAYS_INLINE constexpr void duint_small_shl(T *result_low, T *result_high, T value_low, T value_high, int n) noexcept {
 	assert(n > 0 && static_cast<unsigned>(n) < sizeof(T) * CHAR_BIT);
 
 	*result_high = (value_high << n) | (value_low >> (sizeof(T) * CHAR_BIT - n));
@@ -100,13 +101,31 @@ EJ_ALWAYS_INLINE void duint_small_shl(T *result_low, T *result_high, T value_low
 }
 
 template <typename T>
-EJ_ALWAYS_INLINE void duint_small_shl_assign(T *low, T *high, int n) noexcept {
+EJ_ALWAYS_INLINE constexpr void duint_small_shl_assign(T *low, T *high, int n) noexcept {
 	return duint_small_shl(low, high, *low, *high, n);
 }
 
-EJ_ALWAYS_INLINE void duint64_small_shl_assign(uint64_t *low, uint64_t *high, int n) noexcept {
-	return duint_small_shl_assign(low, high, n);
-}
+template <>
+struct duint_s<uint32_t> {
+	typedef uint32_t value_type;
+	typedef duint32 result_type;
+
+	static EJ_ALWAYS_INLINE constexpr result_type make(value_type low, value_type high) {
+		return make_duint32(low, high);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type get_low(result_type value) {
+		return duint32_get_low(value);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type get_high(result_type value) {
+		return duint32_get_high(value);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type mul(value_type a, value_type b) {
+		return duint32_mul(a, b);
+	}
+};
 
 #if EJ_WORD_SIZE == 64
 
@@ -137,123 +156,149 @@ EJ_ALWAYS_INLINE constexpr uint64_t duint64_get_high(duint64 value) noexcept {
 	return duint64_u(value).High;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(uint64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(uint64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(a) + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(int64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(int64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) + b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(uint64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(uint64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(a + static_cast<__int128>(b));
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(int64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(int64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) + b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(duint64 a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(duint64 a, uint32_t b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(duint64 a, int32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(duint64 a, int32_t b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(duint64 a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(duint64 a, uint64_t b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(duint64 a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(duint64 a, int64_t b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(uint64_t a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(uint64_t a, duint64 b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(int64_t a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(int64_t a, duint64 b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_add(duint64 a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_add(duint64 a, duint64 b) noexcept {
 	return a + b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(uint64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(uint64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(a) - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(int64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(int64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) - b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(uint64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(uint64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(a - static_cast<__int128>(b));
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(int64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(int64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) - b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(duint64 a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(duint64 a, uint64_t b) noexcept {
 	return a - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(duint64 a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(duint64 a, int64_t b) noexcept {
 	return a - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(uint64_t a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(uint64_t a, duint64 b) noexcept {
 	return a - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(int64_t a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(int64_t a, duint64 b) noexcept {
 	return a - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_sub(duint64 a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_sub(duint64 a, duint64 b) noexcept {
 	return a - b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(uint64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(uint64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(a) * b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(int64_t a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(int64_t a, uint64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) * b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(uint64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(uint64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(a * static_cast<__int128>(b));
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(int64_t a, int64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(int64_t a, int64_t b) noexcept {
 	return static_cast<duint64>(static_cast<__int128>(a) * b);
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(duint64 a, uint32_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(duint64 a, uint32_t b) noexcept {
 	return a * b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(duint64 a, uint64_t b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(duint64 a, uint64_t b) noexcept {
 	return a * b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_mul(uint64_t a, duint64 b) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_mul(uint64_t a, duint64 b) noexcept {
 	return a * b;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_shl(uint64_t a, int n) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_shl(uint64_t a, int n) noexcept {
 	assert(n > 0 && static_cast<unsigned>(n) < sizeof(uint64_t) * CHAR_BIT * 2);
 	return static_cast<duint64>(a) << n;
 }
 
-EJ_ALWAYS_INLINE duint64 duint64_shl(int64_t a, int n) noexcept {
+EJ_ALWAYS_INLINE constexpr duint64 duint64_shl(int64_t a, int n) noexcept {
 	assert(n > 0 && static_cast<unsigned>(n) < sizeof(uint64_t) * CHAR_BIT * 2);
 	return static_cast<duint64>(a) << n;
 }
+
+EJ_ALWAYS_INLINE constexpr void duint64_small_shl_assign(uint64_t *low, uint64_t *high, int n) noexcept {
+	return duint_small_shl_assign(low, high, n);
+}
+
+template <>
+struct duint_s<uint64_t> {
+	typedef uint64_t value_type;
+	typedef duint64 result_type;
+
+	static EJ_ALWAYS_INLINE constexpr result_type make(value_type low, value_type high) {
+		return make_duint64(low, high);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type get_low(result_type value) {
+		return duint64_get_low(value);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type get_high(result_type value) {
+		return duint64_get_high(value);
+	}
+
+	static EJ_ALWAYS_INLINE constexpr result_type mul(value_type a, value_type b) {
+		return duint64_mul(a, b);
+	}
+};
 
 #else
 

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "duint.h"
+#include "quint.h"
 
 namespace ej {
 
@@ -96,8 +97,22 @@ constexpr void philox4x32(uint32_t r[4], uint32_t counter0, uint32_t counter1, u
 }
 
 template <unsigned N = 10>
+constexpr quint32 philox4x32(uint32_t counter0, uint32_t counter1, uint32_t counter2, uint32_t counter3, uint32_t key0, uint32_t key1) noexcept {
+	quint32 r(0, 0, 0, 0);
+	philox4x32<N>(r.data(), counter0, counter1, counter2, counter3, key0, key1);
+	return r;
+}
+
+template <unsigned N = 10>
 constexpr void philox4x64(uint64_t r[4], uint64_t counter0, uint64_t counter1, uint64_t counter2, uint64_t counter3, uint64_t key0, uint64_t key1) noexcept {
 	return philox4xN_r<uint64_t, UINT64_C(0xD2E7470EE14C6C93), UINT64_C(0xCA5A826395121157), UINT64_C(0x9E3779B97F4A7C15), UINT64_C(0xBB67AE8584CAA73B), N>(r, counter0, counter1, counter2, counter3, &key0, &key1);
+}
+
+template <unsigned N = 10>
+constexpr quint64 philox4x64(uint64_t counter0, uint64_t counter1, uint64_t counter2, uint64_t counter3, uint64_t key0, uint64_t key1) noexcept {
+	quint64 r(0, 0, 0, 0);
+	philox4x64<N>(r.data(), counter0, counter1, counter2, counter3, key0, key1);
+	return r;
 }
 
 template <unsigned N = 10>
@@ -107,9 +122,23 @@ constexpr void philox4x32(uint32_t r[4], const uint32_t counter[4], const uint32
 }
 
 template <unsigned N = 10>
+constexpr quint32 philox4x32(const uint32_t counter[4], const uint32_t key[2]) noexcept {
+	quint32 r(0, 0, 0, 0);
+	philox4x32<N>(r.data(), counter[0], counter[1], counter[2], counter[3], key[0], key[1]);
+	return r;
+}
+
+template <unsigned N = 10>
 constexpr void philox4x64(uint64_t r[4], const uint64_t counter[4], const uint64_t key[2]) noexcept {
 	uint64_t key0 = key[0], key1 = key[1];
 	return philox4xN_r<uint64_t, UINT64_C(0xD2E7470EE14C6C93), UINT64_C(0xCA5A826395121157), UINT64_C(0x9E3779B97F4A7C15), UINT64_C(0xBB67AE8584CAA73B), N>(r, counter[0], counter[1], counter[2], counter[3], &key0, &key1);
+}
+
+template <unsigned N = 10>
+constexpr quint64 philox4x64(const uint64_t counter[4], const uint64_t key[2]) noexcept {
+	quint64 r(0, 0, 0, 0);
+	philox4x64<N>(r.data(), counter[0], counter[1], counter[2], counter[3], key[0], key[1]);
+	return r;
 }
 
 }

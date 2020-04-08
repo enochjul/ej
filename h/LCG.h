@@ -29,7 +29,7 @@ private:
 	};
 
 	//! Finds the value of the multiplier, a, for the given discard value of 2 to the power of n
-	constexpr static result_type find_a(unsigned n) {
+	constexpr static result_type find_a(unsigned n) noexcept {
 		result_type a = A;
 		for (unsigned i = 0; i < n; i++) {
 			a *= a;
@@ -38,7 +38,7 @@ private:
 	}
 
 	//! Finds the value of the increment, c, for the given discard value of 2 to the power of n
-	constexpr static result_type find_c(unsigned n) {
+	constexpr static result_type find_c(unsigned n) noexcept {
 		result_type a = A, c = C;
 		for (unsigned i = 0; i < n; i++) {
 			c = (a + 1) * c;
@@ -49,26 +49,26 @@ private:
 
 public:
 	//! Initialize with the given seed
-	explicit constexpr LCG32(result_type seed = 1) : Seed(seed) {
+	explicit constexpr LCG32(result_type seed = 1) noexcept : Seed(seed) {
 	}
 
 	//! Reinitialize with the given seed
-	constexpr void seed(result_type seed = 1) {
+	constexpr void seed(result_type seed = 1) noexcept {
 		Seed = seed;
 	}
 
 	//! Generate the next value
-	constexpr result_type operator ()() {
+	constexpr result_type operator ()() noexcept {
 		result_type s = A * Seed + C;
 		Seed = s;
 		return s;
 	}
 
 	//! Discard the next 2 to the power of n values
-	constexpr void discard_pow2(unsigned n);
+	constexpr void discard_pow2(unsigned n) noexcept;
 
 	//! Discard the next n values
-	constexpr void discard(result_type n);
+	constexpr void discard(result_type n) noexcept;
 };
 
 template <uint32_t A, uint32_t C>
@@ -108,14 +108,14 @@ const typename LCG32<A, C>::result_type LCG32<A, C>::Table[][2] = {
 };
 
 template <uint32_t A, uint32_t C>
-constexpr void LCG32<A, C>::discard_pow2(unsigned n) {
+constexpr void LCG32<A, C>::discard_pow2(unsigned n) noexcept {
 	const auto &entry = Table[n & 31];
 	auto a = entry[0], c = entry[1];
 	Seed = a * Seed + c;
 }
 
 template <uint32_t A, uint32_t C>
-constexpr void LCG32<A, C>::discard(result_type n) {
+constexpr void LCG32<A, C>::discard(result_type n) noexcept {
 	result_type v = n, s = Seed;
 	while (v != 0) {
 		const auto &entry = Table[bsf32_nz(v)];
@@ -154,7 +154,7 @@ private:
 	};
 
 	//! Finds the value of the multiplier, a, for the given discard value of 2 to the power of n
-	constexpr static result_type find_a(unsigned n) {
+	constexpr static result_type find_a(unsigned n) noexcept {
 		result_type a = A;
 		for (unsigned i = 0; i < n; i++) {
 			a *= a;
@@ -163,7 +163,7 @@ private:
 	}
 
 	//! Finds the value of the increment, c, for the given discard value of 2 to the power of n
-	constexpr static result_type find_c(unsigned n) {
+	constexpr static result_type find_c(unsigned n) noexcept {
 		result_type a = A, c = C;
 		for (unsigned i = 0; i < n; i++) {
 			c = (a + 1) * c;
@@ -174,26 +174,26 @@ private:
 
 public:
 	//! Initialize with the given seed
-	explicit constexpr LCG64(result_type seed = 1) : Seed(seed) {
+	explicit constexpr LCG64(result_type seed = 1) noexcept : Seed(seed) {
 	}
 
 	//! Reinitialize with the given seed
-	constexpr void seed(result_type seed = 1) {
+	constexpr void seed(result_type seed = 1) noexcept {
 		Seed = seed;
 	}
 
 	//! Generate the next value
-	constexpr result_type operator ()() {
+	constexpr result_type operator ()() noexcept {
 		result_type s = A * Seed + C;
 		Seed = s;
 		return s;
 	}
 
 	//! Discard the next 2 to the power of n values
-	constexpr void discard_pow2(unsigned n);
+	constexpr void discard_pow2(unsigned n) noexcept;
 
 	//! Discard the next n values
-	constexpr void discard(result_type n);
+	constexpr void discard(result_type n) noexcept;
 };
 
 template <uint64_t A, uint64_t C>
@@ -265,14 +265,14 @@ const typename LCG64<A, C>::result_type LCG64<A, C>::Table[][2] = {
 };
 
 template <uint64_t A, uint64_t C>
-constexpr void LCG64<A, C>::discard_pow2(unsigned n) {
+constexpr void LCG64<A, C>::discard_pow2(unsigned n) noexcept {
 	const auto &entry = Table[n & 63];
 	auto a = entry[0], c = entry[1];
 	Seed = a * Seed + c;
 }
 
 template <uint64_t A, uint64_t C>
-constexpr void LCG64<A, C>::discard(result_type n) {
+constexpr void LCG64<A, C>::discard(result_type n) noexcept {
 	result_type v = n, s = Seed;
 	while (v != 0) {
 		const auto &entry = Table[bsf64_nz(v)];

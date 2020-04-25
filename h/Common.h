@@ -62,4 +62,14 @@ inline T compare_and_exchange_value_relaxed(T *ptr, T expected, T desired) noexc
 #endif
 #endif
 
+//! Linearly interpolate between [left, right]
+EJ_ALWAYS_INLINE constexpr float lerp(float left, float right, float t) noexcept {
+	return (1 - t) * left + t * right;
+}
+
+//! Linearly interpolate between [left, right]
+EJ_ALWAYS_INLINE constexpr double lerp(double left, double right, double t) noexcept {
+	return (1 - t) * left + t * right;
+}
+
 }

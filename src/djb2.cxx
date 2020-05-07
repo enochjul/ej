@@ -44,87 +44,87 @@ enum : uint32_t {
 };
 
 uint32_t djb2_32(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint32_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = DJB2_32_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
 			hash = hash * DJB2_32_MULTIPLIER_P8 +
-				start[0] * DJB2_32_MULTIPLIER_P7 +
-				start[1] * DJB2_32_MULTIPLIER_P6 +
-				start[2] * DJB2_32_MULTIPLIER_P5 +
-				start[3] * DJB2_32_MULTIPLIER_P4 +
-				start[4] * DJB2_32_MULTIPLIER_P3 +
-				start[5] * DJB2_32_MULTIPLIER_P2 +
-				start[6] * DJB2_32_MULTIPLIER_P1 +
-				start[7];
+				load<uint8_t>(start, 0) * DJB2_32_MULTIPLIER_P7 +
+				load<uint8_t>(start, 1) * DJB2_32_MULTIPLIER_P6 +
+				load<uint8_t>(start, 2) * DJB2_32_MULTIPLIER_P5 +
+				load<uint8_t>(start, 3) * DJB2_32_MULTIPLIER_P4 +
+				load<uint8_t>(start, 4) * DJB2_32_MULTIPLIER_P3 +
+				load<uint8_t>(start, 5) * DJB2_32_MULTIPLIER_P2 +
+				load<uint8_t>(start, 6) * DJB2_32_MULTIPLIER_P1 +
+				load<uint8_t>(start, 7);
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
 		hash = hash * DJB2_32_MULTIPLIER_P7 +
-			end[0] * DJB2_32_MULTIPLIER_P6 +
-			end[1] * DJB2_32_MULTIPLIER_P5 +
-			end[2] * DJB2_32_MULTIPLIER_P4 +
-			end[3] * DJB2_32_MULTIPLIER_P3 +
-			end[4] * DJB2_32_MULTIPLIER_P2 +
-			end[5] * DJB2_32_MULTIPLIER_P1 +
-			end[6];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * DJB2_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * DJB2_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * DJB2_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * DJB2_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 6);
 		break;
 
 	case 6:
 		hash = hash * DJB2_32_MULTIPLIER_P6 +
-			end[0] * DJB2_32_MULTIPLIER_P5 +
-			end[1] * DJB2_32_MULTIPLIER_P4 +
-			end[2] * DJB2_32_MULTIPLIER_P3 +
-			end[3] * DJB2_32_MULTIPLIER_P2 +
-			end[4] * DJB2_32_MULTIPLIER_P1 +
-			end[5];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * DJB2_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * DJB2_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * DJB2_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 5);
 		break;
 
 	case 5:
 		hash = hash * DJB2_32_MULTIPLIER_P5 +
-			end[0] * DJB2_32_MULTIPLIER_P4 +
-			end[1] * DJB2_32_MULTIPLIER_P3 +
-			end[2] * DJB2_32_MULTIPLIER_P2 +
-			end[3] * DJB2_32_MULTIPLIER_P1 +
-			end[4];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * DJB2_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * DJB2_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 4);
 		break;
 
 	case 4:
 		hash = hash * DJB2_32_MULTIPLIER_P4 +
-			end[0] * DJB2_32_MULTIPLIER_P3 +
-			end[1] * DJB2_32_MULTIPLIER_P2 +
-			end[2] * DJB2_32_MULTIPLIER_P1 +
-			end[3];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * DJB2_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 3);
 		break;
 
 	case 3:
 		hash = hash * DJB2_32_MULTIPLIER_P3 +
-			end[0] * DJB2_32_MULTIPLIER_P2 +
-			end[1] * DJB2_32_MULTIPLIER_P1 +
-			end[2];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 2);
 		break;
 
 	case 2:
 		hash = hash * DJB2_32_MULTIPLIER_P2 +
-			end[0] * DJB2_32_MULTIPLIER_P1 +
-			end[1];
+			load<uint8_t>(end, 0) * DJB2_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 1);
 		break;
 
 	case 1:
 		hash = hash * DJB2_32_MULTIPLIER_P1 +
-			end[0];
+			load<uint8_t>(end, 0);
 		break;
 	}
 	return hash;
@@ -173,87 +173,87 @@ enum : uint64_t {
 };
 
 uint64_t djb2_64(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint64_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = DJB2_64_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
 			hash = hash * DJB2_64_MULTIPLIER_P8 +
-				start[0] * DJB2_64_MULTIPLIER_P7 +
-				start[1] * DJB2_64_MULTIPLIER_P6 +
-				start[2] * DJB2_64_MULTIPLIER_P5 +
-				start[3] * DJB2_64_MULTIPLIER_P4 +
-				start[4] * DJB2_64_MULTIPLIER_P3 +
-				start[5] * DJB2_64_MULTIPLIER_P2 +
-				start[6] * DJB2_64_MULTIPLIER_P1 +
-				start[7];
+				load<uint8_t>(start, 0) * DJB2_64_MULTIPLIER_P7 +
+				load<uint8_t>(start, 1) * DJB2_64_MULTIPLIER_P6 +
+				load<uint8_t>(start, 2) * DJB2_64_MULTIPLIER_P5 +
+				load<uint8_t>(start, 3) * DJB2_64_MULTIPLIER_P4 +
+				load<uint8_t>(start, 4) * DJB2_64_MULTIPLIER_P3 +
+				load<uint8_t>(start, 5) * DJB2_64_MULTIPLIER_P2 +
+				load<uint8_t>(start, 6) * DJB2_64_MULTIPLIER_P1 +
+				load<uint8_t>(start, 7);
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
 		hash = hash * DJB2_64_MULTIPLIER_P7 +
-			end[0] * DJB2_64_MULTIPLIER_P6 +
-			end[1] * DJB2_64_MULTIPLIER_P5 +
-			end[2] * DJB2_64_MULTIPLIER_P4 +
-			end[3] * DJB2_64_MULTIPLIER_P3 +
-			end[4] * DJB2_64_MULTIPLIER_P2 +
-			end[5] * DJB2_64_MULTIPLIER_P1 +
-			end[6];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * DJB2_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * DJB2_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * DJB2_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * DJB2_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 6);
 		break;
 
 	case 6:
 		hash = hash * DJB2_64_MULTIPLIER_P6 +
-			end[0] * DJB2_64_MULTIPLIER_P5 +
-			end[1] * DJB2_64_MULTIPLIER_P4 +
-			end[2] * DJB2_64_MULTIPLIER_P3 +
-			end[3] * DJB2_64_MULTIPLIER_P2 +
-			end[4] * DJB2_64_MULTIPLIER_P1 +
-			end[5];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * DJB2_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * DJB2_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * DJB2_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 5);
 		break;
 
 	case 5:
 		hash = hash * DJB2_64_MULTIPLIER_P5 +
-			end[0] * DJB2_64_MULTIPLIER_P4 +
-			end[1] * DJB2_64_MULTIPLIER_P3 +
-			end[2] * DJB2_64_MULTIPLIER_P2 +
-			end[3] * DJB2_64_MULTIPLIER_P1 +
-			end[4];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * DJB2_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * DJB2_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 4);
 		break;
 
 	case 4:
 		hash = hash * DJB2_64_MULTIPLIER_P4 +
-			end[0] * DJB2_64_MULTIPLIER_P3 +
-			end[1] * DJB2_64_MULTIPLIER_P2 +
-			end[2] * DJB2_64_MULTIPLIER_P1 +
-			end[3];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * DJB2_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 3);
 		break;
 
 	case 3:
 		hash = hash * DJB2_64_MULTIPLIER_P3 +
-			end[0] * DJB2_64_MULTIPLIER_P2 +
-			end[1] * DJB2_64_MULTIPLIER_P1 +
-			end[2];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 2);
 		break;
 
 	case 2:
 		hash = hash * DJB2_64_MULTIPLIER_P2 +
-			end[0] * DJB2_64_MULTIPLIER_P1 +
-			end[1];
+			load<uint8_t>(end, 0) * DJB2_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 1);
 		break;
 
 	case 1:
 		hash = hash * DJB2_64_MULTIPLIER_P1 +
-			end[0];
+			load<uint8_t>(end, 0);
 		break;
 	}
 	return hash;

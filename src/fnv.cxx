@@ -97,13 +97,13 @@ uint64_t fnv1a_add_64(const char *s) noexcept {
 }
 
 uint32_t fnv1_32(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	uint32_t hash;
 
 	hash = FNV_32_OFFSET_BASIS;
-	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
-		hash = (hash * FNV_32_MULTIPLIER) ^ *start;
+	for (start = s, end = lea(start, n); start < end; start = lea(start, sizeof(uint8_t))) {
+		hash = (hash * FNV_32_MULTIPLIER) ^ load<uint8_t>(start);
 	}
 	return hash;
 }
@@ -137,13 +137,13 @@ uint32_t fnv1_32(uint64_t value) noexcept {
 }
 
 uint64_t fnv1_64(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	uint64_t hash;
 
 	hash = FNV_64_OFFSET_BASIS;
-	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
-		hash = (hash * FNV_64_MULTIPLIER) ^ *start;
+	for (start = s, end = lea(start, n); start < end; start = lea(start, sizeof(uint8_t))) {
+		hash = (hash * FNV_64_MULTIPLIER) ^ load<uint8_t>(start);
 	}
 	return hash;
 }
@@ -177,13 +177,13 @@ uint64_t fnv1_64(uint64_t value) noexcept {
 }
 
 uint32_t fnv1a_32(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	uint32_t hash;
 
 	hash = FNV_32_OFFSET_BASIS;
-	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
-		hash = (hash ^ *start) * FNV_32_MULTIPLIER;
+	for (start = s, end = lea(start, n); start < end; start = lea(start, sizeof(uint8_t))) {
+		hash = (hash ^ load<uint8_t>(start)) * FNV_32_MULTIPLIER;
 	}
 	return hash;
 }
@@ -217,13 +217,13 @@ uint32_t fnv1a_32(uint64_t value) noexcept {
 }
 
 uint64_t fnv1a_64(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	uint64_t hash;
 
 	hash = FNV_64_OFFSET_BASIS;
-	for (start = static_cast<const uint8_t *>(s), end = start + n; start < end; ++start) {
-		hash = (hash ^ *start) * FNV_64_MULTIPLIER;
+	for (start = s, end = lea(start, n); start < end; start = lea(start, sizeof(uint8_t))) {
+		hash = (hash ^ load<uint8_t>(start)) * FNV_64_MULTIPLIER;
 	}
 	return hash;
 }
@@ -269,87 +269,87 @@ enum : uint32_t {
 };
 
 uint32_t fnv1_add_32(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint32_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = FNV1_ADD_32_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
 			hash = hash * FNV1_ADD_32_MULTIPLIER_P8 +
-				start[0] * FNV1_ADD_32_MULTIPLIER_P7 +
-				start[1] * FNV1_ADD_32_MULTIPLIER_P6 +
-				start[2] * FNV1_ADD_32_MULTIPLIER_P5 +
-				start[3] * FNV1_ADD_32_MULTIPLIER_P4 +
-				start[4] * FNV1_ADD_32_MULTIPLIER_P3 +
-				start[5] * FNV1_ADD_32_MULTIPLIER_P2 +
-				start[6] * FNV1_ADD_32_MULTIPLIER_P1 +
-				start[7];
+				load<uint8_t>(start, 0) * FNV1_ADD_32_MULTIPLIER_P7 +
+				load<uint8_t>(start, 1) * FNV1_ADD_32_MULTIPLIER_P6 +
+				load<uint8_t>(start, 2) * FNV1_ADD_32_MULTIPLIER_P5 +
+				load<uint8_t>(start, 3) * FNV1_ADD_32_MULTIPLIER_P4 +
+				load<uint8_t>(start, 4) * FNV1_ADD_32_MULTIPLIER_P3 +
+				load<uint8_t>(start, 5) * FNV1_ADD_32_MULTIPLIER_P2 +
+				load<uint8_t>(start, 6) * FNV1_ADD_32_MULTIPLIER_P1 +
+				load<uint8_t>(start, 7);
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P7 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P6 +
-			end[1] * FNV1_ADD_32_MULTIPLIER_P5 +
-			end[2] * FNV1_ADD_32_MULTIPLIER_P4 +
-			end[3] * FNV1_ADD_32_MULTIPLIER_P3 +
-			end[4] * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[5] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[6];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * FNV1_ADD_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * FNV1_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * FNV1_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * FNV1_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 6);
 		break;
 
 	case 6:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P6 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P5 +
-			end[1] * FNV1_ADD_32_MULTIPLIER_P4 +
-			end[2] * FNV1_ADD_32_MULTIPLIER_P3 +
-			end[3] * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[4] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[5];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * FNV1_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * FNV1_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * FNV1_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 5);
 		break;
 
 	case 5:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P5 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P4 +
-			end[1] * FNV1_ADD_32_MULTIPLIER_P3 +
-			end[2] * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[3] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[4];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * FNV1_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * FNV1_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 4);
 		break;
 
 	case 4:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P4 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P3 +
-			end[1] * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[2] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[3];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * FNV1_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 3);
 		break;
 
 	case 3:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P3 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[1] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[2];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 2);
 		break;
 
 	case 2:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P2 +
-			end[0] * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[1];
+			load<uint8_t>(end, 0) * FNV1_ADD_32_MULTIPLIER_P1 +
+			load<uint8_t>(end, 1);
 		break;
 
 	case 1:
 		hash = hash * FNV1_ADD_32_MULTIPLIER_P1 +
-			end[0];
+			load<uint8_t>(end, 0);
 		break;
 	}
 	return hash;
@@ -398,87 +398,87 @@ enum : uint64_t {
 };
 
 uint64_t fnv1_add_64(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint64_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = FNV1_ADD_64_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
 			hash = hash * FNV1_ADD_64_MULTIPLIER_P8 +
-				start[0] * FNV1_ADD_64_MULTIPLIER_P7 +
-				start[1] * FNV1_ADD_64_MULTIPLIER_P6 +
-				start[2] * FNV1_ADD_64_MULTIPLIER_P5 +
-				start[3] * FNV1_ADD_64_MULTIPLIER_P4 +
-				start[4] * FNV1_ADD_64_MULTIPLIER_P3 +
-				start[5] * FNV1_ADD_64_MULTIPLIER_P2 +
-				start[6] * FNV1_ADD_64_MULTIPLIER_P1 +
-				start[7];
+				load<uint8_t>(start, 0) * FNV1_ADD_64_MULTIPLIER_P7 +
+				load<uint8_t>(start, 1) * FNV1_ADD_64_MULTIPLIER_P6 +
+				load<uint8_t>(start, 2) * FNV1_ADD_64_MULTIPLIER_P5 +
+				load<uint8_t>(start, 3) * FNV1_ADD_64_MULTIPLIER_P4 +
+				load<uint8_t>(start, 4) * FNV1_ADD_64_MULTIPLIER_P3 +
+				load<uint8_t>(start, 5) * FNV1_ADD_64_MULTIPLIER_P2 +
+				load<uint8_t>(start, 6) * FNV1_ADD_64_MULTIPLIER_P1 +
+				load<uint8_t>(start, 7);
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P7 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P6 +
-			end[1] * FNV1_ADD_64_MULTIPLIER_P5 +
-			end[2] * FNV1_ADD_64_MULTIPLIER_P4 +
-			end[3] * FNV1_ADD_64_MULTIPLIER_P3 +
-			end[4] * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[5] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[6];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * FNV1_ADD_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * FNV1_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * FNV1_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * FNV1_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 6);
 		break;
 
 	case 6:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P6 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P5 +
-			end[1] * FNV1_ADD_64_MULTIPLIER_P4 +
-			end[2] * FNV1_ADD_64_MULTIPLIER_P3 +
-			end[3] * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[4] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[5];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * FNV1_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * FNV1_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * FNV1_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 5);
 		break;
 
 	case 5:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P5 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P4 +
-			end[1] * FNV1_ADD_64_MULTIPLIER_P3 +
-			end[2] * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[3] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[4];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * FNV1_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * FNV1_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 4);
 		break;
 
 	case 4:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P4 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P3 +
-			end[1] * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[2] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[3];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * FNV1_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 3);
 		break;
 
 	case 3:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P3 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[1] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[2];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 2);
 		break;
 
 	case 2:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P2 +
-			end[0] * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[1];
+			load<uint8_t>(end, 0) * FNV1_ADD_64_MULTIPLIER_P1 +
+			load<uint8_t>(end, 1);
 		break;
 
 	case 1:
 		hash = hash * FNV1_ADD_64_MULTIPLIER_P1 +
-			end[0];
+			load<uint8_t>(end, 0);
 		break;
 	}
 	return hash;
@@ -527,79 +527,79 @@ enum : uint32_t {
 };
 
 uint32_t fnv1a_add_32(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint32_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = FNV1A_ADD_32_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
-			hash = (hash + start[0]) * FNV1A_ADD_32_MULTIPLIER_P8 +
-				start[1] * FNV1A_ADD_32_MULTIPLIER_P7 +
-				start[2] * FNV1A_ADD_32_MULTIPLIER_P6 +
-				start[3] * FNV1A_ADD_32_MULTIPLIER_P5 +
-				start[4] * FNV1A_ADD_32_MULTIPLIER_P4 +
-				start[5] * FNV1A_ADD_32_MULTIPLIER_P3 +
-				start[6] * FNV1A_ADD_32_MULTIPLIER_P2 +
-				start[7] * FNV1A_ADD_32_MULTIPLIER_P1;
+			hash = (hash + load<uint8_t>(start)) * FNV1A_ADD_32_MULTIPLIER_P8 +
+				load<uint8_t>(start, 1) * FNV1A_ADD_32_MULTIPLIER_P7 +
+				load<uint8_t>(start, 2) * FNV1A_ADD_32_MULTIPLIER_P6 +
+				load<uint8_t>(start, 3) * FNV1A_ADD_32_MULTIPLIER_P5 +
+				load<uint8_t>(start, 4) * FNV1A_ADD_32_MULTIPLIER_P4 +
+				load<uint8_t>(start, 5) * FNV1A_ADD_32_MULTIPLIER_P3 +
+				load<uint8_t>(start, 6) * FNV1A_ADD_32_MULTIPLIER_P2 +
+				load<uint8_t>(start, 7) * FNV1A_ADD_32_MULTIPLIER_P1;
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P7 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P6 +
-			end[2] * FNV1A_ADD_32_MULTIPLIER_P5 +
-			end[3] * FNV1A_ADD_32_MULTIPLIER_P4 +
-			end[4] * FNV1A_ADD_32_MULTIPLIER_P3 +
-			end[5] * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[6] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P7 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P6 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 5) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 6) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 6:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P6 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P5 +
-			end[2] * FNV1A_ADD_32_MULTIPLIER_P4 +
-			end[3] * FNV1A_ADD_32_MULTIPLIER_P3 +
-			end[4] * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[5] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 5:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P5 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P4 +
-			end[2] * FNV1A_ADD_32_MULTIPLIER_P3 +
-			end[3] * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[4] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 4:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P4 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P3 +
-			end[2] * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[3] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 3:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P3 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[2] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 2:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P2 +
-			end[1] * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 
 	case 1:
-		hash = (hash + end[0]) * FNV1A_ADD_32_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_32_MULTIPLIER_P1;
 		break;
 	}
 	return hash;
@@ -646,79 +646,79 @@ enum : uint64_t {
 };
 
 uint64_t fnv1a_add_64(const void *s, size_t n) noexcept {
-	const uint8_t *start;
-	const uint8_t *end;
+	const void *start;
+	const void *end;
 	size_t aligned_n;
 	uint64_t hash;
 
-	end = static_cast<const uint8_t *>(s);
+	end = s;
 	hash = FNV1A_ADD_64_OFFSET_BASIS;
 	aligned_n = (n / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint8_t *>(s);
-		end += aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
-			hash = (hash + start[0]) * FNV1A_ADD_64_MULTIPLIER_P8 +
-				start[1] * FNV1A_ADD_64_MULTIPLIER_P7 +
-				start[2] * FNV1A_ADD_64_MULTIPLIER_P6 +
-				start[3] * FNV1A_ADD_64_MULTIPLIER_P5 +
-				start[4] * FNV1A_ADD_64_MULTIPLIER_P4 +
-				start[5] * FNV1A_ADD_64_MULTIPLIER_P3 +
-				start[6] * FNV1A_ADD_64_MULTIPLIER_P2 +
-				start[7] * FNV1A_ADD_64_MULTIPLIER_P1;
+			hash = (hash + load<uint8_t>(start)) * FNV1A_ADD_64_MULTIPLIER_P8 +
+				load<uint8_t>(start, 1) * FNV1A_ADD_64_MULTIPLIER_P7 +
+				load<uint8_t>(start, 2) * FNV1A_ADD_64_MULTIPLIER_P6 +
+				load<uint8_t>(start, 3) * FNV1A_ADD_64_MULTIPLIER_P5 +
+				load<uint8_t>(start, 4) * FNV1A_ADD_64_MULTIPLIER_P4 +
+				load<uint8_t>(start, 5) * FNV1A_ADD_64_MULTIPLIER_P3 +
+				load<uint8_t>(start, 6) * FNV1A_ADD_64_MULTIPLIER_P2 +
+				load<uint8_t>(start, 7) * FNV1A_ADD_64_MULTIPLIER_P1;
 
-			start += 8;
+			start = lea(start, 8);
 		} while (start < end);
 	}
 
 	switch (n & 7) {
 	case 7:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P7 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P6 +
-			end[2] * FNV1A_ADD_64_MULTIPLIER_P5 +
-			end[3] * FNV1A_ADD_64_MULTIPLIER_P4 +
-			end[4] * FNV1A_ADD_64_MULTIPLIER_P3 +
-			end[5] * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[6] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P7 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P6 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 5) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 6) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 6:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P6 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P5 +
-			end[2] * FNV1A_ADD_64_MULTIPLIER_P4 +
-			end[3] * FNV1A_ADD_64_MULTIPLIER_P3 +
-			end[4] * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[5] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P6 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 5) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 5:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P5 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P4 +
-			end[2] * FNV1A_ADD_64_MULTIPLIER_P3 +
-			end[3] * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[4] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P5 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 4) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 4:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P4 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P3 +
-			end[2] * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[3] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P4 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 3) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 3:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P3 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[2] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P3 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 2) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 2:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P2 +
-			end[1] * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P2 +
+			load<uint8_t>(end, 1) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 
 	case 1:
-		hash = (hash + end[0]) * FNV1A_ADD_64_MULTIPLIER_P1;
+		hash = (hash + load<uint8_t>(end)) * FNV1A_ADD_64_MULTIPLIER_P1;
 		break;
 	}
 	return hash;

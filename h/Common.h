@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
+
+#include <type_traits>
 
 #define EJ_ALWAYS_INLINE_ATTRIBUTE	__attribute__((always_inline))
 #define EJ_ALWAYS_INLINE	inline EJ_ALWAYS_INLINE_ATTRIBUTE
@@ -22,6 +25,24 @@ EJ_ALWAYS_INLINE constexpr size_t get_size(const T (&a)[N]) noexcept {
 template <typename T>
 EJ_ALWAYS_INLINE constexpr T *lea(T *ptr, uintptr_t offset) noexcept {
 	return reinterpret_cast<T *>(reinterpret_cast<uintptr_t>(ptr) + offset);
+}
+
+template <typename T>
+EJ_ALWAYS_INLINE T load(const void *ptr, size_t index = 0) noexcept {
+	static_assert(std::is_scalar<T>::value);
+
+	T r;
+	memcpy(&r, static_cast<const T *>(ptr) + index, sizeof(T));
+	return r;
+}
+
+template <typename T>
+EJ_ALWAYS_INLINE T loadu(const void *ptr, size_t index = 0) noexcept {
+	static_assert(std::is_scalar<T>::value);
+
+	T r;
+	memcpy(&r, static_cast<const T *>(ptr) + index, sizeof(T));
+	return r;
 }
 
 enum : size_t {

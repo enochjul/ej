@@ -3,17 +3,11 @@
 //file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "murmur3.h"
-#include "rotate.h"
 
 namespace ej {
 
-enum : uint32_t {
-	MURMUR3_32_C1 = 0xcc9e2d51U,
-	MURMUR3_32_C2 = 0x1b873593U,
-};
-
 uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
-	const uint32_t *start;
+	const void *start;
 	const void *end;
 	size_t aligned_n;
 	uint32_t hash, k;
@@ -22,10 +16,10 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 	hash = seed;
 	aligned_n = (n / 4) * 4;
 	if (aligned_n > 0) {
-		start = static_cast<const uint32_t *>(s);
-		end = static_cast<const uint8_t *>(end) + aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
-			k = *start;
+			k = loadu<uint32_t>(start);
 
 			k *= MURMUR3_32_C1;
 			k = rotate_left<uint32_t>(k, 15);
@@ -35,7 +29,7 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 			hash = rotate_left<uint32_t>(hash, 13);
 			hash = hash * 5 + UINT32_C(0xe6546b64);
 
-			++start;
+			start = lea(start, sizeof(uint32_t));
 		} while (start < end);
 	}
 
@@ -43,8 +37,8 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 	switch(n & 3)
 	{
 	case 3:
-		k = *static_cast<const uint16_t *>(end);
-		k |= static_cast<uint32_t>(*(static_cast<const uint8_t *>(end) + 2)) << 16;
+		k = loadu<uint16_t>(end);
+		k |= static_cast<uint32_t>(load<uint8_t>(lea(end, sizeof(uint16_t)))) << 16;
 
 		k *= MURMUR3_32_C1;
 		k = rotate_left<uint32_t>(k, 15);
@@ -53,7 +47,7 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 		break;
 
 	case 2:
-		k = *static_cast<const uint16_t *>(end);
+		k = loadu<uint16_t>(end);
 
 		k *= MURMUR3_32_C1;
 		k = rotate_left<uint32_t>(k, 15);
@@ -62,7 +56,7 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 		break;
 
 	case 1:
-		k = *static_cast<const uint8_t *>(end);
+		k = load<uint8_t>(end);
 
 		k *= MURMUR3_32_C1;
 		k = rotate_left<uint32_t>(k, 15);
@@ -72,30 +66,6 @@ uint32_t murmur3_32(const void *s, size_t n, uint32_t seed) noexcept {
 	};
 
 	hash ^= static_cast<uint32_t>(n);
-	hash ^= hash >> 16;
-	hash *= UINT32_C(0x85ebca6b);
-	hash ^= hash >> 13;
-	hash *= UINT32_C(0xc2b2ae35);
-	hash ^= hash >> 16;
-
-	return hash;
-}
-
-uint32_t murmur3_32(uint32_t value, uint32_t seed) noexcept {
-	uint32_t hash, k;
-
-	hash = seed;
-
-	k = value;
-	k *= MURMUR3_32_C1;
-	k = rotate_left<uint32_t>(k, 15);
-	k *= MURMUR3_32_C2;
-
-	hash ^= k;
-	hash = rotate_left<uint32_t>(hash, 13);
-	hash = hash * 5 + UINT32_C(0xe6546b64);
-
-	hash ^= sizeof(value);
 	hash ^= hash >> 16;
 	hash *= UINT32_C(0x85ebca6b);
 	hash ^= hash >> 13;
@@ -140,6 +110,36 @@ uint32_t murmur3_32(uint64_t value, uint32_t seed) noexcept {
 	return hash;
 }
 
+uint32_t murmur3_32(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t seed) noexcept {
+	uint32_t hash;
+
+	hash = seed;
+	hash = murmur3_32_round(hash, v0);
+	hash = murmur3_32_round(hash, v1);
+	hash = murmur3_32_round(hash, v2);
+
+	hash ^= sizeof(uint32_t) * 3;
+	hash ^= hash >> 16;
+	hash *= UINT32_C(0x85ebca6b);
+	hash ^= hash >> 13;
+	hash *= UINT32_C(0xc2b2ae35);
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
+v4u32 murmur3_32x4(v4u32 value, uint32_t seed) noexcept {
+	v4u32 hash;
+
+	hash.set1(seed);
+	hash = murmur3_32x4_round(hash, value);
+
+	hash ^= make1_v4u32(sizeof(uint32_t));
+	hash = murmur3_32x4_final_mix(hash);
+
+	return hash;
+}
+
 enum : uint64_t {
 	MURMUR3_128_C1 = UINT64_C(0x87c37b91114253d5),
 	MURMUR3_128_C2 = UINT64_C(0x4cf5ad432745937f),
@@ -156,7 +156,7 @@ inline uint64_t murmur3_128_final_mix(uint64_t k) {
 }
 
 duint64 murmur3_128(const void *s, size_t n, uint64_t seed) noexcept {
-	const uint64_t *start;
+	const void *start;
 	const void *end;
 	size_t aligned_n;
 	uint64_t hash_low, hash_high;
@@ -167,11 +167,11 @@ duint64 murmur3_128(const void *s, size_t n, uint64_t seed) noexcept {
 	hash_high = seed;
 	aligned_n = (n / 16) * 16;
 	if (aligned_n > 0) {
-		start = static_cast<const uint64_t *>(s);
-		end = static_cast<const uint8_t *>(end) + aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 		do {
-			k_low = start[0];
-			k_high = start[1];
+			k_low = loadu<uint64_t>(start);
+			k_high = loadu<uint64_t>(lea(start, sizeof(uint64_t)));
 
 			k_low *= MURMUR3_128_C1;
 			k_low = rotate_left<uint64_t>(k_low, 31);
@@ -189,80 +189,80 @@ duint64 murmur3_128(const void *s, size_t n, uint64_t seed) noexcept {
 			hash_high += hash_low;
 			hash_high = hash_high * 5 + UINT32_C(0x38495ab5);
 
-			start += 2;
+			start = lea(start, sizeof(uint64_t) * 2);
 		} while (start < end);
 	}
 
 	switch(n & 15)
 	{
 	case 15:
-		k_high = *(static_cast<const uint32_t *>(end) + 2);
-		k_high |= static_cast<uint64_t>(*(static_cast<const uint16_t *>(end) + 6)) << 32;
-		k_high |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 14)) << 48;
+		k_high = loadu<uint32_t>(lea(end, sizeof(uint64_t)));
+		k_high |= static_cast<uint64_t>(loadu<uint16_t>(lea(end, sizeof(uint64_t) + sizeof(uint32_t)))) << 32;
+		k_high |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint16_t)))) << 48;
 		goto second_last_block;
 
 	case 14:
-		k_high = *(static_cast<const uint32_t *>(end) + 2);
-		k_high |= static_cast<uint64_t>(*(static_cast<const uint16_t *>(end) + 6)) << 32;
+		k_high = loadu<uint32_t>(lea(end, sizeof(uint64_t)));
+		k_high |= static_cast<uint64_t>(loadu<uint16_t>(lea(end, sizeof(uint64_t) + sizeof(uint32_t)))) << 32;
 		goto second_last_block;
 
 	case 13:
-		k_high = *(static_cast<const uint32_t *>(end) + 2);
-		k_high |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 12)) << 32;
+		k_high = loadu<uint32_t>(lea(end, sizeof(uint64_t)));
+		k_high |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint64_t) + sizeof(uint32_t)))) << 32;
 		goto second_last_block;
 
 	case 12:
-		k_high = *(static_cast<const uint32_t *>(end) + 2);
+		k_high = loadu<uint32_t>(lea(end, sizeof(uint64_t)));
 		goto second_last_block;
 
 	case 11:
-		k_high = *(static_cast<const uint16_t *>(end) + 4);
-		k_high |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 10)) << 16;
+		k_high = loadu<uint16_t>(lea(end, sizeof(uint64_t)));
+		k_high |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint64_t) + sizeof(uint16_t)))) << 16;
 		goto second_last_block;
 
 	case 10:
-		k_high = *(static_cast<const uint16_t *>(end) + 4);
+		k_high = loadu<uint16_t>(lea(end, sizeof(uint64_t)));
 		goto second_last_block;
 
 	case 9:
-		k_high = *(static_cast<const uint8_t *>(end) + 8);
+		k_high = load<uint8_t>(lea(end, sizeof(uint64_t)));
 		goto second_last_block;
 
 	case 8:
-		k_low = *static_cast<const uint64_t *>(end);
+		k_low = loadu<uint64_t>(end);
 		goto last_block;
 
 	case 7:
-		k_low = *static_cast<const uint32_t *>(end);
-		k_low |= static_cast<uint64_t>(*(static_cast<const uint16_t *>(end) + 2)) << 32;
-		k_low |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 6)) << 48;
+		k_low = loadu<uint32_t>(end);
+		k_low |= static_cast<uint64_t>(loadu<uint16_t>(lea(end, sizeof(uint32_t)))) << 32;
+		k_low |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint32_t) + sizeof(uint16_t)))) << 48;
 		goto last_block;
 
 	case 6:
-		k_low = *static_cast<const uint32_t *>(end);
-		k_low |= static_cast<uint64_t>(*(static_cast<const uint16_t *>(end) + 2)) << 32;
+		k_low = loadu<uint32_t>(end);
+		k_low |= static_cast<uint64_t>(loadu<uint16_t>(lea(end, sizeof(uint32_t)))) << 32;
 		goto last_block;
 
 	case 5:
-		k_low = *static_cast<const uint32_t *>(end);
-		k_low |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 4)) << 32;
+		k_low = loadu<uint32_t>(end);
+		k_low |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint32_t)))) << 32;
 		goto last_block;
 
 	case 4:
-		k_low = *static_cast<const uint32_t *>(end);
+		k_low = loadu<uint32_t>(end);
 		goto last_block;
 
 	case 3:
-		k_low = *static_cast<const uint16_t *>(end);
-		k_low |= static_cast<uint64_t>(*(static_cast<const uint8_t *>(end) + 2)) << 16;
+		k_low = loadu<uint16_t>(end);
+		k_low |= static_cast<uint64_t>(load<uint8_t>(lea(end, sizeof(uint16_t)))) << 16;
 		goto last_block;
 
 	case 2:
-		k_low = *static_cast<const uint16_t *>(end);
+		k_low = loadu<uint16_t>(end);
 		goto last_block;
 
 	case 1:
-		k_low = *static_cast<const uint8_t *>(end);
+		k_low = load<uint8_t>(end);
 		goto last_block;
 
 	case 0:
@@ -275,7 +275,7 @@ second_last_block:
 	k_high *= MURMUR3_128_C1;
 	hash_high ^= k_high;
 
-	k_low = *static_cast<const uint64_t *>(end);
+	k_low = loadu<uint64_t>(end);
 
 last_block:
 	k_low *= MURMUR3_128_C1;

@@ -40,7 +40,7 @@ enum : uint32_t {
 };
 
 uint32_t xxhash_32(const void *s, size_t n, uint32_t seed) noexcept {
-	const uint32_t *start;
+	const void *start;
 	const void *end;
 	size_t aligned_n;
 	uint32_t hash, v1, v2, v3, v4;
@@ -48,8 +48,8 @@ uint32_t xxhash_32(const void *s, size_t n, uint32_t seed) noexcept {
 	end = s;
 	aligned_n = (n / 16) * 16;
 	if (aligned_n > 0) {
-		start = static_cast<const uint32_t *>(s);
-		end = static_cast<const uint8_t *>(end) + aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 
 		v1 = seed + XXHASH_32_PRIME_1 + XXHASH_32_PRIME_2;
 		v2 = seed + XXHASH_32_PRIME_2;
@@ -57,23 +57,23 @@ uint32_t xxhash_32(const void *s, size_t n, uint32_t seed) noexcept {
 		v4 = seed - XXHASH_32_PRIME_1;
 
 		do {
-			v1 += start[0] * XXHASH_32_PRIME_2;
+			v1 += loadu<uint32_t>(start) * XXHASH_32_PRIME_2;
 			v1 = rotate_left<uint32_t>(v1, 13);
 			v1 *= XXHASH_32_PRIME_1;
 
-			v2 += start[1] * XXHASH_32_PRIME_2;
+			v2 += loadu<uint32_t>(start, 1) * XXHASH_32_PRIME_2;
 			v2 = rotate_left<uint32_t>(v2, 13);
 			v2 *= XXHASH_32_PRIME_1;
 
-			v3 += start[2] * XXHASH_32_PRIME_2;
+			v3 += loadu<uint32_t>(start, 2) * XXHASH_32_PRIME_2;
 			v3 = rotate_left<uint32_t>(v3, 13);
 			v3 *= XXHASH_32_PRIME_1;
 
-			v4 += start[3] * XXHASH_32_PRIME_2;
+			v4 += loadu<uint32_t>(start, 3) * XXHASH_32_PRIME_2;
 			v4 = rotate_left<uint32_t>(v4, 13);
 			v4 *= XXHASH_32_PRIME_1;
 
-			start += 4;
+			start = lea(start, sizeof(uint32_t) * 4);
 		} while (start < end);
 
 		hash = rotate_left<uint32_t>(v1, 1) + rotate_left<uint32_t>(v2, 7) + rotate_left<uint32_t>(v3, 12) + rotate_left<uint32_t>(v4, 18);
@@ -86,143 +86,143 @@ uint32_t xxhash_32(const void *s, size_t n, uint32_t seed) noexcept {
 	hash += static_cast<uint32_t>(n);
 	switch (n & 15) {
 	case 15:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[2] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 2) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[12] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 12) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[13] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 13) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[14] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 14) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 14:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[2] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 2) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[12] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 12) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[13] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 13) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 13:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[2] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 2) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[12] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 12) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 12:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[2] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 2) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
 		break;
 
 	case 11:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[8] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 8) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[9] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 9) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[10] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 10) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 10:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[8] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 8) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[9] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 9) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 9:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[8] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 8) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 8:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint32_t *>(end)[1] * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end, 1) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
 		break;
 
 	case 7:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[4] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 4) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[5] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 5) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[6] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 6) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 6:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[4] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 4) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[5] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 5) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 5:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
-		hash += static_cast<const uint8_t *>(end)[4] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 4) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 4:
-		hash += *static_cast<const uint32_t *>(end) * XXHASH_32_PRIME_3;
+		hash += loadu<uint32_t>(end) * XXHASH_32_PRIME_3;
 		hash = rotate_left<uint32_t>(hash, 17) * XXHASH_32_PRIME_4;
 		break;
 
 	case 3:
-		hash += *static_cast<const uint8_t *>(end) * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[1] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 1) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[2] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 2) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 2:
-		hash += *static_cast<const uint8_t *>(end) * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
-		hash += static_cast<const uint8_t *>(end)[1] * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end, 1) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 
 	case 1:
-		hash += *static_cast<const uint8_t *>(end) * XXHASH_32_PRIME_5;
+		hash += load<uint8_t>(end) * XXHASH_32_PRIME_5;
 		hash = rotate_left<uint32_t>(hash, 11) * XXHASH_32_PRIME_1;
 		break;
 	}
@@ -283,17 +283,17 @@ enum : uint64_t {
 };
 
 uint64_t xxhash_64(const void *s, size_t n, uint64_t seed) noexcept {
-	const uint64_t *start;
+	const void *start;
 	const void *end;
-	const uint8_t *remaining_bytes;
+	const void *remaining_bytes;
 	size_t aligned_n;
 	uint64_t hash, v1, v2, v3, v4, k1;
 
 	end = s;
 	aligned_n = (n / 32) * 32;
 	if (aligned_n > 0) {
-		start = static_cast<const uint64_t *>(s);
-		end = static_cast<const uint8_t *>(end) + aligned_n;
+		start = s;
+		end = lea(end, aligned_n);
 
 		v1 = seed + XXHASH_64_PRIME_1 + XXHASH_64_PRIME_2;
 		v2 = seed + XXHASH_64_PRIME_2;
@@ -301,23 +301,23 @@ uint64_t xxhash_64(const void *s, size_t n, uint64_t seed) noexcept {
 		v4 = seed - XXHASH_64_PRIME_1;
 
 		do {
-			v1 += start[0] * XXHASH_64_PRIME_2;
+			v1 += loadu<uint64_t>(start) * XXHASH_64_PRIME_2;
 			v1 = rotate_left<uint64_t>(v1, 31);
 			v1 *= XXHASH_64_PRIME_1;
 
-			v2 += start[1] * XXHASH_64_PRIME_2;
+			v2 += loadu<uint64_t>(start, 1) * XXHASH_64_PRIME_2;
 			v2 = rotate_left<uint64_t>(v2, 31);
 			v2 *= XXHASH_64_PRIME_1;
 
-			v3 += start[2] * XXHASH_64_PRIME_2;
+			v3 += loadu<uint64_t>(start, 2) * XXHASH_64_PRIME_2;
 			v3 = rotate_left<uint64_t>(v3, 31);
 			v3 *= XXHASH_64_PRIME_1;
 
-			v4 += start[3] * XXHASH_64_PRIME_2;
+			v4 += loadu<uint64_t>(start, 3) * XXHASH_64_PRIME_2;
 			v4 = rotate_left<uint64_t>(v4, 31);
 			v4 *= XXHASH_64_PRIME_1;
 
-			start += 4;
+			start = lea(start, sizeof(uint64_t) * 4);
 		} while (start < end);
 
 		hash = rotate_left<uint64_t>(v1, 1) + rotate_left<uint64_t>(v2, 7) + rotate_left<uint64_t>(v3, 12) + rotate_left<uint64_t>(v4, 18);
@@ -354,29 +354,29 @@ uint64_t xxhash_64(const void *s, size_t n, uint64_t seed) noexcept {
 	hash += n;
 	aligned_n = ((n & 31) / 8) * 8;
 	if (aligned_n > 0) {
-		start = static_cast<const uint64_t *>(end);
-		end = static_cast<const uint8_t *>(end) + aligned_n;
+		start = end;
+		end = lea(end, aligned_n);
 		do {
-			k1 = *start;
+			k1 = loadu<uint64_t>(start);
 			k1 *= XXHASH_64_PRIME_2;
 			k1 = rotate_left<uint64_t>(k1, 31);
 			k1 *= XXHASH_64_PRIME_1;
 			hash ^= k1;
 			hash = rotate_left<uint64_t>(hash, 27) * XXHASH_64_PRIME_1 + XXHASH_64_PRIME_4;
 
-			++start;
+			start = lea(start, sizeof(uint64_t));
 		} while (start < end);
 	}
 
 	if ((n & 4) != 0) {
-		hash ^= static_cast<uint64_t>(*static_cast<const uint32_t *>(end)) * XXHASH_64_PRIME_1;
+		hash ^= static_cast<uint64_t>(loadu<uint32_t>(end)) * XXHASH_64_PRIME_1;
 		hash = rotate_left<uint64_t>(hash, 23) * XXHASH_64_PRIME_2 + XXHASH_64_PRIME_3;
 
-		end = static_cast<const uint32_t *>(end) + 1;
+		end = lea(end, sizeof(uint32_t));
 	}
 
-	for (remaining_bytes = static_cast<const uint8_t *>(end), end = static_cast<const uint8_t *>(s) + n; remaining_bytes < end; ++remaining_bytes) {
-		hash ^= static_cast<uint64_t>(*remaining_bytes) * XXHASH_64_PRIME_5;
+	for (remaining_bytes = end, end = lea(s, n); remaining_bytes < end; remaining_bytes = lea(remaining_bytes, 1)) {
+		hash ^= static_cast<uint64_t>(load<uint8_t>(remaining_bytes)) * XXHASH_64_PRIME_5;
 		hash = rotate_left<uint64_t>(hash, 11) * XXHASH_64_PRIME_1;
 	}
 
